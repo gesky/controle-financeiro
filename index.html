@@ -386,6 +386,38 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 .parc-pct{font-size:12px;font-family:'DM Mono',monospace;min-width:36px;text-align:right}
 .parc-actions{display:flex;gap:6px}
 .parc-hist-card{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:6px;opacity:.7}
+
+/* Dark mode specific fixes */
+[data-theme="dark"] select option{background:var(--bg);color:var(--text)}
+[data-theme="dark"] .auth-card{background:var(--bg)}
+[data-theme="dark"] .goal-card{background:var(--bg)}
+[data-theme="dark"] .inv-card{background:var(--bg)}
+[data-theme="dark"] .parc-card{background:var(--bg)}
+[data-theme="dark"] .cartao-wrap .btn-outline{background:var(--bg2);border-color:var(--border2);color:var(--text)}
+[data-theme="dark"] .cfg-cat-item{background:var(--bg) !important}
+[data-theme="dark"] .cfg-sub-item{background:var(--bg) !important}
+[data-theme="dark"] .cfg-invtipo-item{background:var(--bg) !important}
+[data-theme="dark"] .user-row{background:var(--bg);border-color:var(--border)}
+[data-theme="dark"] .theme-toggle{background:var(--bg2)}
+[data-theme="dark"] .ai-panel{background:var(--bg)}
+[data-theme="dark"] .ai-messages{background:var(--bg)}
+[data-theme="dark"] .ai-footer{background:var(--bg)}
+[data-theme="dark"] .ai-msg.assistant{background:var(--bg2)}
+[data-theme="dark"] .ai-input{background:var(--bg2);color:var(--text)}
+[data-theme="dark"] .modal-overlay{background:rgba(0,0,0,.6)}
+[data-theme="dark"] .cat-body{background:var(--bg)}
+[data-theme="dark"] .tx-list{background:var(--bg)}
+[data-theme="dark"] .subcat-row{background:transparent}
+[data-theme="dark"] .form-row .fg input,
+[data-theme="dark"] .form-row .fg select,
+[data-theme="dark"] .form-row .fg textarea{background:var(--bg2);color:var(--text);border-color:var(--border2)}
+[data-theme="dark"] .field input{background:var(--bg2);color:var(--text)}
+[data-theme="dark"] .filter-select{background:var(--bg2);color:var(--text)}
+[data-theme="dark"] .parc-hist-card{background:var(--bg2)}
+[data-theme="dark"] .ai-hist-modal{background:var(--bg)}
+[data-theme="dark"] .ai-hist-body{background:var(--bg)}
+[data-theme="dark"] .ai-conv-item{background:var(--bg2)}
+[data-theme="dark"] .ai-conv-item:hover{background:var(--bg3)}
 </style>
 </head>
 <body>
@@ -578,12 +610,14 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
         <button class="cfg-tab" onclick="showCfgTab('receitas',this)">Receitas</button>
         <button class="cfg-tab" onclick="showCfgTab('investimentos',this)">Investimentos</button>
         <button class="cfg-tab" onclick="showCfgTab('usuarios',this)">Usuários</button>
+        <button class="cfg-tab" onclick="showCfgTab('aparencia',this)">Aparência</button>
         <button class="cfg-tab" onclick="showCfgTab('dados',this)">Dados</button>
       </div>
       <div id="cfg-despesas" class="cfg-panel active"></div>
       <div id="cfg-receitas" class="cfg-panel"></div>
       <div id="cfg-investimentos" class="cfg-panel"></div>
       <div id="cfg-usuarios" class="cfg-panel"></div>
+      <div id="cfg-aparencia" class="cfg-panel"></div>
       <div id="cfg-dados" class="cfg-panel"></div>
     </div>
 
@@ -1052,6 +1086,11 @@ async function initApp(){
   await loadConfig();
   await loadApiKey();
   listenAll();
+  // Apply correct clippy based on saved theme
+  if(localStorage.getItem('finn-theme')==='dark'){
+    const btn=document.getElementById('ai-toggle-btn');
+    if(btn) btn.innerHTML=`<svg viewBox="0 0 2048 2048" width="32" height="32" xmlns="http://www.w3.org/2000/svg"><defs><style>.cls-1{fill:#fff;stroke:#000;stroke-miterlimit:10;stroke-width:11px}</style></defs><g><path d="M1265.24,491.5c4.6-31.2,8.3-60.8,11-91.5,3.2-35.7.2-70.4-9.4-104.7-8-27.9-20.6-53.1-38.4-75.8-14.5-18.5-31.8-33.2-51.5-45.8-32.2-20.6-67.5-32.4-105.5-35.6-68.4-5.8-135.8,12.8-185.8,60.8-16.6,15.9-31.1,32.4-43.4,51.9-29.8,45.6-47.7,97-61.2,149.8l-2.2,10.6-3.6,13.9-19.8,106.9c23.9-.9,46,3.8,68.1,13.2l23.2-120.5,3.9-14.5,2.7-9.8c8.6-31.2,19.2-60.1,33.6-88.3,26.4-51.9,66-92.7,126.2-102.6,50.7-8.4,101.9,1,141.3,33.9,43.9,36.7,56.4,91.3,52.7,146.7l-5.2,47.8-7.1,53.7-3.2,24.3-9.8,93.6c23.6-3.2,46.2-2.3,69.5,5.2l10.7-98.9,3.1-24.2Z"/><g><path d="M1405.44,993.6c-19.6,37.4-34.7,76.8-42.3,118.5-5,27.5-8.3,54.4-9.5,82.4-1.6,39.5-.2,78.1,3.7,117.6l6.5,66.4,12.1,126.5c2,20.5,1.5,39.7,1.5,60.2,0,31.8-2.7,62.4-7.5,93.7-6.3,41.2-19.4,82.1-39.9,118.4-47.7,84.3-139.7,134.8-236.2,134.6-66.2-.1-123.9-29.8-167.2-78.7-34.5-39.1-61.9-89.1-81.7-137.6-31.2-76.3-52.2-163.7-66.9-245.3-27.7-153.9-44.2-359.2-44.2-515.1v-58.5l1.3-79.6c.2-1.2,3.5-42.5,4.4-42.4,22,4.7,44.2,3.7,67.1-1.5-2.2,84.9-5.8,207.2-.8,291l7.9,132.1c7.4,123,35,303.1,70.4,421.4,6.3,20.9,13.1,40.1,20.8,60.3,20.5,53.4,49.4,109.5,92.8,147.8,17.7,15.6,38,27.1,61,32.5,46.4,10.9,95.9.4,136.9-22.6,52.5-29.5,82.1-73.1,97.7-130.7,15.4-56.9,17.5-131.4,12.1-190l-8.2-89.1-10.9-117.9c-3.5-37.7-3.1-74.3-.8-112,4.6-78.8,22.6-147.4,60.2-216.7,5.9-10.9,17.5-17.3,29.3-17.3s23.3,6.7,29.5,17.4,6.8,23.1,1,34.2Z"/><path d="M855.14,966.5c.7-19.7,16.6-34.2,35.2-33.8,18.1.4,34.5,15.8,33.7,35.5-3.5,90.1-2.1,179.7,8.7,269.3s19.1,127.3,45.2,182.6,14.8,25.1,25.4,35.2c21.1,20.1,53.6,24.8,81.4,17.3,22.8-6.1,41.3-20.9,53.3-41.3,21.8-37.2,21.7-77.1,17.5-119.3-10.3-104.1-15.5-205-11.7-309.5l1.2-35.5,8-157.5c22.2,8.2,44.2,12.4,68.3,10.3-3.6,58-9.2,182.2-9.5,240.3-.6,85.2,3.7,169.3,12.6,253.8,4.8,45.6,2.9,86.4-15,128.6-28.2,66.7-88.5,106.6-161.8,101.9-64.3-4.1-110.4-44.6-136-101.5s-15.8-38.7-21.6-59.5c-24.8-89.1-33.9-193.3-36.2-285.8-1.1-43.8-.4-86.4,1.2-131.1Z"/></g></g><circle class="cls-1" cx="1206.84" cy="704.6" r="127.5"/><circle class="cls-1" cx="765.94" cy="644.9" r="127.5"/><circle cx="765.94" cy="644.9" r="84"/><circle cx="1206.84" cy="704.6" r="84"/></svg>`;
+  }
 }
 
 async function loadApiKey(){
@@ -1970,6 +2009,7 @@ window.showCfgTab=(tab,el)=>{
   if(el)el.classList.add('active');
   document.getElementById('cfg-'+tab).classList.add('active');
   if(tab==='usuarios')renderCfgUsuarios();
+  else if(tab==='aparencia')renderCfgAparencia();
   else if(tab==='dados')renderCfgDados();
   else if(tab==='despesas')renderCfgCats('despesa');
   else if(tab==='receitas')renderCfgCats('receita');
@@ -2264,18 +2304,32 @@ window.removeUser=async(uid,name)=>{
   }catch(e){alert('Erro ao excluir: '+e.message);}
 };
 
+
+function renderCfgAparencia(){
+  const isDark = document.documentElement.getAttribute('data-theme')==='dark';
+  document.getElementById('cfg-aparencia').innerHTML=`
+    <div class="cfg-section">
+      <div class="cfg-section-title">Tema</div>
+      <div class="theme-toggle" style="margin-bottom:12px">
+        <div class="theme-toggle-label">
+          <span style="display:flex;align-items:center;gap:8px">
+            ${isDark ? '<svg viewBox="0 0 2048 2048" width="32" height="32" xmlns="http://www.w3.org/2000/svg"><defs><style>.cls-1{fill:#fff;stroke:#000;stroke-miterlimit:10;stroke-width:11px}</style></defs><g><path d="M1265.24,491.5c4.6-31.2,8.3-60.8,11-91.5,3.2-35.7.2-70.4-9.4-104.7-8-27.9-20.6-53.1-38.4-75.8-14.5-18.5-31.8-33.2-51.5-45.8-32.2-20.6-67.5-32.4-105.5-35.6-68.4-5.8-135.8,12.8-185.8,60.8-16.6,15.9-31.1,32.4-43.4,51.9-29.8,45.6-47.7,97-61.2,149.8l-2.2,10.6-3.6,13.9-19.8,106.9c23.9-.9,46,3.8,68.1,13.2l23.2-120.5,3.9-14.5,2.7-9.8c8.6-31.2,19.2-60.1,33.6-88.3,26.4-51.9,66-92.7,126.2-102.6,50.7-8.4,101.9,1,141.3,33.9,43.9,36.7,56.4,91.3,52.7,146.7l-5.2,47.8-7.1,53.7-3.2,24.3-9.8,93.6c23.6-3.2,46.2-2.3,69.5,5.2l10.7-98.9,3.1-24.2Z"/><g><path d="M1405.44,993.6c-19.6,37.4-34.7,76.8-42.3,118.5-5,27.5-8.3,54.4-9.5,82.4-1.6,39.5-.2,78.1,3.7,117.6l6.5,66.4,12.1,126.5c2,20.5,1.5,39.7,1.5,60.2,0,31.8-2.7,62.4-7.5,93.7-6.3,41.2-19.4,82.1-39.9,118.4-47.7,84.3-139.7,134.8-236.2,134.6-66.2-.1-123.9-29.8-167.2-78.7-34.5-39.1-61.9-89.1-81.7-137.6-31.2-76.3-52.2-163.7-66.9-245.3-27.7-153.9-44.2-359.2-44.2-515.1v-58.5l1.3-79.6c.2-1.2,3.5-42.5,4.4-42.4,22,4.7,44.2,3.7,67.1-1.5-2.2,84.9-5.8,207.2-.8,291l7.9,132.1c7.4,123,35,303.1,70.4,421.4,6.3,20.9,13.1,40.1,20.8,60.3,20.5,53.4,49.4,109.5,92.8,147.8,17.7,15.6,38,27.1,61,32.5,46.4,10.9,95.9.4,136.9-22.6,52.5-29.5,82.1-73.1,97.7-130.7,15.4-56.9,17.5-131.4,12.1-190l-8.2-89.1-10.9-117.9c-3.5-37.7-3.1-74.3-.8-112,4.6-78.8,22.6-147.4,60.2-216.7,5.9-10.9,17.5-17.3,29.3-17.3s23.3,6.7,29.5,17.4,6.8,23.1,1,34.2Z"/><path d="M855.14,966.5c.7-19.7,16.6-34.2,35.2-33.8,18.1.4,34.5,15.8,33.7,35.5-3.5,90.1-2.1,179.7,8.7,269.3s19.1,127.3,45.2,182.6,14.8,25.1,25.4,35.2c21.1,20.1,53.6,24.8,81.4,17.3,22.8-6.1,41.3-20.9,53.3-41.3,21.8-37.2,21.7-77.1,17.5-119.3-10.3-104.1-15.5-205-11.7-309.5l1.2-35.5,8-157.5c22.2,8.2,44.2,12.4,68.3,10.3-3.6,58-9.2,182.2-9.5,240.3-.6,85.2,3.7,169.3,12.6,253.8,4.8,45.6,2.9,86.4-15,128.6-28.2,66.7-88.5,106.6-161.8,101.9-64.3-4.1-110.4-44.6-136-101.5s-15.8-38.7-21.6-59.5c-24.8-89.1-33.9-193.3-36.2-285.8-1.1-43.8-.4-86.4,1.2-131.1Z"/></g></g><circle class="cls-1" cx="1206.84" cy="704.6" r="127.5"/><circle class="cls-1" cx="765.94" cy="644.9" r="127.5"/><circle cx="765.94" cy="644.9" r="84"/><circle cx="1206.84" cy="704.6" r="84"/></svg>' : '<span style="font-size:20px">☀️</span>'}
+            <span>${isDark?'Modo escuro':'Modo claro'}</span>
+          </span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="theme-toggle-input" ${isDark?'checked':''} onchange="toggleDarkMode(this.checked)">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <p style="font-size:12px;color:var(--text3)">A preferência é salva automaticamente no navegador.</p>
+    </div>`;
+}
 function renderCfgDados(){
   const keyStatus = ANTHROPIC_KEY ? '✓ Chave configurada' : '✗ Não configurada';
   const isDark = document.documentElement.getAttribute('data-theme')==='dark';
   const keyColor = ANTHROPIC_KEY ? 'var(--green)' : 'var(--red)';
   document.getElementById('cfg-dados').innerHTML=`
-    <div class="cfg-section">
-      <div class="cfg-section-title">Aparência</div>
-      <div class="theme-toggle">
-        <div class="theme-toggle-label"><span class="theme-toggle-icon">${isDark?'🌙':'☀️'}</span>${isDark?'Modo escuro ativado':'Modo claro ativado'}</div>
-        <label class="toggle-switch"><input type="checkbox" id="theme-toggle-input" ${isDark?'checked':''} onchange="toggleDarkMode(this.checked)"><span class="toggle-slider"></span></label>
-      </div>
-    </div>
     <div class="cfg-section">
       <div class="cfg-section-title">Chave da API — Finn AI</div>
       <p style="font-size:13px;color:var(--text2);margin-bottom:12px">A chave é salva no Firebase e carregada automaticamente em todos os dispositivos. Apenas administradores podem alterar.</p>
@@ -2384,12 +2438,18 @@ window.toggleDarkMode=(dark)=>{
   if(dark){
     document.documentElement.setAttribute('data-theme','dark');
     localStorage.setItem('finn-theme','dark');
+    // Swap to dark clippy
+    const btn=document.getElementById('ai-toggle-btn');
+    if(btn) btn.innerHTML=`<svg viewBox="0 0 2048 2048" width="32" height="32" xmlns="http://www.w3.org/2000/svg"><defs><style>.cls-1{fill:#fff;stroke:#000;stroke-miterlimit:10;stroke-width:11px}</style></defs><g><path d="M1265.24,491.5c4.6-31.2,8.3-60.8,11-91.5,3.2-35.7.2-70.4-9.4-104.7-8-27.9-20.6-53.1-38.4-75.8-14.5-18.5-31.8-33.2-51.5-45.8-32.2-20.6-67.5-32.4-105.5-35.6-68.4-5.8-135.8,12.8-185.8,60.8-16.6,15.9-31.1,32.4-43.4,51.9-29.8,45.6-47.7,97-61.2,149.8l-2.2,10.6-3.6,13.9-19.8,106.9c23.9-.9,46,3.8,68.1,13.2l23.2-120.5,3.9-14.5,2.7-9.8c8.6-31.2,19.2-60.1,33.6-88.3,26.4-51.9,66-92.7,126.2-102.6,50.7-8.4,101.9,1,141.3,33.9,43.9,36.7,56.4,91.3,52.7,146.7l-5.2,47.8-7.1,53.7-3.2,24.3-9.8,93.6c23.6-3.2,46.2-2.3,69.5,5.2l10.7-98.9,3.1-24.2Z"/><g><path d="M1405.44,993.6c-19.6,37.4-34.7,76.8-42.3,118.5-5,27.5-8.3,54.4-9.5,82.4-1.6,39.5-.2,78.1,3.7,117.6l6.5,66.4,12.1,126.5c2,20.5,1.5,39.7,1.5,60.2,0,31.8-2.7,62.4-7.5,93.7-6.3,41.2-19.4,82.1-39.9,118.4-47.7,84.3-139.7,134.8-236.2,134.6-66.2-.1-123.9-29.8-167.2-78.7-34.5-39.1-61.9-89.1-81.7-137.6-31.2-76.3-52.2-163.7-66.9-245.3-27.7-153.9-44.2-359.2-44.2-515.1v-58.5l1.3-79.6c.2-1.2,3.5-42.5,4.4-42.4,22,4.7,44.2,3.7,67.1-1.5-2.2,84.9-5.8,207.2-.8,291l7.9,132.1c7.4,123,35,303.1,70.4,421.4,6.3,20.9,13.1,40.1,20.8,60.3,20.5,53.4,49.4,109.5,92.8,147.8,17.7,15.6,38,27.1,61,32.5,46.4,10.9,95.9.4,136.9-22.6,52.5-29.5,82.1-73.1,97.7-130.7,15.4-56.9,17.5-131.4,12.1-190l-8.2-89.1-10.9-117.9c-3.5-37.7-3.1-74.3-.8-112,4.6-78.8,22.6-147.4,60.2-216.7,5.9-10.9,17.5-17.3,29.3-17.3s23.3,6.7,29.5,17.4,6.8,23.1,1,34.2Z"/><path d="M855.14,966.5c.7-19.7,16.6-34.2,35.2-33.8,18.1.4,34.5,15.8,33.7,35.5-3.5,90.1-2.1,179.7,8.7,269.3s19.1,127.3,45.2,182.6,14.8,25.1,25.4,35.2c21.1,20.1,53.6,24.8,81.4,17.3,22.8-6.1,41.3-20.9,53.3-41.3,21.8-37.2,21.7-77.1,17.5-119.3-10.3-104.1-15.5-205-11.7-309.5l1.2-35.5,8-157.5c22.2,8.2,44.2,12.4,68.3,10.3-3.6,58-9.2,182.2-9.5,240.3-.6,85.2,3.7,169.3,12.6,253.8,4.8,45.6,2.9,86.4-15,128.6-28.2,66.7-88.5,106.6-161.8,101.9-64.3-4.1-110.4-44.6-136-101.5s-15.8-38.7-21.6-59.5c-24.8-89.1-33.9-193.3-36.2-285.8-1.1-43.8-.4-86.4,1.2-131.1Z"/></g></g><circle class="cls-1" cx="1206.84" cy="704.6" r="127.5"/><circle class="cls-1" cx="765.94" cy="644.9" r="127.5"/><circle cx="765.94" cy="644.9" r="84"/><circle cx="1206.84" cy="704.6" r="84"/></svg>`;
   } else {
     document.documentElement.removeAttribute('data-theme');
     localStorage.setItem('finn-theme','light');
+    // Restore light clippy
+    const btn=document.getElementById('ai-toggle-btn');
+    if(btn) btn.innerHTML=`<svg width="30" height="30" viewBox="0 0 2048 2048" xmlns="http://www.w3.org/2000/svg" fill="white"><circle cx="727.2" cy="644.9" r="127.5"/><circle cx="1168.1" cy="704.6" r="127.5"/><path d="M1226.5,491.5c4.6-31.2,8.3-60.8,11-91.5,3.2-35.7.2-70.4-9.4-104.7-8-27.9-20.6-53.1-38.4-75.8-14.5-18.5-31.8-33.2-51.5-45.8-32.2-20.6-67.5-32.4-105.5-35.6-68.4-5.8-135.8,12.8-185.8,60.8-16.6,15.9-31.1,32.4-43.4,51.9-29.8,45.6-47.7,97-61.2,149.8l-2.2,10.6-3.6,13.9-19.8,106.9c23.9-.9,46,3.8,68.1,13.2l23.2-120.5,3.9-14.5,2.7-9.8c8.6-31.2,19.2-60.1,33.6-88.3,26.4-51.9,66-92.7,126.2-102.6,50.7-8.4,101.9,1,141.3,33.9,43.9,36.7,56.4,91.3,52.7,146.7l-5.2,47.8-7.1,53.7-3.2,24.3-9.8,93.6c23.6-3.2,46.2-2.3,69.5,5.2l10.7-98.9,3.1-24.2Z"/><path d="M1366.7,993.6c-19.6,37.4-34.7,76.8-42.3,118.5-5,27.5-8.3,54.4-9.5,82.4-1.6,39.5-.2,78.1,3.7,117.6l6.5,66.4,12.1,126.5c2,20.5,1.5,39.7,1.5,60.2,0,31.8-2.7,62.4-7.5,93.7-6.3,41.2-19.4,82.1-39.9,118.4-47.7,84.3-139.7,134.8-236.2,134.6-66.2-.1-123.9-29.8-167.2-78.7-34.5-39.1-61.9-89.1-81.7-137.6-31.2-76.3-52.2-163.7-66.9-245.3-27.7-153.9-44.2-359.2-44.2-515.1v-58.5s1.3-79.6,1.3-79.6c.2-1.2,3.5-42.5,4.4-42.4,22,4.7,44.2,3.7,67.1-1.5-2.2,84.9-5.8,207.2-.8,291l7.9,132.1c7.4,123,35,303.1,70.4,421.4,6.3,20.9,13.1,40.1,20.8,60.3,20.5,53.4,49.4,109.5,92.8,147.8,17.7,15.6,38,27.1,61,32.5,46.4,10.9,95.9.4,136.9-22.6,52.5-29.5,82.1-73.1,97.7-130.7,15.4-56.9,17.5-131.4,12.1-190l-8.2-89.1-10.9-117.9c-3.5-37.7-3.1-74.3-.8-112,4.6-78.8,22.6-147.4,60.2-216.7,5.9-10.9,17.5-17.3,29.3-17.3s23.3,6.7,29.5,17.4,6.8,23.1,1,34.2Z"/><path d="M816.4,966.5c.7-19.7,16.6-34.2,35.2-33.8,18.1.4,34.5,15.8,33.7,35.5-3.5,90.1-2.1,179.7,8.7,269.3s19.1,127.3,45.2,182.6,14.8,25.1,25.4,35.2c21.1,20.1,53.6,24.8,81.4,17.3,22.8-6.1,41.3-20.9,53.3-41.3,21.8-37.2,21.7-77.1,17.5-119.3-10.3-104.1-15.5-205-11.7-309.5l1.2-35.5,8-157.5c22.2,8.2,44.2,12.4,68.3,10.3-3.6,58-9.2,182.2-9.5,240.3-.6,85.2,3.7,169.3,12.6,253.8,4.8,45.6,2.9,86.4-15,128.6-28.2,66.7-88.5,106.6-161.8,101.9-64.3-4.1-110.4-44.6-136-101.5s-15.8-38.7-21.6-59.5c-24.8-89.1-33.9-193.3-36.2-285.8-1.1-43.8-.4-86.4,1.2-131.1Z"/><circle cx="727.2" cy="644.9" r="84" fill="black"/><circle cx="1168.1" cy="704.6" r="84" fill="black"/></svg>`;
   }
-  // Re-render cfg dados to update icon/label
-  renderCfgDados();
+  // Re-render appearance tab if active
+  if(document.getElementById('cfg-aparencia')?.classList.contains('active')) renderCfgAparencia();
 };
 
 window.zerarBanco=async()=>{
