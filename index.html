@@ -795,6 +795,7 @@ onAuthStateChanged(auth,async user=>{
     isAdmin=user.email===ADMIN_EMAIL;
     document.getElementById('auth-screen').style.display='none';
     document.getElementById('app-screen').style.display='block';
+    const aiW=document.getElementById('ai-wrapper');if(aiW)aiW.style.display='block';
     const displayName = user.displayName||user.email.split('@')[0];
     document.getElementById('user-name-display').textContent = displayName;
     const roleEl = document.getElementById('user-role-display');
@@ -812,6 +813,7 @@ onAuthStateChanged(auth,async user=>{
     currentUser=null; isAdmin=false;
     document.getElementById('auth-screen').style.display='flex';
     document.getElementById('app-screen').style.display='none';
+    const aiW2=document.getElementById('ai-wrapper');if(aiW2)aiW2.style.display='none';
     unsubs.forEach(u=>u()); unsubs=[];
   }
 });
@@ -854,194 +856,163 @@ async function savePrevistos(){await setDoc(doc(db,'config','previstos'),previst
 async function saveInvTipos(){await setDoc(doc(db,'config','invTipos'),{tipos:invTipos});}
 
 // ── PARCELAMENTOS ─────────────────────────────────────────
-let parcelas = [];
-let unsubParc = null;
+function getParcMensalidade(p){ return Math.round((Number(p.valorTotal)||0)/(Number(p.numParcelas)||1)*100)/100; }
 
-function listenParc(){
-  if(unsubParc) unsubParc();
-  unsubParc = onSnapshot(collection(db,'parcelas'), s=>{
-    parcelas = s.docs.map(d=>({id:d.id,...d.data()}));
-    if(activePage()==='parcelamentos') renderParcelamentos();
-    if(activePage()==='dashboard') renderDashboard();
-  });
+function getParcSaldoMes(p, m, y){
+  const parts=(p.inicio||'').split('-').map(Number);
+  if(parts.length<2)return 0;
+  const [startY,startM]=parts;
+  const idx=(y-startY)*12+(m-(startM-1));
+  if(idx<1||idx>Number(p.numParcelas))return 0;
+  return getParcMensalidade(p);
 }
 
-// Returns parcela value for a given month/year
-function getParcValForMonth(parc, m, y){
-  const start = new Date(parc.inicio+'-01T12:00:00');
-  const sm = start.getMonth(), sy = start.getFullYear();
-  const monthIdx = (y - sy)*12 + (m - sm);
-  if(monthIdx < 0 || monthIdx >= Number(parc.numParcelas)) return 0;
-  return Number(parc.prestacao)||0;
-}
-
-// Total parcelamentos value for current view month
-function getParcTotalMonth(m=viewMonth, y=viewYear){
-  return parcelas.filter(p=>!p.cancelado).reduce((s,p)=>s+getParcValForMonth(p,m,y),0);
-}
-
-function getParcStatus(parc){
-  const start = new Date(parc.inicio+'-01T12:00:00');
-  const end = new Date(start);
-  end.setMonth(end.getMonth() + Number(parc.numParcelas) - 1);
-  const now = new Date();
-  const paidMonths = Math.max(0,Math.min(Number(parc.numParcelas),(now.getFullYear()-start.getFullYear())*12+(now.getMonth()-start.getMonth())+1));
-  const remaining = Number(parc.numParcelas) - paidMonths;
-  return { start, end, paidMonths, remaining, done: remaining <= 0 || parc.cancelado };
+function getParcTotalMonth(m=viewMonth,y=viewYear){
+  return parcelamentos.reduce((s,p)=>s+getParcSaldoMes(p,m,y),0);
 }
 
 function renderParcelamentos(){
-  const ativas = parcelas.filter(p=>{ const s=getParcStatus(p); return !s.done && !p.cancelado; });
-  const encerradas = parcelas.filter(p=>{ const s=getParcStatus(p); return s.done || p.cancelado; });
-
-  const totalMes = getParcTotalMonth();
-  const totalRestante = ativas.reduce((s,p)=>{ const st=getParcStatus(p); return s+st.remaining*Number(p.prestacao); },0);
-  const totalParcelas = ativas.reduce((s,p)=>s+Number(p.numParcelas),0);
-  const paidTotal = ativas.reduce((s,p)=>{ const st=getParcStatus(p); return s+st.paidMonths*Number(p.prestacao); },0);
+  const active=parcelamentos.filter(p=>Number(p.parcPagas||0)<Number(p.numParcelas||0));
+  const done=parcelamentos.filter(p=>Number(p.parcPagas||0)>=Number(p.numParcelas||0));
+  const totalMes=getParcTotalMonth();
+  const totalRest=active.reduce((s,p)=>{const mens=getParcMensalidade(p);return s+mens*(Number(p.numParcelas||0)-Number(p.parcPagas||0));},0);
 
   document.getElementById('parc-metrics').innerHTML=`
-    <div class="metric-card"><div class="metric-label">Este mês</div><div class="metric-value neg">${fmt(totalMes)}</div><div class="metric-badge">${ativas.length} parcelamento${ativas.length!==1?'s':''} ativo${ativas.length!==1?'s':''}</div></div>
-    <div class="metric-card"><div class="metric-label">Total restante</div><div class="metric-value neg">${fmt(totalRestante)}</div></div>
-    <div class="metric-card"><div class="metric-label">Já pago</div><div class="metric-value">${fmt(paidTotal)}</div></div>
-    <div class="metric-card"><div class="metric-label">Encerram em breve</div><div class="metric-value amber">${ativas.filter(p=>getParcStatus(p).remaining<=3).length} parcela${ativas.filter(p=>getParcStatus(p).remaining<=3).length!==1?'s':''}</div></div>`;
+    <div class="metric-card"><div class="metric-label">Parcelas este mês</div><div class="metric-value neg">${fmt(totalMes)}</div></div>
+    <div class="metric-card"><div class="metric-label">Em aberto</div><div class="metric-value">${active.length}</div></div>
+    <div class="metric-card"><div class="metric-label">Valor restante</div><div class="metric-value neg">${fmt(totalRest)}</div></div>
+    <div class="metric-card"><div class="metric-label">Concluídos</div><div class="metric-value pos">${done.length}</div></div>`;
 
-  const listEl = document.getElementById('parc-list');
-  if(!ativas.length){ listEl.innerHTML='<div class="empty">Nenhum parcelamento ativo.</div>'; }
-  else {
-    listEl.innerHTML = ativas.map(p=>{
-      const st = getParcStatus(p);
-      const pct = Math.round((st.paidMonths/Number(p.numParcelas))*100);
-      const endStr = st.end.toLocaleDateString('pt-BR',{month:'short',year:'numeric'});
-      const urgency = st.remaining<=2?'var(--green)':st.remaining<=6?'var(--amber)':'var(--accent)';
-      const mesAtual = getParcValForMonth(p, viewMonth, viewYear);
-      return`<div style="display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)">
-        <div style="flex:1;min-width:0">
-          <div style="font-size:14px;font-weight:500;margin-bottom:2px">${p.descricao}</div>
-          <div style="font-size:12px;color:var(--text2)">${p.cartao?p.cartao+' · ':''}${p.catLabel||p.cat||'—'}</div>
-          ${p.obs?`<div style="font-size:11px;color:var(--text3);font-style:italic">${p.obs}</div>`:''}
-        </div>
-        <div style="text-align:center;min-width:70px">
-          <div style="font-size:13px;font-weight:600;font-family:'DM Mono',monospace;color:${mesAtual>0?'var(--red)':'var(--text3)'}">${mesAtual>0?fmt(mesAtual):'—'}</div>
-          <div style="font-size:11px;color:var(--text2)">este mês</div>
-        </div>
-        <div style="text-align:center;min-width:90px">
-          <div style="font-size:13px;font-weight:600;font-family:'DM Mono',monospace">${fmt(p.prestacao)}</div>
-          <div style="font-size:11px;color:var(--text2)">${st.paidMonths}/${p.numParcelas} pagas</div>
-        </div>
-        <div style="min-width:110px">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-            <div style="flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;border-radius:3px;background:${urgency};width:${pct}%"></div></div>
-            <span style="font-size:11px;font-family:'DM Mono',monospace;color:${urgency}">${pct}%</span>
+  const activeEl=document.getElementById('parc-active');
+  if(!active.length){activeEl.innerHTML='<div class="empty">Nenhum parcelamento em aberto.</div>';}
+  else{
+    activeEl.innerHTML=active.map(p=>{
+      const mens=getParcMensalidade(p);
+      const pagas=Number(p.parcPagas||0);
+      const total=Number(p.numParcelas||0);
+      const rest=total-pagas;
+      const pct=Math.round((pagas/total)*100);
+      const barColor=pct>=80?'var(--green)':pct>=40?'var(--accent)':'var(--amber)';
+      const catName=allCats('despesa').find(c=>c.id===p.catId)?.label||p.catId||'—';
+      const estesMes=getParcSaldoMes(p,viewMonth,viewYear)>0;
+      const vence=(()=>{
+        if(!p.inicio)return '—';
+        const[sy,sm]=p.inicio.split('-').map(Number);
+        const lastM=new Date(sy,sm-1+total-1);
+        return MESES[lastM.getMonth()]+'/'+lastM.getFullYear();
+      })();
+      return`<div class="parc-card">
+        <div class="parc-header">
+          <div>
+            <div class="parc-name">${p.descricao}${estesMes?'<span style="margin-left:8px;padding:2px 7px;background:var(--red-bg);color:var(--red);border-radius:20px;font-size:11px;font-weight:500">Vence este mês</span>':''}</div>
+            <div class="parc-cat">${catName}</div>
           </div>
-          <div style="font-size:11px;color:var(--text2)">Termina ${endStr} · ${st.remaining} rest.</div>
+          <div style="display:flex;gap:6px">
+            <button class="btn-sm" onclick="editParc('${p.id}')">✎ Editar</button>
+            <button class="btn-sm" onclick="pagarParcela('${p.id}',${pagas},${total})">✓ Marcar paga</button>
+            <button class="btn-sm" style="color:var(--red)" onclick="deleteParc('${p.id}')">×</button>
+          </div>
         </div>
-        <div style="display:flex;gap:4px;flex-shrink:0">
-          <button class="btn-ghost" onclick="editParc('${p.id}')" style="font-size:12px">✎</button>
-          <button class="btn-ghost" onclick="cancelParc('${p.id}')" style="font-size:12px;color:var(--red)" title="Encerrar">×</button>
+        <div class="parc-body">
+          <div class="parc-stat"><div class="parc-stat-label">Por parcela</div><div class="parc-stat-val">${fmt(mens)}</div></div>
+          <div class="parc-stat"><div class="parc-stat-label">Pagas</div><div class="parc-stat-val">${pagas}/${total}</div></div>
+          <div class="parc-stat"><div class="parc-stat-label">Restam</div><div class="parc-stat-val">${fmt(mens*rest)}</div></div>
+          <div class="parc-stat"><div class="parc-stat-label">Termina</div><div class="parc-stat-val" style="font-size:12px">${vence}</div></div>
+        </div>
+        <div class="parc-progress">
+          <div class="parc-bar"><div class="parc-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+          <span class="parc-pct" style="color:${barColor}">${pct}%</span>
         </div>
       </div>`;
     }).join('');
   }
 
-  const doneEl = document.getElementById('parc-done-list');
-  if(!encerradas.length){ doneEl.innerHTML='<div class="empty">Nenhum encerrado ainda.</div>'; }
-  else {
-    doneEl.innerHTML = encerradas.map(p=>{
-      const label = p.cancelado?'Cancelado':'Concluído';
-      return`<div style="display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--border);opacity:.6">
-        <div style="flex:1"><div style="font-size:13px;font-weight:500">${p.descricao}</div><div style="font-size:12px;color:var(--text2)">${p.cartao||''} · ${p.numParcelas}x ${fmt(p.prestacao)}</div></div>
-        <span style="font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg3);color:var(--text2)">${label}</span>
-        <button class="btn-ghost" onclick="deleteParc('${p.id}')" style="font-size:12px;color:var(--red)">Excluir</button>
-      </div>`;
-    }).join('');
-  }
+  const histSec=document.getElementById('parc-history-section');
+  if(histSec) histSec.style.display=done.length?'block':'none';
+  const histEl=document.getElementById('parc-history');
+  if(histEl) histEl.innerHTML=done.map(p=>{
+    const catName=allCats('despesa').find(c=>c.id===p.catId)?.label||'—';
+    return`<div class="parc-hist-card"><div style="flex:1"><div style="font-size:13px;font-weight:500">${p.descricao}</div><div style="font-size:12px;color:var(--text3)">${catName} · ${p.numParcelas}x ${fmt(getParcMensalidade(p))}</div></div><span style="font-size:13px;font-weight:600;font-family:'DM Mono',monospace">${fmt(p.valorTotal)}</span><button class="btn-sm" style="color:var(--red)" onclick="deleteParc('${p.id}')">×</button></div>`;
+  }).join('');
 }
 
-window.calcParcPrestacao = ()=>{
+window.toggleParcHistory=()=>{
+  const el=document.getElementById('parc-history');
+  const ch=document.getElementById('parc-history-chevron');
+  const open=el.style.display==='none';
+  el.style.display=open?'block':'none';
+  if(ch)ch.textContent=open?'▼':'▶';
+};
+
+window.calcParcValue=()=>{
   const total=parseFloat(document.getElementById('parc-total').value)||0;
   const num=parseInt(document.getElementById('parc-num').value)||0;
-  if(total>0&&num>0){ document.getElementById('parc-prestacao').value=(total/num).toFixed(2); }
-  updateParcPreview();
+  const disp=document.getElementById('parc-valor-display');
+  if(total>0&&num>0){disp.value='R$ '+(total/num).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+  else{disp.value='—';}
 };
-window.calcParcTotal = ()=>{
-  const prest=parseFloat(document.getElementById('parc-prestacao').value)||0;
-  const num=parseInt(document.getElementById('parc-num').value)||0;
-  if(prest>0&&num>0){ document.getElementById('parc-total').value=(prest*num).toFixed(2); }
-  updateParcPreview();
-};
-function updateParcPreview(){
-  const prest=parseFloat(document.getElementById('parc-prestacao').value)||0;
-  const num=parseInt(document.getElementById('parc-num').value)||0;
-  const inicio=document.getElementById('parc-inicio').value;
-  const preview=document.getElementById('parc-preview');
-  if(!prest||!num||!inicio){preview.style.display='none';return;}
-  const start=new Date(inicio+'-01T12:00:00');
-  const end=new Date(start);
-  end.setMonth(end.getMonth()+num-1);
-  const endStr=end.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
-  preview.style.display='block';
-  preview.innerHTML=`<strong>${num}x</strong> de <strong>${fmt(prest)}</strong> · Total: <strong>${fmt(prest*num)}</strong> · Última parcela: <strong>${endStr}</strong>`;
-}
 
 window.openParcModal=()=>{
   editingParcId=null;
   document.getElementById('mp2-title').textContent='Novo parcelamento';
-  ['parc-desc','parc-cartao','parc-obs'].forEach(id=>document.getElementById(id).value='');
-  ['parc-total','parc-num','parc-prestacao'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('parc-inicio').value=`${viewYear}-${String(viewMonth+1).padStart(2,'0')}`;
-  document.getElementById('parc-preview').style.display='none';
-  // populate cats
-  const sel=document.getElementById('parc-cat');
-  sel.innerHTML=allCats('despesa').map(c=>`<option value="${c.id}" data-label="${c.label}">${c.icon} ${c.label}</option>`).join('');
+  document.getElementById('parc-desc').value='';
+  document.getElementById('parc-total').value='';
+  document.getElementById('parc-num').value='';
+  document.getElementById('parc-valor-display').value='';
+  document.getElementById('parc-pagas').value='0';
+  const now=new Date();
+  document.getElementById('parc-inicio').value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  document.getElementById('parc-cat').innerHTML=allCats('despesa').map(c=>`<option value="${c.id}">${c.icon} ${c.label}</option>`).join('');
   openModal('modal-parc');
 };
 
 window.editParc=id=>{
-  const p=parcelas.find(x=>x.id===id);if(!p)return;
+  const p=parcelamentos.find(x=>x.id===id);if(!p)return;
   editingParcId=id;
   document.getElementById('mp2-title').textContent='Editar parcelamento';
   document.getElementById('parc-desc').value=p.descricao||'';
   document.getElementById('parc-total').value=p.valorTotal||'';
   document.getElementById('parc-num').value=p.numParcelas||'';
-  document.getElementById('parc-prestacao').value=p.prestacao||'';
+  document.getElementById('parc-pagas').value=p.parcPagas||0;
   document.getElementById('parc-inicio').value=p.inicio||'';
-  document.getElementById('parc-cartao').value=p.cartao||'';
-  document.getElementById('parc-obs').value=p.obs||'';
-  const sel=document.getElementById('parc-cat');
-  sel.innerHTML=allCats('despesa').map(c=>`<option value="${c.id}" data-label="${c.label}"${c.id===p.cat?' selected':''}>${c.icon} ${c.label}</option>`).join('');
-  updateParcPreview();
+  document.getElementById('parc-cat').innerHTML=allCats('despesa').map(c=>`<option value="${c.id}"${c.id===p.catId?' selected':''}>${c.icon} ${c.label}</option>`).join('');
+  calcParcValue();
   openModal('modal-parc');
 };
 
 window.saveParc=async()=>{
-  const desc=(document.getElementById('parc-desc').value||'').trim();
-  const num=parseInt(document.getElementById('parc-num').value)||0;
-  const prestacao=parseFloat(document.getElementById('parc-prestacao').value)||0;
+  const descricao=document.getElementById('parc-desc').value.trim();
+  const valorTotal=parseFloat(document.getElementById('parc-total').value)||0;
+  const numParcelas=parseInt(document.getElementById('parc-num').value)||0;
   const inicio=document.getElementById('parc-inicio').value;
-  const catSel=document.getElementById('parc-cat');
-  const cat=catSel.value;
-  const catLabel=catSel.options[catSel.selectedIndex]?.dataset?.label||cat;
-  const cartao=(document.getElementById('parc-cartao').value||'').trim();
-  const obs=(document.getElementById('parc-obs').value||'').trim();
-  const valorTotal=prestacao*num;
-  if(!desc){alert('Informe a descrição.');return;}
-  if(!num||num<1){alert('Informe o número de parcelas.');return;}
-  if(!prestacao||prestacao<=0){alert('Informe o valor da parcela.');return;}
-  if(!inicio){alert('Informe o mês da primeira parcela.');return;}
-  const data={descricao:desc,numParcelas:num,prestacao,valorTotal,inicio,cat,catLabel,cartao,obs,cancelado:false,criadoEm:new Date().toISOString()};
-  if(editingParcId) await updateDoc(doc(db,'parcelas',editingParcId),data);
-  else await addDoc(collection(db,'parcelas'),data);
+  const catId=document.getElementById('parc-cat').value;
+  const parcPagas=Math.min(parseInt(document.getElementById('parc-pagas').value)||0,numParcelas);
+  if(!descricao){alert('Informe a descrição.');return;}
+  if(!valorTotal||valorTotal<=0){alert('Informe o valor total.');return;}
+  if(!numParcelas||numParcelas<1){alert('Informe o número de parcelas.');return;}
+  if(!inicio){alert('Informe o mês da 1ª parcela.');return;}
+  const data={descricao,valorTotal,numParcelas,inicio,catId,parcPagas,createdAt:new Date().toISOString()};
+  if(editingParcId)await updateDoc(doc(db,'parcelamentos',editingParcId),data);
+  else await addDoc(collection(db,'parcelamentos'),data);
+  editingParcId=null;
   closeModal('modal-parc');
 };
 
-window.cancelParc=async id=>{
-  if(!confirm('Marcar como encerrado?'))return;
-  await updateDoc(doc(db,'parcelas',id),{cancelado:true});
+window.pagarParcela=async(id,pagas,total)=>{
+  const nova=pagas+1;
+  if(nova>total){alert('Todas as parcelas já foram pagas!');return;}
+  const msg=nova>=total?'Marcar última parcela como paga? O parcelamento irá para o histórico.':'Marcar parcela '+nova+'/'+total+' como paga?';
+  if(!confirm(msg))return;
+  await updateDoc(doc(db,'parcelamentos',id),{parcPagas:nova});
 };
+
 window.deleteParc=async id=>{
-  if(!confirm('Excluir permanentemente?'))return;
-  await deleteDoc(doc(db,'parcelas',id));
+  if(!confirm('Excluir este parcelamento?'))return;
+  await deleteDoc(doc(db,'parcelamentos',id));
 };
+
+
+
 
 function listenAll(){
   unsubs.push(onSnapshot(query(collection(db,'entries'),orderBy('date','desc')),s=>{
@@ -1415,357 +1386,6 @@ window.saveInvMov=async()=>{
 window.deleteInvMov=async id=>{if(!confirm('Excluir?'))return;await deleteDoc(doc(db,'invMovimentos',id));};
 
 // ── METAS ─────────────────────────────────────────────────
-// ── PARCELAMENTOS ─────────────────────────────────────────
-function getParcMensalidade(p){ return Math.round((Number(p.valorTotal)||0)/(Number(p.numParcelas)||1)*100)/100; }
-
-function getParcSaldoMes(p, m, y){
-  // returns value owed in given month/year (0 if outside range)
-  const [startY, startM] = (p.inicio||'').split('-').map(Number);
-  if(!startY||!startM) return 0;
-  const parcsIdx = (y - startY)*12 + (m - (startM-1)); // 1-indexed
-  if(parcsIdx < 1 || parcsIdx > Number(p.numParcelas)) return 0;
-  return getParcMensalidade(p);
-}
-
-function renderParcelamentos(){
-  const active = parcelamentos.filter(p=>Number(p.parcPagas||0)<Number(p.numParcelas||0));
-  const done = parcelamentos.filter(p=>Number(p.parcPagas||0)>=Number(p.numParcelas||0));
-  const totalMes = parcelamentos.reduce((s,p)=>s+getParcSaldoMes(p,viewMonth,viewYear),0);
-  const totalRestante = active.reduce((s,p)=>{const mens=getParcMensalidade(p);const restante=Number(p.numParcelas||0)-Number(p.parcPagas||0);return s+mens*restante;},0);
-  const totalOriginal = active.reduce((s,p)=>s+(Number(p.valorTotal)||0),0);
-
-  document.getElementById('parc-metrics').innerHTML=`
-    <div class="metric-card"><div class="metric-label">Parcelas este mês</div><div class="metric-value neg">${fmt(totalMes)}</div></div>
-    <div class="metric-card"><div class="metric-label">Em aberto</div><div class="metric-value">${active.length}</div></div>
-    <div class="metric-card"><div class="metric-label">Valor restante total</div><div class="metric-value neg">${fmt(totalRestante)}</div></div>
-    <div class="metric-card"><div class="metric-label">Concluídos</div><div class="metric-value pos">${done.length}</div></div>`;
-
-  const activeEl = document.getElementById('parc-active');
-  if(!active.length){
-    activeEl.innerHTML='<div class="empty">Nenhum parcelamento em aberto.</div>';
-  } else {
-    activeEl.innerHTML = active.map(p=>{
-      const mens = getParcMensalidade(p);
-      const pagas = Number(p.parcPagas||0);
-      const total = Number(p.numParcelas||0);
-      const restante = total - pagas;
-      const pct = Math.round((pagas/total)*100);
-      const barColor = pct>=80?'var(--green)':pct>=40?'var(--accent)':'var(--amber)';
-      const catName = allCats('despesa').find(c=>c.id===p.catId)?.label || p.catId || '—';
-      const venceEm = (() => {
-        if(!p.inicio) return '—';
-        const [sy,sm] = p.inicio.split('-').map(Number);
-        const lastM = new Date(sy, sm-1+total-1);
-        return MESES[lastM.getMonth()]+'/'+lastM.getFullYear();
-      })();
-      const estesMes = getParcSaldoMes(p,viewMonth,viewYear)>0;
-      return`<div class="parc-card">
-        <div class="parc-header">
-          <div>
-            <div class="parc-name">${p.descricao}${estesMes?'<span style="margin-left:8px;padding:2px 7px;background:var(--red-bg);color:var(--red);border-radius:20px;font-size:11px;font-weight:500">Vence este mês</span>':''}</div>
-            <div class="parc-cat">${catName}</div>
-          </div>
-          <div style="display:flex;gap:6px">
-            <button class="btn-sm" onclick="editParc('${p.id}')">✎ Editar</button>
-            <button class="btn-sm" onclick="pagarParcela('${p.id}',${pagas},${total})">✓ Marcar paga</button>
-            <button class="btn-sm" style="color:var(--red)" onclick="deleteParc('${p.id}')">×</button>
-          </div>
-        </div>
-        <div class="parc-body">
-          <div class="parc-stat"><div class="parc-stat-label">Por parcela</div><div class="parc-stat-val">${fmt(mens)}</div></div>
-          <div class="parc-stat"><div class="parc-stat-label">Pagas</div><div class="parc-stat-val">${pagas}/${total}</div></div>
-          <div class="parc-stat"><div class="parc-stat-label">Restam</div><div class="parc-stat-val">${fmt(mens*restante)}</div></div>
-          <div class="parc-stat"><div class="parc-stat-label">Termina em</div><div class="parc-stat-val" style="font-size:12px">${venceEm}</div></div>
-        </div>
-        <div class="parc-progress">
-          <div class="parc-bar"><div class="parc-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
-          <span class="parc-pct" style="color:${barColor}">${pct}%</span>
-        </div>
-      </div>`;
-    }).join('');
-  }
-
-  // History
-  const histSec = document.getElementById('parc-history-section');
-  histSec.style.display = done.length ? 'block' : 'none';
-  document.getElementById('parc-history').innerHTML = done.map(p=>{
-    const catName = allCats('despesa').find(c=>c.id===p.catId)?.label || '—';
-    return`<div class="parc-hist-card">
-      <div style="flex:1"><div style="font-size:13px;font-weight:500">${p.descricao}</div><div style="font-size:12px;color:var(--text3)">${catName} · ${p.numParcelas}x ${fmt(getParcMensalidade(p))}</div></div>
-      <span style="font-size:13px;font-weight:600;font-family:'DM Mono',monospace">${fmt(p.valorTotal)}</span>
-      <button class="btn-sm" style="color:var(--red);font-size:12px" onclick="deleteParc('${p.id}')">×</button>
-    </div>`;
-  }).join('');
-}
-
-window.toggleParcHistory=()=>{
-  const el=document.getElementById('parc-history');
-  const ch=document.getElementById('parc-history-chevron');
-  const open=el.style.display==='none';
-  el.style.display=open?'block':'none';
-  ch.textContent=open?'▼':'▶';
-};
-
-window.calcParcValue=()=>{
-  const total=parseFloat(document.getElementById('parc-total').value)||0;
-  const num=parseInt(document.getElementById('parc-num').value)||0;
-  const disp=document.getElementById('parc-valor-display');
-  if(total>0&&num>0){
-    const v=total/num;
-    disp.value='R$ '+(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
-  } else { disp.value='—'; }
-};
-
-window.openParcModal=()=>{
-  editingParcId=null;
-  document.getElementById('mp2-title').textContent='Novo parcelamento';
-  document.getElementById('parc-desc').value='';
-  document.getElementById('parc-total').value='';
-  document.getElementById('parc-num').value='';
-  document.getElementById('parc-valor-display').value='';
-  document.getElementById('parc-pagas').value='0';
-  const now=new Date();
-  document.getElementById('parc-inicio').value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
-  document.getElementById('parc-cat').innerHTML=allCats('despesa').map(c=>`<option value="${c.id}">${c.icon} ${c.label}</option>`).join('');
-  openModal('modal-parc');
-};
-
-window.editParc=id=>{
-  const p=parcelamentos.find(x=>x.id===id);
-  if(!p)return;
-  editingParcId=id;
-  document.getElementById('mp2-title').textContent='Editar parcelamento';
-  document.getElementById('parc-desc').value=p.descricao||'';
-  document.getElementById('parc-total').value=p.valorTotal||'';
-  document.getElementById('parc-num').value=p.numParcelas||'';
-  document.getElementById('parc-pagas').value=p.parcPagas||0;
-  document.getElementById('parc-inicio').value=p.inicio||'';
-  document.getElementById('parc-cat').innerHTML=allCats('despesa').map(c=>`<option value="${c.id}"${c.id===p.catId?' selected':''}>${c.icon} ${c.label}</option>`).join('');
-  calcParcValue();
-  openModal('modal-parc');
-};
-
-window.saveParc=async()=>{
-  const descricao=document.getElementById('parc-desc').value.trim();
-  const valorTotal=parseFloat(document.getElementById('parc-total').value)||0;
-  const numParcelas=parseInt(document.getElementById('parc-num').value)||0;
-  const inicio=document.getElementById('parc-inicio').value;
-  const catId=document.getElementById('parc-cat').value;
-  const parcPagas=Math.min(parseInt(document.getElementById('parc-pagas').value)||0,numParcelas);
-  if(!descricao){alert('Informe a descrição.');return;}
-  if(!valorTotal||valorTotal<=0){alert('Informe o valor total.');return;}
-  if(!numParcelas||numParcelas<1){alert('Informe o número de parcelas.');return;}
-  if(!inicio){alert('Informe o mês da 1ª parcela.');return;}
-  const data={descricao,valorTotal,numParcelas,inicio,catId,parcPagas,createdAt:new Date().toISOString()};
-  if(editingParcId)await updateDoc(doc(db,'parcelamentos',editingParcId),data);
-  else await addDoc(collection(db,'parcelamentos'),data);
-  editingParcId=null;
-  closeModal('modal-parc');
-};
-
-window.pagarParcela=async(id,pagas,total)=>{
-  const nova=pagas+1;
-  if(nova>total){alert('Todas as parcelas já foram pagas!');return;}
-  const msg=nova>=total?`Marcar última parcela como paga? O parcelamento irá para o histórico.`:`Marcar parcela ${nova}/${total} como paga?`;
-  if(!confirm(msg))return;
-  await updateDoc(doc(db,'parcelamentos',id),{parcPagas:nova});
-};
-
-window.deleteParc=async id=>{
-  if(!confirm('Excluir este parcelamento?'))return;
-  await deleteDoc(doc(db,'parcelamentos',id));
-};
-
-function renderGoals(){
-  const c=document.getElementById('goals-container');
-  if(!goals.length){c.innerHTML='<div class="empty">Nenhuma meta cadastrada.</div>';return;}
-  c.innerHTML=goals.map(g=>{
-    const pct=g.target>0?Math.min(100,Math.round((g.current/g.target)*100)):0;
-    const col=pct>=100?'var(--green)':pct>=60?'var(--accent)':'var(--amber)';
-    return`<div class="goal-card"><div style="display:flex;justify-content:space-between"><div class="goal-name">${g.name}</div><button class="btn-danger-ghost" onclick="deleteGoal('${g.id}')">×</button></div><div class="goal-sub">${fmt(g.current)} de ${fmt(g.target)}${g.notes?' · '+g.notes:''}</div><div class="goal-pct" style="color:${col}">${pct}%</div><div class="pbar"><div class="pbar-fill" style="width:${pct}%;background:${col}"></div></div><button class="btn-sm" onclick="updateGoalProgress('${g.id}',${g.current},${g.target})">Atualizar valor</button></div>`;
-  }).join('');
-}
-window.openGoalModal=()=>{editingGoalId=null;['g-name','g-notes'].forEach(id=>document.getElementById(id).value='');['g-target','g-current'].forEach(id=>document.getElementById(id).value='');openModal('modal-goal');};
-window.saveGoal=async()=>{
-  const name=document.getElementById('g-name').value.trim();
-  const target=parseFloat(document.getElementById('g-target').value)||0;
-  const current=parseFloat(document.getElementById('g-current').value)||0;
-  const notes=document.getElementById('g-notes').value.trim();
-  if(!name){alert('Informe o nome da meta.');return;}
-  if(!target||target<=0){alert('Informe um valor alvo maior que zero.');return;}
-  const data={name,target,current,notes};
-  if(editingGoalId)await updateDoc(doc(db,'goals',editingGoalId),data);
-  else await addDoc(collection(db,'goals'),data);
-  closeModal('modal-goal');
-};
-window.deleteGoal=async id=>{if(!confirm('Excluir?'))return;await deleteDoc(doc(db,'goals',id));};
-window.updateGoalProgress=(id,cur)=>{const v=prompt('Valor atual (R$):',cur);if(v===null)return;const n=parseFloat(v.replace(',','.'));if(!isNaN(n))updateDoc(doc(db,'goals',id),{current:n});};
-
-// ── PARCELAMENTOS ────────────────────────────────────────
-let parcelamentos = [];
-
-function getParcValorMes(parc, m=viewMonth, y=viewYear){
-  // returns the installment value for a given month/year, or 0 if not applicable
-  const start = new Date(parc.startDate+'T12:00:00');
-  const startM = start.getMonth(), startY = start.getFullYear();
-  const parcIdx = (y - startY)*12 + (m - startM); // 0-based index
-  if(parcIdx < 0 || parcIdx >= parc.numParcelas) return 0;
-  return Number(parc.valorParcela)||0;
-}
-
-function getParcStatus(parc){
-  const now = new Date();
-  const start = new Date(parc.startDate+'T12:00:00');
-  const endDate = new Date(start);
-  endDate.setMonth(endDate.getMonth() + parc.numParcelas - 1);
-  if(now > endDate) return 'done';
-  const monthsLeft = (endDate.getFullYear()-now.getFullYear())*12 + (endDate.getMonth()-now.getMonth()) + 1;
-  if(monthsLeft <= 3) return 'ending';
-  return 'active';
-}
-
-function getParcPaid(parc){
-  const now = new Date();
-  const start = new Date(parc.startDate+'T12:00:00');
-  const paid = (now.getFullYear()-start.getFullYear())*12 + (now.getMonth()-start.getMonth());
-  return Math.max(0, Math.min(paid, parc.numParcelas));
-}
-
-function renderParcelamentos(){
-  // metrics
-  const totalMes = parcelamentos.reduce((s,p)=>s+getParcValorMes(p),0);
-  const ativos = parcelamentos.filter(p=>getParcStatus(p)!=='done').length;
-  const totalRestante = parcelamentos.reduce((s,p)=>{
-    const paid=getParcPaid(p);
-    return s+(parc=>parc.valorParcela*(parc.numParcelas-paid))(p);
-  },0);
-  const totalPago = parcelamentos.reduce((s,p)=>s+getParcPaid(p)*p.valorParcela,0);
-
-  document.getElementById('parc-metrics').innerHTML=`
-    <div class="metric-card"><div class="metric-label">Parcelas este mês</div><div class="metric-value neg">${fmt(totalMes)}</div></div>
-    <div class="metric-card"><div class="metric-label">Ativos</div><div class="metric-value">${ativos}</div></div>
-    <div class="metric-card"><div class="metric-label">Total restante</div><div class="metric-value neg">${fmtK(totalRestante)}</div></div>
-    <div class="metric-card"><div class="metric-label">Total pago</div><div class="metric-value pos">${fmtK(totalPago)}</div></div>`;
-
-  if(!parcelamentos.length){
-    document.getElementById('parc-list').innerHTML='<div class="empty">Nenhum parcelamento cadastrado.</div>';
-    return;
-  }
-
-  // sort: active first, then ending, then done
-  const order = {active:0,ending:1,done:2};
-  const sorted = [...parcelamentos].sort((a,b)=>order[getParcStatus(a)]-order[getParcStatus(b)]);
-
-  document.getElementById('parc-list').innerHTML = sorted.map(parc=>{
-    const status = getParcStatus(parc);
-    const paid = getParcPaid(parc);
-    const pct = Math.round((paid/parc.numParcelas)*100);
-    const valorMes = getParcValorMes(parc);
-    const restante = parc.valorParcela*(parc.numParcelas-paid);
-
-    const start = new Date(parc.startDate+'T12:00:00');
-    const endDate = new Date(start);
-    endDate.setMonth(endDate.getMonth() + parc.numParcelas - 1);
-    const endStr = `${MESES[endDate.getMonth()].slice(0,3)} ${endDate.getFullYear()}`;
-
-    const statusLabels = {active:'Em andamento', ending:'Encerrando em breve', done:'Quitado'};
-    const barColor = status==='done'?'var(--text3)':status==='ending'?'var(--amber)':'var(--accent)';
-
-    // parcela chips (max 24 shown)
-    const maxShow = Math.min(parc.numParcelas, 24);
-    const chips = Array.from({length:maxShow},(_,i)=>{
-      const cls = i<paid?'paid':i===paid&&status!=='done'?'current':'future';
-      return `<div class="parc-parcela-chip ${cls}" title="Parcela ${i+1}">${i+1}</div>`;
-    }).join('');
-    const moreChips = parc.numParcelas>24?`<div style="font-size:11px;color:var(--text3);align-self:center">+${parc.numParcelas-24}</div>`:'';
-
-    return `<div class="parc-card">
-      <div class="parc-header">
-        <div>
-          <div class="parc-desc">${parc.descricao}</div>
-          <div class="parc-cartao">${parc.cartao||''}${parc.cartao&&parc.categoria?' · ':''}${parc.categoria||''}</div>
-        </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span class="parc-status ${status}">${statusLabels[status]}</span>
-          <button class="btn-ghost" onclick="editParc('${parc.id}')" style="font-size:12px">✎</button>
-          <button class="btn-danger-ghost" onclick="deleteParc('${parc.id}')">×</button>
-        </div>
-      </div>
-      <div class="parc-progress-wrap">
-        <span style="font-size:12px;color:var(--text2);min-width:60px">${paid}/${parc.numParcelas} pagas</span>
-        <div class="parc-pbar"><div class="parc-pbar-fill" style="width:${pct}%;background:${barColor}"></div></div>
-        <span style="font-size:12px;font-weight:600;min-width:34px;text-align:right;color:${barColor}">${pct}%</span>
-      </div>
-      <div class="parc-grid">
-        <div class="parc-stat"><div class="parc-stat-label">Parcela mensal</div><div class="parc-stat-val" style="color:var(--red)">${fmt(parc.valorParcela)}</div></div>
-        <div class="parc-stat"><div class="parc-stat-label">Restante</div><div class="parc-stat-val">${fmt(restante)}</div></div>
-        <div class="parc-stat"><div class="parc-stat-label">Termina em</div><div class="parc-stat-val" style="font-size:12px;color:${status==='ending'?'var(--amber)':'inherit'}">${endStr}</div></div>
-      </div>
-      ${valorMes>0?`<div style="font-size:12px;color:var(--text2);margin-top:8px">Este mês: <strong style="color:var(--red)">${fmt(valorMes)}</strong></div>`:''}
-      <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
-        <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em">Parcelas</div>
-        <div class="parc-parcelas-list">${chips}${moreChips}</div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-window.openParcModal = ()=>{
-  editingParcId=null;
-  document.getElementById('mp2-title').textContent='Novo parcelamento';
-  document.getElementById('parc-desc').value='';
-  document.getElementById('parc-total').value='';
-  document.getElementById('parc-num').value='';
-  document.getElementById('parc-start').value=new Date().toISOString().split('T')[0];
-  document.getElementById('parc-cartao').value='';
-  document.getElementById('parc-notes').value='';
-  // populate cat select
-  const sel=document.getElementById('parc-cat');
-  sel.innerHTML=allCats('despesa').map(c=>`<option value="${c.label}">${c.icon} ${c.label}</option>`).join('');
-  openModal('modal-parc');
-};
-
-window.editParc = id=>{
-  const p=parcelamentos.find(x=>x.id===id);
-  if(!p) return;
-  editingParcId=id;
-  document.getElementById('mp2-title').textContent='Editar parcelamento';
-  document.getElementById('parc-desc').value=p.descricao||'';
-  document.getElementById('parc-total').value=p.valorTotal||'';
-  document.getElementById('parc-num').value=p.numParcelas||'';
-  document.getElementById('parc-start').value=p.startDate||'';
-  document.getElementById('parc-cartao').value=p.cartao||'';
-  document.getElementById('parc-notes').value=p.notas||'';
-  const sel=document.getElementById('parc-cat');
-  sel.innerHTML=allCats('despesa').map(c=>`<option value="${c.label}"${c.label===p.categoria?' selected':''}>${c.icon} ${c.label}</option>`).join('');
-  openModal('modal-parc');
-};
-
-window.saveParc = async()=>{
-  const descricao=document.getElementById('parc-desc').value.trim();
-  const valorTotal=parseFloat(document.getElementById('parc-total').value)||0;
-  const numParcelas=parseInt(document.getElementById('parc-num').value)||0;
-  const startDate=document.getElementById('parc-start').value;
-  const cartao=document.getElementById('parc-cartao').value.trim();
-  const categoria=document.getElementById('parc-cat').value;
-  const notas=document.getElementById('parc-notes').value.trim();
-  if(!descricao){alert('Informe a descrição.');return;}
-  if(!valorTotal||valorTotal<=0){alert('Informe o valor total.');return;}
-  if(!numParcelas||numParcelas<=0){alert('Informe o número de parcelas.');return;}
-  if(!startDate){alert('Informe a data da primeira parcela.');return;}
-  const valorParcela=Math.round((valorTotal/numParcelas)*100)/100;
-  const data={descricao,valorTotal,valorParcela,numParcelas,startDate,cartao,categoria,notas,criadoEm:new Date().toISOString()};
-  if(editingParcId) await updateDoc(doc(db,'parcelamentos',editingParcId),data);
-  else await addDoc(collection(db,'parcelamentos'),data);
-  editingParcId=null;
-  closeModal('modal-parc');
-};
-
-window.deleteParc = async id=>{
-  if(!confirm('Excluir este parcelamento?')) return;
-  await deleteDoc(doc(db,'parcelamentos',id));
-};
-
 // ── RELATÓRIOS ────────────────────────────────────────────
 function renderRelatorios(){
   const labels=[],recData=[],despData=[];
@@ -2294,60 +1914,3 @@ window.loadConversation = async id => {
 
 </script>
 
-<!-- AI ASSISTANT -->
-<button class="ai-btn" id="ai-toggle-btn" onclick="toggleAI()" title="Pergunte ao Greco">
-  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <!-- Clippy-inspired: paperclip body with eyes -->
-    <path d="M19 4C19 4 22 4 22 8V20C22 24 18 26 14 26C10 26 6 24 6 20V10C6 6 9 4 12 4C15 4 17 6 17 9V19C17 21 15.5 22 14 22C12.5 22 11 21 11 19V10" 
-          stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-    <!-- Eyes -->
-    <circle cx="11.5" cy="12" r="1.2" fill="currentColor"/>
-    <circle cx="16.5" cy="12" r="1.2" fill="currentColor"/>
-    <!-- Shine dots -->
-    <circle cx="12" cy="11.5" r="0.4" fill="white"/>
-    <circle cx="17" cy="11.5" r="0.4" fill="white"/>
-  </svg>
-</button>
-
-<div class="ai-panel" id="ai-panel">
-  <div class="ai-header">
-    <div class="ai-avatar">
-      <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
-        <path d="M19 4C19 4 22 4 22 8V20C22 24 18 26 14 26C10 26 6 24 6 20V10C6 6 9 4 12 4C15 4 17 6 17 9V19C17 21 15.5 22 14 22C12.5 22 11 21 11 19V10" 
-              stroke="var(--text)" stroke-width="2" stroke-linecap="round" fill="none"/>
-        <circle cx="11.5" cy="12" r="1.2" fill="var(--text)"/>
-        <circle cx="16.5" cy="12" r="1.2" fill="var(--text)"/>
-      </svg>
-    </div>
-    <div class="ai-header-info">
-      <div class="ai-header-name">Greco AI</div>
-      <div class="ai-header-status" id="ai-status">Online</div>
-    </div>
-    <button class="ai-history-btn" onclick="openAiHistory()">Histórico</button>
-  </div>
-  <div class="ai-messages" id="ai-messages">
-    <div class="ai-msg assistant">Olá! Sou o assistente do Greco. Pergunte sobre seus lançamentos, gastos, metas ou investimentos.</div>
-  </div>
-  <div class="ai-footer">
-    <input class="ai-input" id="ai-input" placeholder="Pergunte algo..." onkeydown="aiKeydown(event)">
-    <button class="ai-send" id="ai-send-btn" onclick="sendAiMessage()">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-      </svg>
-    </button>
-  </div>
-</div>
-
-<!-- AI HISTORY MODAL -->
-<div class="ai-hist-overlay" id="ai-hist-overlay" onclick="if(event.target===this)closeAiHistory()">
-  <div class="ai-hist-modal">
-    <div class="ai-hist-header">
-      <span style="font-size:15px;font-weight:600">Histórico de conversas</span>
-      <button class="modal-close" onclick="closeAiHistory()">×</button>
-    </div>
-    <div class="ai-hist-body" id="ai-hist-body"></div>
-  </div>
-</div>
-
-</body>
-</html>
