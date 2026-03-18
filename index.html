@@ -258,12 +258,14 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 .empty{text-align:center;padding:32px;color:var(--text2);font-size:14px}
 .divider{height:1px;background:var(--border);margin:16px 0}
 /* ── CARTÕES ──────────────────────────────────────────── */
-.cartao-card{border-radius:12px;padding:18px 20px;min-height:110px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
-.cartao-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.12)}
-.cartao-nome{font-size:15px;font-weight:600;letter-spacing:-0.2px}
-.cartao-banco{font-size:12px;opacity:.75;margin-top:2px}
-.cartao-chip{width:28px;height:20px;border-radius:4px;background:rgba(255,255,255,0.4);margin-bottom:8px}
-.cartao-selected{box-shadow:0 0 0 3px var(--accent) !important}
+.cartao-wrap{perspective:1000px}
+.cartao-card{border-radius:18px;padding:22px 24px;width:100%;aspect-ratio:1.586;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;position:relative;transform-style:preserve-3d;will-change:transform;box-shadow:0 8px 32px rgba(0,0,0,0.22);transition:box-shadow .2s;overflow:hidden}
+.cartao-card::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 30% 30%,rgba(255,255,255,0.12) 0%,transparent 60%);pointer-events:none}
+.cartao-banco-label{font-size:13px;font-weight:600;color:rgba(255,255,255,0.9);letter-spacing:.3px}
+.cartao-numero{font-size:16px;font-weight:400;letter-spacing:3px;color:white;font-family:'DM Mono',monospace;margin:8px 0}
+.cartao-nome-titular{font-size:12px;font-weight:500;color:rgba(255,255,255,0.85);letter-spacing:.5px;text-transform:uppercase}
+.cartao-venc-label{font-size:11px;color:rgba(255,255,255,0.6)}
+.cartao-venc-val{font-size:13px;color:rgba(255,255,255,0.85);font-family:'DM Mono',monospace}
 
 /* ── DRAG AND DROP ────────────────────────────────────── */
 .drag-handle{cursor:grab;color:var(--text3);padding:2px 4px;font-size:16px;line-height:1;user-select:none;flex-shrink:0}
@@ -692,35 +694,58 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
     <div class="modal-header"><span class="modal-title" id="mc2-title">Novo cartão</span><button class="modal-close" onclick="closeModal('modal-cartao')">×</button></div>
     <div class="modal-body">
       <div class="form-row">
-        <div class="fg"><label>Nome do cartão</label><input id="ct-nome" placeholder="Ex: Nubank, Inter, XP..."></div>
         <div class="fg"><label>Banco / Instituição</label><input id="ct-banco" placeholder="Ex: Nubank, Itaú..."></div>
+        <div class="fg"><label>Bandeira</label>
+          <select id="ct-bandeira">
+            <option value="mastercard">Mastercard</option>
+            <option value="visa">Visa</option>
+            <option value="elo">Elo</option>
+            <option value="amex">American Express</option>
+            <option value="hipercard">Hipercard</option>
+            <option value="none">Sem bandeira</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="fg"><label>Número do cartão</label><input id="ct-numero" placeholder="1234 5678 9101 1121" maxlength="19" oninput="formatCartaoNumero(this)" style="font-family:'DM Mono',monospace;letter-spacing:2px"></div>
       </div>
       <div class="form-row">
-        <div class="fg"><label>Últimos 4 dígitos</label><input id="ct-digitos" placeholder="1234" maxlength="4"></div>
-        <div class="fg"><label>Cor do cartão</label>
+        <div class="fg"><label>Nome no cartão</label><input id="ct-nome" placeholder="Ex: PEDRO S SPADOTTO"></div>
+        <div class="fg"><label>Validade (MM/AA)</label><input id="ct-venc" placeholder="12/28" maxlength="5" oninput="formatCartaoVenc(this)"></div>
+      </div>
+      <div class="form-row">
+        <div class="fg"><label>Cor</label>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px" id="ct-cores">
-            <div class="ct-cor-opt" data-cor="#1a1a2e" style="width:28px;height:28px;border-radius:6px;background:#1a1a2e;cursor:pointer;border:2px solid transparent" onclick="selectCartaoCor(this,'#1a1a2e')"></div>
+            <div class="ct-cor-opt" data-cor="#1a1a2e" style="width:28px;height:28px;border-radius:6px;background:#1a1a2e;cursor:pointer;border:3px solid white;outline:2px solid #1a1a2e" onclick="selectCartaoCor(this,'#1a1a2e')"></div>
             <div class="ct-cor-opt" data-cor="#7c3aed" style="width:28px;height:28px;border-radius:6px;background:#7c3aed;cursor:pointer;border:2px solid transparent" onclick="selectCartaoCor(this,'#7c3aed')"></div>
             <div class="ct-cor-opt" data-cor="#2563eb" style="width:28px;height:28px;border-radius:6px;background:#2563eb;cursor:pointer;border:2px solid transparent" onclick="selectCartaoCor(this,'#2563eb')"></div>
             <div class="ct-cor-opt" data-cor="#059669" style="width:28px;height:28px;border-radius:6px;background:#059669;cursor:pointer;border:2px solid transparent" onclick="selectCartaoCor(this,'#059669')"></div>
             <div class="ct-cor-opt" data-cor="#dc2626" style="width:28px;height:28px;border-radius:6px;background:#dc2626;cursor:pointer;border:2px solid transparent" onclick="selectCartaoCor(this,'#dc2626')"></div>
             <div class="ct-cor-opt" data-cor="#d97706" style="width:28px;height:28px;border-radius:6px;background:#d97706;cursor:pointer;border:2px solid transparent" onclick="selectCartaoCor(this,'#d97706')"></div>
-            <div class="ct-cor-opt" data-cor="#0f172a" style="width:28px;height:28px;border-radius:6px;background:#0f172a;cursor:pointer;border:2px solid transparent" onclick="selectCartaoCor(this,'#0f172a')"></div>
-            <div class="ct-cor-opt" data-cor="#be185d" style="width:28px;height:28px;border-radius:6px;background:#be185d;cursor:pointer;border:2px solid transparent" onclick="selectCartaoCor(this,'#be185d')"></div>
+            <div class="ct-cor-opt" data-cor="#e11d48" style="width:28px;height:28px;border-radius:6px;background:#e11d48;cursor:pointer;border:2px solid transparent" onclick="selectCartaoCor(this,'#e11d48')"></div>
+            <div class="ct-cor-opt" data-cor="#0e7490" style="width:28px;height:28px;border-radius:6px;background:#0e7490;cursor:pointer;border:2px solid transparent" onclick="selectCartaoCor(this,'#0e7490')"></div>
+          </div>
+        </div>
+        <div class="fg"><label>Preview</label>
+          <div class="cartao-wrap" style="max-width:200px">
+            <div id="ct-preview" class="cartao-card" style="background:#1a1a2e;padding:16px 18px">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div id="ct-preview-banco" class="cartao-banco-label" style="font-size:12px">Banco</div>
+                <div id="ct-preview-bandeira"></div>
+              </div>
+              <div>
+                <svg viewBox="0 0 38 28" width="32" height="24" style="opacity:.75;margin-bottom:8px"><rect x="0" y="0" width="14" height="20" rx="2" fill="rgba(255,255,255,0.5)"/><rect x="11" y="0" width="14" height="20" rx="2" fill="rgba(255,255,255,0.3)"/></svg>
+                <div id="ct-preview-numero" class="cartao-numero" style="font-size:13px">•••• •••• •••• ••••</div>
+              </div>
+              <div style="display:flex;justify-content:space-between;align-items:flex-end">
+                <div id="ct-preview-nome" class="cartao-nome-titular" style="font-size:10px">NOME DO TITULAR</div>
+                <div id="ct-preview-venc" style="font-size:11px;color:rgba(255,255,255,0.7);font-family:'DM Mono',monospace">MM/AA</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      <div style="margin:14px 0 4px">
-        <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Preview</div>
-        <div id="ct-preview" style="border-radius:12px;padding:16px 18px;min-height:90px;display:flex;flex-direction:column;justify-content:space-between;background:#1a1a2e;max-width:200px">
-          <div style="width:24px;height:18px;border-radius:3px;background:rgba(255,255,255,0.35)"></div>
-          <div>
-            <div id="ct-preview-nome" style="font-size:13px;font-weight:600;color:white">Nome do cartão</div>
-            <div id="ct-preview-banco" style="font-size:11px;color:rgba(255,255,255,0.65)">Banco</div>
-          </div>
-        </div>
-      </div>
-      <div class="btn-row">
+            <div class="btn-row">
         <button class="btn-cancel" onclick="closeModal('modal-cartao')">Cancelar</button>
         <button class="btn-save" onclick="saveCartao()">Salvar cartão</button>
       </div>
@@ -1268,6 +1293,16 @@ function renderDespesas(){ renderCatPage('despesa','desp-metrics','desp-cats'); 
 
 
 // ── CARTÕES ───────────────────────────────────────────────
+function getBandeiraHTML(bandeira, size=28){
+  const s = size;
+  if(bandeira==='mastercard') return `<svg width="${s}" height="${Math.round(s*0.6)}" viewBox="0 0 38 24"><circle cx="14" cy="12" r="11" fill="white" opacity="0.9"/><circle cx="24" cy="12" r="11" fill="white" opacity="0.6"/><path d="M19 5.5a11 11 0 010 13" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/></svg>`;
+  if(bandeira==='visa') return `<svg width="${s}" height="${Math.round(s*0.35)}" viewBox="0 0 60 20"><text x="0" y="16" font-size="18" font-weight="700" font-family="serif" fill="white" letter-spacing="1">VISA</text></svg>`;
+  if(bandeira==='elo') return `<svg width="${s}" height="${Math.round(s*0.5)}" viewBox="0 0 40 20"><text x="0" y="15" font-size="14" font-weight="700" font-family="sans-serif" fill="white">elo</text></svg>`;
+  if(bandeira==='amex') return `<svg width="${s}" height="${Math.round(s*0.5)}" viewBox="0 0 50 20"><text x="0" y="15" font-size="11" font-weight="600" font-family="sans-serif" fill="white" letter-spacing="0.5">AMEX</text></svg>`;
+  if(bandeira==='hipercard') return `<svg width="${s}" height="${Math.round(s*0.5)}" viewBox="0 0 60 20"><text x="0" y="15" font-size="10" font-weight="600" font-family="sans-serif" fill="white">HIPER</text></svg>`;
+  return '';
+}
+
 function renderCartoes(){
   const el=document.getElementById('cartoes-grid');
   if(!el)return;
@@ -1277,20 +1312,52 @@ function renderCartoes(){
   }
   el.innerHTML=cartoes.map(c=>{
     const cor=c.cor||'#1a1a2e';
-    const textColor='white';
-    return`<div class="cartao-card" style="background:${cor};color:${textColor};border:2px solid ${cor}">
-      <div><div style="width:24px;height:18px;border-radius:3px;background:rgba(255,255,255,0.35);margin-bottom:12px"></div></div>
-      <div>
-        <div class="cartao-nome">${c.nome}${c.digitos?' ···'+c.digitos:''}</div>
-        <div class="cartao-banco">${c.banco||''}</div>
-        <div style="display:flex;gap:6px;margin-top:10px">
-          <button class="btn-sm" style="background:rgba(255,255,255,0.2);border-color:rgba(255,255,255,0.3);color:white;font-size:11px" onclick="editCartao('${c.id}')">✎ Editar</button>
-          <button class="btn-sm" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:white;font-size:11px" onclick="deleteCartao('${c.id}')">× Excluir</button>
+    const numDisplay=c.numero?c.numero.replace(/\d(?=(?:\d{4})+$)/g,'•'):'•••• •••• •••• ••••';
+    return`<div class="cartao-wrap">
+      <div class="cartao-card" id="card-${c.id}" style="background:${cor}"
+        onmousemove="cartaoParallax(event,'card-${c.id}')"
+        onmouseleave="cartaoParallaxReset('card-${c.id}')">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="cartao-banco-label">${c.banco||'—'}</div>
+          <div>${getBandeiraHTML(c.bandeira)}</div>
+        </div>
+        <div>
+          <svg viewBox="0 0 38 28" width="36" height="26" style="opacity:.75;margin-bottom:10px">
+            <rect x="0" y="0" width="14" height="20" rx="2" fill="rgba(255,255,255,0.5)"/>
+            <rect x="11" y="0" width="14" height="20" rx="2" fill="rgba(255,255,255,0.3)"/>
+          </svg>
+          <div class="cartao-numero">${numDisplay}</div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-end">
+          <div>
+            <div class="cartao-nome-titular">${c.nome||'—'}</div>
+            ${c.venc?`<div class="cartao-venc-label" style="font-size:10px;color:rgba(255,255,255,0.6);margin-top:2px">VALIDADE</div><div class="cartao-venc-val">${c.venc}</div>`:''}
+          </div>
+          <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
+            <button class="btn-sm" style="background:rgba(255,255,255,0.2);border-color:rgba(255,255,255,0.25);color:white;font-size:11px" onclick="editCartao('${c.id}')">✎</button>
+            <button class="btn-sm" style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.8);font-size:11px" onclick="deleteCartao('${c.id}')">×</button>
+          </div>
         </div>
       </div>
     </div>`;
   }).join('');
 }
+
+window.cartaoParallax=(e,id)=>{
+  const el=document.getElementById(id);if(!el)return;
+  const r=el.getBoundingClientRect();
+  const x=((e.clientX-r.left)/r.width-0.5)*18;
+  const y=((e.clientY-r.top)/r.height-0.5)*-18;
+  el.style.transform=`perspective(800px) rotateX(${y}deg) rotateY(${x}deg) scale(1.03)`;
+  el.style.boxShadow=`${-x*0.5}px ${y*0.5+12}px 40px rgba(0,0,0,0.3)`;
+};
+window.cartaoParallaxReset=(id)=>{
+  const el=document.getElementById(id);if(!el)return;
+  el.style.transform='perspective(800px) rotateX(0) rotateY(0) scale(1)';
+  el.style.boxShadow='0 8px 32px rgba(0,0,0,0.22)';
+  el.style.transition='transform .4s ease,box-shadow .4s ease';
+  setTimeout(()=>{if(el)el.style.transition='';},400);
+};
 
 window.selectCartaoCor=(el,cor)=>{
   _cartaoCorSelecionada=cor;
@@ -1301,27 +1368,32 @@ window.selectCartaoCor=(el,cor)=>{
   if(prev) prev.style.background=cor;
 };
 
+window.formatCartaoNumero=el=>{let v=el.value.replace(/\D/g,'').slice(0,16);el.value=v.replace(/(\d{4})(?=\d)/g,'$1 ');updateCartaoPreview();};
+window.formatCartaoVenc=el=>{let v=el.value.replace(/\D/g,'').slice(0,4);if(v.length>2)v=v.slice(0,2)+'/'+v.slice(2);el.value=v;updateCartaoPreview();};
+function updateCartaoPreview(){
+  const banco=document.getElementById('ct-banco')?.value||'Banco';
+  const nome=document.getElementById('ct-nome')?.value||'NOME DO TITULAR';
+  const venc=document.getElementById('ct-venc')?.value||'MM/AA';
+  const num=document.getElementById('ct-numero')?.value||'';
+  const bandeira=document.getElementById('ct-bandeira')?.value||'mastercard';
+  const numDisplay=num||'•••• •••• •••• ••••';
+  const prev=document.getElementById('ct-preview');
+  if(prev)prev.style.background=_cartaoCorSelecionada;
+  const pb=document.getElementById('ct-preview-banco');if(pb)pb.textContent=banco;
+  const pn=document.getElementById('ct-preview-nome');if(pn)pn.textContent=nome.toUpperCase();
+  const pv=document.getElementById('ct-preview-venc');if(pv)pv.textContent=venc;
+  const pnum=document.getElementById('ct-preview-numero');if(pnum)pnum.textContent=numDisplay;
+  const pbnd=document.getElementById('ct-preview-bandeira');if(pbnd)pbnd.innerHTML=getBandeiraHTML(bandeira,24);
+}
 window.openCartaoModal=()=>{
   _editingCartaoId=null;
   _cartaoCorSelecionada='#1a1a2e';
   document.getElementById('mc2-title').textContent='Novo cartão';
-  ['ct-nome','ct-banco','ct-digitos'].forEach(id=>document.getElementById(id).value='');
-  document.querySelectorAll('.ct-cor-opt').forEach(o=>{o.style.border='2px solid transparent';o.style.outline='none';});
-  const firstCor=document.querySelector('.ct-cor-opt');
-  if(firstCor){firstCor.style.border='2px solid white';firstCor.style.outline='2px solid #1a1a2e';}
-  document.getElementById('ct-preview').style.background='#1a1a2e';
-  document.getElementById('ct-preview-nome').textContent='Nome do cartão';
-  document.getElementById('ct-preview-banco').textContent='Banco';
-  // live preview
-  ['ct-nome','ct-banco'].forEach(id=>{
-    const el=document.getElementById(id);
-    el.oninput=()=>{
-      const n=document.getElementById('ct-nome').value||'Nome do cartão';
-      const b=document.getElementById('ct-banco').value||'Banco';
-      document.getElementById('ct-preview-nome').textContent=n;
-      document.getElementById('ct-preview-banco').textContent=b;
-    };
-  });
+  ['ct-nome','ct-banco','ct-numero','ct-venc'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('ct-bandeira').value='mastercard';
+  document.querySelectorAll('.ct-cor-opt').forEach((o,i)=>{o.style.border=i===0?'3px solid white':'2px solid transparent';o.style.outline=i===0?'2px solid #1a1a2e':'none';});
+  updateCartaoPreview();
+  ['ct-nome','ct-banco','ct-numero','ct-venc','ct-bandeira'].forEach(id=>{const el=document.getElementById(id);if(el)el.oninput=updateCartaoPreview;if(el&&el.tagName==='SELECT')el.onchange=updateCartaoPreview;});
   openModal('modal-cartao');
 };
 
@@ -1332,29 +1404,25 @@ window.editCartao=id=>{
   document.getElementById('mc2-title').textContent='Editar cartão';
   document.getElementById('ct-nome').value=c.nome||'';
   document.getElementById('ct-banco').value=c.banco||'';
-  document.getElementById('ct-digitos').value=c.digitos||'';
-  document.getElementById('ct-preview').style.background=_cartaoCorSelecionada;
-  document.getElementById('ct-preview-nome').textContent=c.nome||'Nome do cartão';
-  document.getElementById('ct-preview-banco').textContent=c.banco||'Banco';
-  // highlight selected color
-  document.querySelectorAll('.ct-cor-opt').forEach(o=>{
-    o.style.border='2px solid transparent';o.style.outline='none';
-    if(o.dataset.cor===_cartaoCorSelecionada){o.style.border='2px solid white';o.style.outline='2px solid '+_cartaoCorSelecionada;}
-  });
+  document.getElementById('ct-numero').value=c.numero||'';
+  document.getElementById('ct-venc').value=c.venc||'';
+  document.getElementById('ct-bandeira').value=c.bandeira||'mastercard';
+  document.querySelectorAll('.ct-cor-opt').forEach(o=>{o.style.border='2px solid transparent';o.style.outline='none';if(o.dataset.cor===_cartaoCorSelecionada){o.style.border='3px solid white';o.style.outline='2px solid '+_cartaoCorSelecionada;}});
+  updateCartaoPreview();
+  ['ct-nome','ct-banco','ct-numero','ct-venc','ct-bandeira'].forEach(id=>{const el=document.getElementById(id);if(el)el.oninput=updateCartaoPreview;if(el&&el.tagName==='SELECT')el.onchange=updateCartaoPreview;});
   openModal('modal-cartao');
 };
 
 window.saveCartao=async()=>{
   const nome=document.getElementById('ct-nome').value.trim();
   const banco=document.getElementById('ct-banco').value.trim();
-  const digitos=document.getElementById('ct-digitos').value.trim().slice(0,4);
-  if(!nome){alert('Informe o nome do cartão.');return;}
-  const data={nome,banco,digitos,cor:_cartaoCorSelecionada,criadoEm:new Date().toISOString()};
-  if(_editingCartaoId){
-    await updateDoc(doc(db,'cartoes',_editingCartaoId),data);
-  } else {
-    await addDoc(collection(db,'cartoes'),data);
-  }
+  const numero=document.getElementById('ct-numero').value.trim();
+  const venc=document.getElementById('ct-venc').value.trim();
+  const bandeira=document.getElementById('ct-bandeira').value;
+  if(!banco&&!nome){alert('Informe ao menos o banco ou nome.');return;}
+  const data={nome,banco,numero,venc,bandeira,cor:_cartaoCorSelecionada,criadoEm:new Date().toISOString()};
+  if(_editingCartaoId){await updateDoc(doc(db,'cartoes',_editingCartaoId),data);}
+  else{await addDoc(collection(db,'cartoes'),data);}
   closeModal('modal-cartao');
 };
 
@@ -1556,7 +1624,7 @@ window.calcParcPreviewInline=()=>{
 function populateParcCartaoSelect(){
   const sel=document.getElementById('me-parc-cartao');
   if(!sel)return;
-  sel.innerHTML='<option value="">Nenhum / Débito</option>'+cartoes.map(c=>`<option value="${c.id}">${c.nome} ${c.digitos?'···'+c.digitos:''}</option>`).join('');
+  sel.innerHTML='<option value="">Nenhum / Débito</option>'+cartoes.map(c=>`<option value="${c.id}">${c.banco||c.nome} ${c.numero?'···'+c.numero.slice(-4):''}</option>`).join('');
 }
 
 window.openEntryModal=(tipo='despesa',catId,subcat)=>{
@@ -2297,7 +2365,9 @@ window.deleteInvTipo=async tipo=>{if(!confirm(`Excluir tipo "${tipo}"?`))return;
 // ── UI ────────────────────────────────────────────────────
 window.openModal=id=>document.getElementById(id).classList.add('open');
 window.closeModal=id=>document.getElementById(id).classList.remove('open');
-document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+document.querySelectorAll('.modal-overlay').forEach(o=>{
+  if(o.id==='ai-hist-overlay') o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');});
+});
 updateMonthLabel();
 
 // ── AI ASSISTANT ──────────────────────────────────────────
