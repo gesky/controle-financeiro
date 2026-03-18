@@ -47,8 +47,13 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 .sidebar-logo-icon{width:28px;height:28px;background:var(--text);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .sidebar-logo-icon svg{width:16px;height:16px;fill:white}
 .sidebar-logo-text{font-size:15px;font-weight:600;letter-spacing:-0.3px}
-.sidebar-user{padding:2px 14px 8px;font-size:12px;color:var(--text2);display:flex;align-items:center;justify-content:space-between}
-.btn-logout{background:none;border:none;font-size:11px;color:var(--text3);cursor:pointer;font-family:'Sora',sans-serif;padding:2px 6px;border-radius:4px}
+.sidebar-user{padding:10px 14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.sidebar-user-avatar{width:32px;height:32px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--text2);flex-shrink:0;text-transform:uppercase}
+.sidebar-user-info{flex:1;min-width:0}
+.sidebar-user-name{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar-user-role{font-size:11px;color:var(--text3);margin-top:1px}
+.sidebar-user-role.is-admin{color:var(--amber)}
+.btn-logout{background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;border-radius:4px;display:flex;align-items:center;flex-shrink:0}
 .btn-logout:hover{color:var(--red);background:var(--red-bg)}
 .sidebar-section{padding:4px 10px;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:6px}
 .nav-item{display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:var(--radius);margin:1px 6px;cursor:pointer;color:var(--text2);font-size:14px;transition:all .1s;user-select:none}
@@ -267,7 +272,6 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
           <g><polygon points="329.6 327.5 23.2 365 23.2 282.4 329.6 282.4 329.6 327.5"/><polygon points="23.2 752.5 329.6 715 329.6 797.6 23.2 797.6 23.2 752.5"/><polygon points="119.2 720.3 54.9 727.8 54.5 380.8 118.8 373.3 119.2 720.3"/><polygon points="208.8 709.8 144.4 717.3 144 370.3 208.4 362.8 208.8 709.8"/><polygon points="298.3 699.3 234 706.9 233.6 359.8 298 352.3 298.3 699.3"/></g>
         </svg>
       </div>
-      <div class="sidebar-user"><span id="user-name-display"></span><button class="btn-logout" onclick="doLogout()">Sair</button></div>
     </div>
     <div class="sidebar-section">Menu</div>
     <div class="nav-item active" onclick="showPage('dashboard',this)"><div class="nav-item-icon">⊞</div>Painel</div>
@@ -277,6 +281,18 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
     <div class="nav-item" onclick="showPage('metas',this)"><div class="nav-item-icon">◎</div>Metas</div>
     <div class="nav-item" onclick="showPage('relatorios',this)"><div class="nav-item-icon">≋</div>Relatórios</div>
     <div class="nav-item" onclick="showPage('configuracoes',this)"><div class="nav-item-icon">⚙</div>Configurações</div>
+    <div class="sidebar-user" id="sidebar-user-block">
+      <div class="sidebar-user-avatar" id="user-avatar-initials"></div>
+      <div class="sidebar-user-info">
+        <div class="sidebar-user-name" id="user-name-display"></div>
+        <div class="sidebar-user-role" id="user-role-display"></div>
+      </div>
+      <button class="btn-logout" onclick="doLogout()" title="Sair">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+          <path d="M13 15l4-5-4-5M17 10H7M10 3H4a1 1 0 00-1 1v12a1 1 0 001 1h6"/>
+        </svg>
+      </button>
+    </div>
     <div class="sidebar-month">
       <div class="month-nav">
         <button class="month-btn" onclick="changeMonth(-1)">‹</button>
@@ -290,7 +306,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 
     <!-- PAINEL -->
     <div id="page-dashboard" class="page active">
-      <div class="page-header"><div><div class="page-title">Painel</div><div class="page-sub" id="dash-sub"></div></div></div>
+      <div class="page-header"><div><div class="page-title" id="dash-title"></div><div class="page-sub" id="dash-sub">Visão geral</div></div></div>
       <div class="metrics-grid" id="dash-metrics"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
         <div class="card"><div class="card-header"><span class="card-title">Receitas vs Despesas — últimos 6 meses</span></div><div class="card-body"><div class="chart-wrap"><canvas id="barChart"></canvas></div></div></div>
@@ -593,7 +609,14 @@ onAuthStateChanged(auth,async user=>{
     isAdmin=user.email===ADMIN_EMAIL;
     document.getElementById('auth-screen').style.display='none';
     document.getElementById('app-screen').style.display='block';
-    document.getElementById('user-name-display').textContent=user.displayName||user.email.split('@')[0];
+    const displayName = user.displayName||user.email.split('@')[0];
+    document.getElementById('user-name-display').textContent = displayName;
+    const roleEl = document.getElementById('user-role-display');
+    const avatarEl = document.getElementById('user-avatar-initials');
+    const isAdminUser = user.email === ADMIN_EMAIL;
+    roleEl.textContent = isAdminUser ? 'Administrador' : 'Membro';
+    roleEl.className = 'sidebar-user-role' + (isAdminUser ? ' is-admin' : '');
+    avatarEl.textContent = displayName.split(' ').map(w=>w[0]).slice(0,2).join('');
     // ensure user doc
     const uref=doc(db,'users',user.uid);
     const usnap=await getDoc(uref);
@@ -676,8 +699,10 @@ window.changeMonth=d=>{
 function updateMonthLabel(){
   const full=MESES[viewMonth]+' '+viewYear;
   document.getElementById('monthLabel').textContent=MESES[viewMonth].slice(0,3)+' '+viewYear;
-  const els={'rec-sub':'Previsto vs Realizado · '+full,'desp-sub':'Previsto vs Realizado · '+full,'dash-sub':'Visão geral · '+full,'rel-sub':'Análise anual · '+viewYear};
+  const els={'rec-sub':'Previsto vs Realizado · '+full,'desp-sub':'Previsto vs Realizado · '+full,'rel-sub':'Análise anual · '+viewYear};
   Object.entries(els).forEach(([k,v])=>{const el=document.getElementById(k);if(el)el.textContent=v;});
+  const titleEl=document.getElementById('dash-title');
+  if(titleEl) titleEl.textContent=MESES[viewMonth]+' '+viewYear;
 }
 
 // ── HELPERS ──────────────────────────────────────────────
@@ -1031,6 +1056,74 @@ function renderConfig(){
   renderCfgCats('despesa');
 }
 
+// ── EMOJI PICKER ─────────────────────────────────────────
+const EMOJI_LIST = [
+  '🏠','🏡','🏢','🏗️','🔑','🛋️','🛏️','💡','🔌','🚿',
+  '🍽️','🍔','🍕','🍜','🥗','🍣','☕','🧃','🍺','🥤',
+  '🚗','🚕','🚙','🏍️','🚌','✈️','🚂','⛽','🔧','🅿️',
+  '📚','🎓','📖','✏️','🖊️','📐','💻','🖥️','🎒','🏫',
+  '💊','🏥','🩺','💉','🧘','🏃','🤸','💆','💅','🪥',
+  '✈️','🏖️','🎡','🎭','🎬','🎮','🎵','🎨','🏆','⚽',
+  '👕','👗','👔','👟','👜','💍','🕶️','🧢','🧣','👒',
+  '📈','💰','💳','🪙','💵','🏦','📊','💎','🔐','🏧',
+  '🎁','❤️','🌟','🌈','🦋','🌺','🌿','🍀','🐾','🌙',
+  '📦','🗂️','📋','📌','🔗','⚙️','🛠️','🧰','📎','🗒️',
+  '🍎','🥦','🥕','🌽','🍇','🍓','🥑','🧀','🥚','🍞',
+  '🐶','🐱','🐭','🐰','🦊','🐻','🐼','🐨','🐯','🦁',
+  '💼','👔','🤝','📱','⌚','🖨️','📷','🎙️','📡','🔋',
+  '🏋️','🧗','🤾','🏊','🚴','⛷️','🎯','🎳','🎱','🎲',
+  '🌍','🗺️','🧭','🏔️','🌊','🏕️','🗽','🗼','🎠','🎪'
+];
+
+window.openEmojiPicker = function(catId, tipo, btnEl){
+  // close any existing picker
+  document.querySelectorAll('.emoji-picker-popup').forEach(p=>p.remove());
+  const picker = document.createElement('div');
+  picker.className = 'emoji-picker-popup';
+  picker.style.cssText = `position:absolute;z-index:999;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:10px;box-shadow:var(--shadow-md);display:grid;grid-template-columns:repeat(10,28px);gap:2px;max-width:320px`;
+  EMOJI_LIST.forEach(em=>{
+    const btn=document.createElement('button');
+    btn.textContent=em;
+    btn.style.cssText='background:none;border:none;cursor:pointer;font-size:16px;width:28px;height:28px;border-radius:4px;display:flex;align-items:center;justify-content:center;';
+    btn.onmouseover=()=>btn.style.background='var(--bg2)';
+    btn.onmouseout=()=>btn.style.background='none';
+    btn.onclick=async()=>{
+      const cat=cats[tipo].find(c=>c.id===catId);
+      if(cat){cat.icon=em;await saveCategories();picker.remove();renderCfgCats(tipo);}
+    };
+    picker.appendChild(btn);
+  });
+  // position below button
+  const rect=btnEl.getBoundingClientRect();
+  const panel=document.getElementById('cfg-'+(tipo==='despesa'?'despesas':'receitas'));
+  const panelRect=panel.getBoundingClientRect();
+  picker.style.top=(rect.bottom-panelRect.top+panel.scrollTop+4)+'px';
+  picker.style.left=Math.max(0,rect.left-panelRect.left)+'px';
+  panel.style.position='relative';
+  panel.appendChild(picker);
+  // close on outside click
+  setTimeout(()=>document.addEventListener('click',function h(e){if(!picker.contains(e.target)&&e.target!==btnEl){picker.remove();document.removeEventListener('click',h);}},),0);
+};
+
+window.startCatNameEdit = function(catId, tipo, spanEl){
+  const currentName=spanEl.textContent;
+  const input=document.createElement('input');
+  input.value=currentName;
+  input.style.cssText='flex:1;padding:2px 6px;border:1px solid var(--accent);border-radius:4px;font-size:14px;font-weight:600;font-family:inherit;background:var(--bg);color:var(--text);outline:none;min-width:0';
+  spanEl.replaceWith(input);
+  input.focus();input.select();
+  const save=async()=>{
+    const newName=input.value.trim();
+    if(newName&&newName!==currentName){
+      const cat=cats[tipo].find(c=>c.id===catId);
+      if(cat){cat.label=newName;await saveCategories();}
+    }
+    renderCfgCats(tipo);
+  };
+  input.addEventListener('blur',save);
+  input.addEventListener('keydown',e=>{if(e.key==='Enter')input.blur();if(e.key==='Escape'){input.value=currentName;input.blur();}});
+};
+
 function renderCfgCats(tipo){
   const panelId='cfg-'+(tipo==='despesa'?'despesas':'receitas');
   let html=`<div class="cfg-section"><div class="cfg-section-title">Categorias de ${tipo==='despesa'?'Despesa':'Receita'}</div>
@@ -1039,15 +1132,17 @@ function renderCfgCats(tipo){
       <button class="btn-outline" style="font-size:12px" onclick="openSubcatModal('${tipo}')">+ Nova subcategoria</button>
     </div>`;
   allCats(tipo).forEach(cat=>{
-    html+=`<div style="border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:10px;overflow:hidden">
-      <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg2)">
-        <span style="font-size:16px">${cat.icon}</span>
-        <span style="flex:1;font-size:14px;font-weight:600">${cat.label}</span>
-        <button class="btn-ghost" style="color:var(--red);font-size:12px" onclick="deleteCat('${tipo}','${cat.id}')">Excluir categoria</button>
+    const safeId=cat.id.replace(/'/g,"\\'");
+    html+=`<div style="border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:10px;overflow:visible">
+      <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg2);border-radius:var(--radius-lg) var(--radius-lg) 0 0">
+        <button onclick="openEmojiPicker('${safeId}','${tipo}',this)" title="Clique para trocar o emoji" style="font-size:18px;background:none;border:1px dashed transparent;border-radius:6px;cursor:pointer;padding:2px 4px;line-height:1;transition:border-color .15s" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='transparent'">${cat.icon}</button>
+        <span id="catname-${cat.id}" onclick="startCatNameEdit('${safeId}','${tipo}',this)" title="Clique para editar o nome" style="flex:1;font-size:14px;font-weight:600;cursor:text;padding:2px 4px;border-radius:4px;border:1px dashed transparent;transition:border-color .15s" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='transparent'">${cat.label}</span>
+        <span style="font-size:11px;color:var(--text3);margin-right:4px">clique no nome ou emoji para editar</span>
+        <button class="btn-ghost" style="color:var(--red);font-size:12px" onclick="deleteCat('${tipo}','${safeId}')">Excluir</button>
       </div>
       <div style="padding:8px 14px 12px">
-        ${cat.subcats.map(sub=>`<div style="display:flex;align-items:center;gap:6px;padding:4px 0;border-bottom:1px solid var(--border)"><span style="flex:1;font-size:13px">${sub}</span><button class="btn-ghost" style="font-size:11px;color:var(--red)" onclick="deleteSubcat('${tipo}','${cat.id}','${sub.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">×</button></div>`).join('')}
-        <button class="add-tx-inline" style="margin-top:8px" onclick="openSubcatModal('${tipo}','${cat.id}')">+ subcategoria</button>
+        ${cat.subcats.map(sub=>`<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--border)"><span style="flex:1;font-size:13px">${sub}</span><button class="btn-ghost" style="font-size:11px;color:var(--red)" onclick="deleteSubcat('${tipo}','${safeId}','${sub.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">×</button></div>`).join('')}
+        <button class="add-tx-inline" style="margin-top:8px" onclick="openSubcatModal('${tipo}','${safeId}')">+ subcategoria</button>
       </div>
     </div>`;
   });
