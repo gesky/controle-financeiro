@@ -1276,7 +1276,6 @@ function populateSubcatSelect(catId,tipo){
 }
 window.onEntryTipoChange=()=>populateCatSelect(document.getElementById('me-tipo').value);
 window.onEntryCatChange=()=>populateSubcatSelect(document.getElementById('me-cat').value);
-e.target.value='';}};
 
 window.saveEntry=async()=>{
   const tipo=document.getElementById('me-tipo').value;
