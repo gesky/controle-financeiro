@@ -117,7 +117,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 .cat-pct-label{font-size:11px;font-family:'DM Mono',monospace;min-width:34px;text-align:right}
 .cat-chevron{font-size:11px;color:var(--text3);transition:transform .2s;margin-left:2px}
 .cat-chevron.open{transform:rotate(90deg)}
-.cat-body{display:none;border-top:1px solid var(--border)}
+.cat-body{display:block;border-top:1px solid var(--border)}
 .cat-body.open{display:block}
 .cat-actions{display:flex;gap:6px;padding:8px 16px;background:var(--bg);border-bottom:1px solid var(--border)}
 
@@ -509,8 +509,8 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
         <div class="fg"><label>Subcategoria</label><select id="me-subcat"></select></div>
       </div>
       <div class="form-row">
-        <div class="fg"><label>Valor realizado (R$)</label><input type="number" id="me-val" placeholder="0,00" step="0.01" min="0"></div>
         <div class="fg"><label>Valor previsto (R$)</label><input type="number" id="me-prev" placeholder="0,00" step="0.01" min="0"></div>
+        <div class="fg"><label>Valor realizado (R$)</label><input type="number" id="me-val" placeholder="0,00" step="0.01" min="0"></div>
       </div>
       <div class="form-row single"><div class="fg"><label>Descrição</label><input id="me-desc" placeholder="Ex: Supermercado Extra, Salário março..."></div></div>
 
@@ -1220,9 +1220,9 @@ function renderCatPage(tipo,metricsId,catsId){
         </div>
         ${catPrev>0?`<div class="cat-pct-wrap"><div class="cat-pct-bar"><div class="cat-pct-fill" style="width:${Math.min(100,pct)}%;background:${barColor}"></div></div><span class="cat-pct-label" style="color:${barColor}">${pct}%</span></div>`:'<div style="min-width:110px"></div>'}
         <button class="btn-ghost" style="font-size:11px" onclick="event.stopPropagation();openPrevistoModal('${cat.id}',${catPrev},'${cat.label.replace(/'/g,"\\'")}')">✎ previsto</button>
-        <span class="cat-chevron" id="chev-${bodyId}">▶</span>
+        <span class="cat-chevron open" id="chev-${bodyId}">▼</span>
       </div>
-      <div class="cat-body" id="${bodyId}">
+      <div class="cat-body open" id="${bodyId}">
         <div class="cat-actions">
           <button class="btn-outline" style="font-size:12px;padding:5px 10px" onclick="openEntryModal('${tipo}','${cat.id}')">+ Lançamento</button>
         </div>
