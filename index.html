@@ -257,6 +257,13 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 @media(max-width:480px){.metric-value{font-size:17px}.page-title{font-size:20px}}
 .empty{text-align:center;padding:32px;color:var(--text2);font-size:14px}
 .divider{height:1px;background:var(--border);margin:16px 0}
+/* ── DRAG AND DROP ────────────────────────────────────── */
+.drag-handle{cursor:grab;color:var(--text3);padding:2px 4px;font-size:16px;line-height:1;user-select:none;flex-shrink:0}
+.drag-handle:hover{color:var(--text)}
+.drag-handle:active{cursor:grabbing}
+.dragging{opacity:.4;border:2px dashed var(--accent) !important}
+.drag-over{border-top:2px solid var(--accent) !important}
+
 /* ── AI ASSISTANT ─────────────────────────────────────── */
 .ai-btn{position:fixed;bottom:24px;right:24px;width:52px;height:52px;border-radius:50%;background:var(--text);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,0.18);z-index:400;transition:transform .2s,box-shadow .2s}
 .ai-btn:hover{transform:scale(1.08);box-shadow:0 6px 20px rgba(0,0,0,0.22)}
@@ -325,6 +332,9 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
     <div class="field"><label>Senha</label><input type="password" id="auth-password" placeholder="••••••••"></div>
     <button class="btn-primary" id="auth-btn" onclick="doAuth()">Entrar</button>
     <div class="auth-err" id="auth-err"></div>
+    <div style="text-align:center;margin-top:10px">
+      <button onclick="sendPasswordReset()" style="background:none;border:none;font-size:12px;color:var(--text3);cursor:pointer;font-family:'Sora',sans-serif;text-decoration:underline">Esqueci minha senha</button>
+    </div>
   </div>
 </div>
 
@@ -606,6 +616,35 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
   </div>
 </div>
 
+
+<!-- MODAL EDITAR USUÁRIO -->
+<div class="modal-overlay" id="modal-edit-user">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title">Editar usuário</span><button class="modal-close" onclick="closeModal('modal-edit-user')">×</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="fg"><label>Nome</label><input id="eu-name" placeholder="Nome do usuário"></div>
+        <div class="fg"><label>Papel</label>
+          <select id="eu-role">
+            <option value="user">Membro</option>
+            <option value="admin">Administrador</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row single">
+        <div class="fg"><label>Nova senha <span style="font-weight:400;color:var(--text3)">(deixe vazio para não alterar)</span></label>
+          <input type="password" id="eu-pw" placeholder="Mínimo 6 caracteres">
+        </div>
+      </div>
+      <div id="eu-err" style="font-size:13px;margin-top:4px;min-height:18px"></div>
+      <div class="btn-row">
+        <button class="btn-cancel" onclick="closeModal('modal-edit-user')">Cancelar</button>
+        <button class="btn-save" onclick="saveEditUser()">Salvar alterações</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL META -->
 <div class="modal-overlay" id="modal-goal">
   <div class="modal">
@@ -779,6 +818,20 @@ window._doAuth = window.doAuth = async ()=>{
   }
 };
 window.doLogout=()=>signOut(auth);
+
+window.sendPasswordReset = async () => {
+  const email = document.getElementById('auth-email').value.trim();
+  if(!email){ document.getElementById('auth-err').textContent = 'Digite seu email primeiro.'; return; }
+  try {
+    const { sendPasswordResetEmail } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
+    await sendPasswordResetEmail(auth, email);
+    document.getElementById('auth-err').style.color = 'var(--green)';
+    document.getElementById('auth-err').textContent = '✓ Email de redefinição enviado!';
+  } catch(e) {
+    document.getElementById('auth-err').style.color = 'var(--red)';
+    document.getElementById('auth-err').textContent = 'Erro: ' + (e.code==='auth/user-not-found'?'Email não encontrado.':e.message);
+  }
+};
 
 onAuthStateChanged(auth,async user=>{
   if(user){
@@ -1082,26 +1135,43 @@ function getCatById(catId,tipo){return allCats(tipo).find(c=>c.id===catId);}
 // ── INVEST SALDO CALC ─────────────────────────────────────
 // Calcula saldo mês a mês aplicando juros compostos sobre capital acumulado
 function calcInvSaldoByMonth(inv, upToMonth, upToYear){
-  const taxa=Number(inv.taxa||0)/100; // % a.m.
-  const start=inv.startDate?new Date(inv.startDate+'T12:00:00'):new Date(inv.criadoEm||Date.now());
+  const taxaMensal=Number(inv.taxa||0)/100; // % a.m. ex: 1.4% → 0.014
+  // Convert monthly rate to daily: (1 + r_m)^(1/30) - 1
+  const taxaDiaria = taxaMensal>0 ? Math.pow(1+taxaMensal, 1/30)-1 : 0;
+
+  const start=inv.startDate?new Date(inv.startDate+'T00:00:00'):new Date(inv.criadoEm||Date.now());
+  start.setHours(0,0,0,0);
+
+  // upTo = last day of upToMonth/upToYear or today, whichever is earlier
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+  const upToRaw = new Date(upToYear, upToMonth+1, 0); // last day of month
+  const upTo = upToRaw < hoje ? upToRaw : hoje;
+
   let saldo=Number(inv.valorInicial||0);
   let totalAportes=Number(inv.valorInicial||0);
   let totalRendimentos=0;
+
   const movs=[...invMovimentos.filter(m=>m.invId===inv.id)].sort((a,b)=>a.date.localeCompare(b.date));
 
-  // iterate month by month from start
-  let curM=start.getMonth(), curY=start.getFullYear();
+  if(start>upTo) return{saldo,totalAportes,totalRendimentos};
+
+  // Iterate day by day from start to upTo
+  const cur=new Date(start);
   let safeIter=0;
-  while((curY<upToYear||(curY===upToYear&&curM<=upToMonth))&&safeIter++<120){
-    // apply movimentos this month
-    movs.filter(m=>{const d=new Date(m.date+'T12:00:00');return d.getMonth()===curM&&d.getFullYear()===curY;}).forEach(m=>{
+  while(cur<=upTo && safeIter++<1500){
+    const dateStr=cur.toISOString().split('T')[0];
+    // Apply any movimentos on this day
+    movs.filter(m=>m.date===dateStr).forEach(m=>{
       if(m.tipo==='aporte'){saldo+=Number(m.valor||0);totalAportes+=Number(m.valor||0);}
-      else if(m.tipo==='retirada'){saldo-=Number(m.valor||0);}
+      else if(m.tipo==='retirada'){saldo=Math.max(0,saldo-Number(m.valor||0));}
     });
-    // apply monthly interest at end of month
-    if(taxa>0){const rend=saldo*taxa;totalRendimentos+=rend;saldo+=rend;}
-    if(curY===upToYear&&curM===upToMonth) break;
-    curM++;if(curM>11){curM=0;curY++;}
+    // Apply daily compounding
+    if(taxaDiaria>0&&saldo>0){
+      const rend=saldo*taxaDiaria;
+      totalRendimentos+=rend;
+      saldo+=rend;
+    }
+    cur.setDate(cur.getDate()+1);
   }
   return{saldo:Math.max(0,saldo),totalAportes,totalRendimentos};
 }
@@ -1370,7 +1440,9 @@ function renderInvestimentos(){
   document.getElementById('inv-cards').innerHTML=investments.map(inv=>{
     const r=calcInvSaldoNow(inv);
     const taxa=Number(inv.taxa||0);
-    const rendEsperadoMes=r.saldo*taxa/100;
+    const taxaDiaria=taxa>0?(Math.pow(1+taxa/100,1/30)-1)*100:0;
+    const rendDiario=r.saldo*taxaDiaria/100;
+    const rendMensal=r.saldo*taxa/100;
     const movs=invMovimentos.filter(m=>m.invId===inv.id).slice(0,6);
     return`<div class="inv-card">
       <div style="display:flex;justify-content:space-between;align-items:start">
@@ -1378,7 +1450,7 @@ function renderInvestimentos(){
         <button class="btn-danger-ghost" onclick="deleteInv('${inv.id}')">×</button>
       </div>
       <div class="inv-saldo">${fmt(r.saldo)}</div>
-      ${taxa>0?`<div class="inv-rendimento-badge">↑ ${fmt(rendEsperadoMes)}/mês · ${taxa}% a.m.</div>`:''}
+      ${taxa>0?`<div class="inv-rendimento-badge">↑ ${fmt(rendDiario)}/dia · ${fmt(rendMensal)}/mês · ${taxa}% a.m.</div>`:''}
       <div class="inv-meta">Aportado: ${fmt(r.totalAportes)} · Rendimentos: ${fmt(r.totalRendimentos)}</div>
       ${inv.notas?`<div style="font-size:12px;color:var(--text2);margin-bottom:10px;font-style:italic">${inv.notas}</div>`:''}
       <div class="inv-actions">
@@ -1590,34 +1662,56 @@ function renderCfgCats(tipo){
     <div style="margin-bottom:12px;display:flex;gap:8px">
       <button class="btn-outline" style="font-size:12px" onclick="openCatModal('${tipo}')">+ Nova categoria</button>
       <button class="btn-outline" style="font-size:12px" onclick="openSubcatModal('${tipo}')">+ Nova subcategoria</button>
-    </div>`;
-  allCats(tipo).forEach(cat=>{
-    const safeId=cat.id.replace(/'/g,"\\'");
-    html+=`<div style="border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:10px;overflow:visible">
+    </div><div id="cat-list-${tipo}">`;
+  allCats(tipo).forEach((cat,ci)=>{
+    const safeId=cat.id.replace(/'/g,"\'");
+    html+=`<div class="cfg-cat-item" draggable="true" data-ci="${ci}" data-tipo="${tipo}"
+        ondragstart="onCatDragStart(event,${ci},'${tipo}')"
+        ondragover="onCatDragOver(event)"
+        ondragleave="onCatDragLeave(event)"
+        ondrop="onCatDrop(event,${ci},'${tipo}')"
+        ondragend="onCatDragEnd(event)"
+        style="border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:10px;background:var(--bg)">
       <div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg2);border-radius:var(--radius-lg) var(--radius-lg) 0 0">
+        <span class="drag-handle" title="Arrastar para reordenar">⠿</span>
         <button onclick="openEmojiPicker('${safeId}','${tipo}',this)" title="Clique para trocar o emoji" style="font-size:18px;background:none;border:1px dashed transparent;border-radius:6px;cursor:pointer;padding:2px 4px;line-height:1;transition:border-color .15s" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='transparent'">${cat.icon}</button>
         <span id="catname-${cat.id}" onclick="startCatNameEdit('${safeId}','${tipo}',this)" title="Clique para editar o nome" style="flex:1;font-size:14px;font-weight:600;cursor:text;padding:2px 4px;border-radius:4px;border:1px dashed transparent;transition:border-color .15s" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='transparent'">${cat.label}</span>
-        <span style="font-size:11px;color:var(--text3);margin-right:4px">clique no nome ou emoji para editar</span>
+        <span style="font-size:11px;color:var(--text3);margin-right:4px">clique para editar</span>
         <button class="btn-ghost" style="color:var(--red);font-size:12px" onclick="deleteCat('${tipo}','${safeId}')">Excluir</button>
       </div>
       <div style="padding:8px 14px 12px">
-        ${cat.subcats.map((sub,si)=>`<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--border)"><span onclick="startSubcatNameEdit(this,'${tipo}','${safeId}',${si})" title="Clique para editar" style="flex:1;font-size:13px;cursor:text;padding:2px 4px;border-radius:4px;border:1px dashed transparent;transition:border-color .15s" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='transparent'">${sub}</span><button class="btn-ghost" style="font-size:11px;color:var(--red)" onclick="deleteSubcat('${tipo}','${safeId}','${sub.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">×</button></div>`).join('')}
+        ${cat.subcats.map((sub,si)=>`<div class="cfg-sub-item" draggable="true" data-si="${si}" data-catid="${safeId}" data-tipo="${tipo}"
+            ondragstart="onSubDragStart(event,${si},'${safeId}','${tipo}')"
+            ondragover="onSubDragOver(event)"
+            ondragleave="onSubDragLeave(event)"
+            ondrop="onSubDrop(event,${si},'${safeId}','${tipo}')"
+            ondragend="onSubDragEnd(event)"
+            style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--border)">
+          <span class="drag-handle" style="font-size:13px">⠿</span>
+          <span onclick="startSubcatNameEdit(this,'${tipo}','${safeId}',${si})" title="Clique para editar" style="flex:1;font-size:13px;cursor:text;padding:2px 4px;border-radius:4px;border:1px dashed transparent;transition:border-color .15s" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='transparent'">${sub}</span>
+          <button class="btn-ghost" style="font-size:11px;color:var(--red)" onclick="deleteSubcat('${tipo}','${safeId}','${sub.replace(/'/g,"\'").replace(/"/g,'&quot;')}')">×</button>
+        </div>`).join('')}
         <button class="add-tx-inline" style="margin-top:8px" onclick="openSubcatModal('${tipo}','${safeId}')">+ subcategoria</button>
       </div>
     </div>`;
   });
-  html+='</div>';
+  html+='</div></div>';
   document.getElementById(panelId).innerHTML=html;
 }
-
 function renderCfgInv(){
-  let html=`<div class="cfg-section"><div class="cfg-section-title">Tipos de investimento</div>
-    <div style="margin-bottom:12px"><button class="btn-outline" style="font-size:12px" onclick="openInvTipoModal()">+ Novo tipo</button></div>
-    ${invTipos.map(t=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px"><span style="flex:1;font-size:13px">◈ ${t}</span><button class="btn-ghost" style="color:var(--red)" onclick="deleteInvTipo('${t.replace(/'/g,"\\'")}')">Excluir</button></div>`).join('')}
-  </div>`;
-  document.getElementById('cfg-investimentos').innerHTML=html;
+  let tiposHtml=invTipos.map((t,i)=>`<div class="cfg-invtipo-item" draggable="true" data-ii="${i}"
+      ondragstart="onInvTipoDragStart(event,${i})"
+      ondragover="onInvTipoDragOver(event)"
+      ondragleave="onInvTipoDragLeave(event)"
+      ondrop="onInvTipoDrop(event,${i})"
+      ondragend="onInvTipoDragEnd(event)"
+      style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--border);border-radius:var(--radius);margin-bottom:6px;background:var(--bg)">
+    <span class="drag-handle">⠿</span>
+    <span style="flex:1;font-size:13px">◈ ${t}</span>
+    <button class="btn-ghost" style="color:var(--red)" onclick="deleteInvTipo('${t.replace(/'/g,"\'")}')">Excluir</button>
+  </div>`).join('');
+  document.getElementById('cfg-investimentos').innerHTML=`<div class="cfg-section"><div class="cfg-section-title">Tipos de investimento</div><div style="margin-bottom:12px"><button class="btn-outline" style="font-size:12px" onclick="openInvTipoModal()">+ Novo tipo</button></div><div id="invtipo-list">${tiposHtml}</div></div>`;
 }
-
 async function renderCfgUsuarios(){
   const panel=document.getElementById('cfg-usuarios');
   panel.innerHTML='<div style="color:var(--text2);font-size:13px;padding:20px">Carregando...</div>';
@@ -1651,6 +1745,7 @@ async function renderCfgUsuarios(){
           <div class="user-avatar">${initials}</div>
           <div class="user-info"><div class="user-name">${u.name||'—'}${isMe?' (você)':''}</div><div class="user-email">${u.email||'—'}</div></div>
           <span class="user-badge ${u.role==='admin'?'badge-admin':'badge-user'}">${u.role==='admin'?'Admin':'Membro'}</span>
+          ${isAdmin?`<button class="btn-ghost" style="font-size:12px" onclick="openEditUser('${u.id}','${(u.name||'').replace(/'/g,"\\'")}','${u.role||'user'}')">✎ Editar</button>`:''}
           ${isAdmin&&!isMe?`<button class="btn-danger-ghost" onclick="removeUser('${u.id}','${(u.name||u.email).replace(/'/g,"\\'")}')">Excluir</button>`:''}
         </div>`;
       }).join('');
@@ -1659,6 +1754,53 @@ async function renderCfgUsuarios(){
     panel.innerHTML=html;
   }catch(e){panel.innerHTML=`<div class="cfg-section"><div class="cfg-section-title">Usuários</div><div style="color:var(--red);font-size:13px">Erro ao carregar: ${e.message}</div></div>`;}
 }
+
+
+// ── EDIT USER ─────────────────────────────────────────────
+let _editingUserId = null;
+
+window.openEditUser = (uid, name, role) => {
+  _editingUserId = uid;
+  document.getElementById('eu-name').value = name || '';
+  document.getElementById('eu-role').value = role || 'user';
+  document.getElementById('eu-pw').value = '';
+  const errEl = document.getElementById('eu-err');
+  errEl.textContent = ''; errEl.style.color = 'var(--red)';
+  openModal('modal-edit-user');
+};
+
+window.saveEditUser = async () => {
+  if(!isAdmin){ alert('Apenas administradores podem editar usuários.'); return; }
+  const name = document.getElementById('eu-name').value.trim();
+  const role = document.getElementById('eu-role').value;
+  const pw = document.getElementById('eu-pw').value;
+  const errEl = document.getElementById('eu-err');
+  errEl.textContent = ''; errEl.style.color = 'var(--red)';
+  if(!name){ errEl.textContent = 'Informe o nome.'; return; }
+
+  try {
+    // Update Firestore user doc (name + role)
+    await updateDoc(doc(db, 'users', _editingUserId), { name, role });
+
+    // If password provided, update via secondary auth
+    if(pw) {
+      if(pw.length < 6){ errEl.textContent = 'Senha mínimo 6 caracteres.'; return; }
+      // We need to use Admin SDK for password reset — not available client-side
+      // Alternative: send password reset email or use secondary app
+      // For simplicity, store a "pendingPwChange" flag and handle via re-auth
+      errEl.style.color = 'var(--amber)';
+      errEl.textContent = '⚠ Senha não pode ser alterada diretamente. Use "Esqueci minha senha" na tela de login, ou recrie o usuário.';
+      // Still save name/role
+      await new Promise(r => setTimeout(r, 2000));
+    }
+
+    errEl.style.color = 'var(--green)';
+    errEl.textContent = '✓ Usuário atualizado!';
+    setTimeout(() => { closeModal('modal-edit-user'); renderCfgUsuarios(); }, 1000);
+  } catch(e) {
+    errEl.textContent = 'Erro: ' + e.message;
+  }
+};
 
 window.criarUsuario=async()=>{
   if(!isAdmin){alert('Apenas administradores podem criar usuários.');return;}
@@ -2095,6 +2237,57 @@ window.loadConversation = async id => {
   } catch(e){ alert('Erro ao carregar conversa: '+e.message); }
 };
 
+
+// ── DRAG & DROP — Categories ─────────────────────────────
+let _dragCatIdx=null, _dragCatTipo=null;
+window.onCatDragStart=(e,ci,tipo)=>{_dragCatIdx=ci;_dragCatTipo=tipo;e.currentTarget.classList.add('dragging');e.dataTransfer.effectAllowed='move';};
+window.onCatDragOver=(e)=>{e.preventDefault();e.currentTarget.classList.add('drag-over');};
+window.onCatDragLeave=(e)=>{e.currentTarget.classList.remove('drag-over');};
+window.onCatDragEnd=(e)=>{e.currentTarget.classList.remove('dragging');document.querySelectorAll('.cfg-cat-item').forEach(el=>el.classList.remove('drag-over'));};
+window.onCatDrop=async(e,targetIdx,tipo)=>{
+  e.preventDefault();e.currentTarget.classList.remove('drag-over');
+  if(_dragCatIdx===null||_dragCatIdx===targetIdx||_dragCatTipo!==tipo)return;
+  const arr=cats[tipo];
+  const [moved]=arr.splice(_dragCatIdx,1);
+  arr.splice(targetIdx,0,moved);
+  _dragCatIdx=null;
+  await saveCategories();
+  renderCfgCats(tipo);
+};
+
+// ── DRAG & DROP — Subcategories ───────────────────────────
+let _dragSubIdx=null, _dragSubCatId=null, _dragSubTipo=null;
+window.onSubDragStart=(e,si,catId,tipo)=>{_dragSubIdx=si;_dragSubCatId=catId;_dragSubTipo=tipo;e.currentTarget.classList.add('dragging');e.dataTransfer.effectAllowed='move';};
+window.onSubDragOver=(e)=>{e.preventDefault();e.currentTarget.classList.add('drag-over');};
+window.onSubDragLeave=(e)=>{e.currentTarget.classList.remove('drag-over');};
+window.onSubDragEnd=(e)=>{e.currentTarget.classList.remove('dragging');document.querySelectorAll('.cfg-sub-item').forEach(el=>el.classList.remove('drag-over'));};
+window.onSubDrop=async(e,targetIdx,catId,tipo)=>{
+  e.preventDefault();e.currentTarget.classList.remove('drag-over');
+  if(_dragSubIdx===null||_dragSubIdx===targetIdx||_dragSubCatId!==catId)return;
+  const cat=cats[tipo].find(c=>c.id===catId);
+  if(!cat)return;
+  const [moved]=cat.subcats.splice(_dragSubIdx,1);
+  cat.subcats.splice(targetIdx,0,moved);
+  _dragSubIdx=null;
+  await saveCategories();
+  renderCfgCats(tipo);
+};
+
+// ── DRAG & DROP — Investment Types ────────────────────────
+let _dragInvTipoIdx=null;
+window.onInvTipoDragStart=(e,i)=>{_dragInvTipoIdx=i;e.currentTarget.classList.add('dragging');e.dataTransfer.effectAllowed='move';};
+window.onInvTipoDragOver=(e)=>{e.preventDefault();e.currentTarget.classList.add('drag-over');};
+window.onInvTipoDragLeave=(e)=>{e.currentTarget.classList.remove('drag-over');};
+window.onInvTipoDragEnd=(e)=>{e.currentTarget.classList.remove('dragging');document.querySelectorAll('.cfg-invtipo-item').forEach(el=>el.classList.remove('drag-over'));};
+window.onInvTipoDrop=async(e,targetIdx)=>{
+  e.preventDefault();e.currentTarget.classList.remove('drag-over');
+  if(_dragInvTipoIdx===null||_dragInvTipoIdx===targetIdx)return;
+  const [moved]=invTipos.splice(_dragInvTipoIdx,1);
+  invTipos.splice(targetIdx,0,moved);
+  _dragInvTipoIdx=null;
+  await saveInvTipos();
+  renderCfgInv();
+};
 </script>
 
 <div id="ai-wrapper" style="display:none">
