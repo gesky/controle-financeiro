@@ -983,10 +983,14 @@ window.saveParc=async()=>{
   if(!numParcelas||numParcelas<1){alert('Informe o número de parcelas.');return;}
   if(!inicio){alert('Informe o mês da 1ª parcela.');return;}
   const data={descricao,valorTotal,numParcelas,inicio,catId,parcPagas,createdAt:new Date().toISOString()};
-  if(editingParcId)await updateDoc(doc(db,'parcelamentos',editingParcId),data);
-  else await addDoc(collection(db,'parcelamentos'),data);
+  if(editingParcId){
+    const idx=parcelamentos.findIndex(p=>p.id===editingParcId);
+    if(idx>=0) parcelamentos[idx]={...parcelamentos[idx],...data};
+    await updateDoc(doc(db,'parcelamentos',editingParcId),data);
+  } else { await addDoc(collection(db,'parcelamentos'),data); }
   editingParcId=null;
   closeModal('modal-parc');
+  if(activePage()==='parcelamentos') renderParcelamentos();
 };
 
 window.pagarParcela=async(id,pagas,total)=>{
@@ -1136,9 +1140,13 @@ window.saveGoal=async()=>{
   if(!name){alert('Informe o nome da meta.');return;}
   if(!target||target<=0){alert('Informe um valor alvo maior que zero.');return;}
   const data={name,target,current,notes};
-  if(editingGoalId)await updateDoc(doc(db,'goals',editingGoalId),data);
-  else await addDoc(collection(db,'goals'),data);
+  if(editingGoalId){
+    const idx=goals.findIndex(g=>g.id===editingGoalId);
+    if(idx>=0) goals[idx]={...goals[idx],...data};
+    await updateDoc(doc(db,'goals',editingGoalId),data);
+  } else { await addDoc(collection(db,'goals'),data); }
   closeModal('modal-goal');
+  if(activePage()==='metas') renderGoals();
 };
 window.deleteGoal=async id=>{if(!confirm('Excluir?'))return;await deleteDoc(doc(db,'goals',id));};
 window.updateGoalProgress=(id,cur)=>{
@@ -1291,10 +1299,17 @@ window.saveEntry=async()=>{
   if(!date){alert('Selecione uma data.');return;}
   if(!val&&!prev){alert('Informe ao menos um valor.');return;}
   const data={tipo,catId,subcategoria:subcat,descricao:desc,date,valor:val,previsto:prev,por:currentUser.displayName||currentUser.email};
-  if(editingEntryId)await updateDoc(doc(db,'entries',editingEntryId),data);
-  else await addDoc(collection(db,'entries'),data);
+  if(editingEntryId){
+    // update locally immediately so UI reflects change without waiting for snapshot
+    const idx=entries.findIndex(e=>e.id===editingEntryId);
+    if(idx>=0) entries[idx]={...entries[idx],...data};
+    await updateDoc(doc(db,'entries',editingEntryId),data);
+  } else {
+    await addDoc(collection(db,'entries'),data);
+  }
   editingEntryId=null;
   closeModal('modal-entry');
+  refreshActivePage();
 };
 window.deleteEntry=async id=>{if(!confirm('Excluir este lançamento?'))return;await deleteDoc(doc(db,'entries',id));};
 
@@ -1395,9 +1410,13 @@ window.saveInv=async()=>{
   const notas=document.getElementById('mi-notes').value.trim();
   if(!nome){alert('Informe o nome.');return;}
   const data={nome,tipo,valorInicial,taxa,startDate,notas,criadoEm:new Date().toISOString()};
-  if(editingInvId)await updateDoc(doc(db,'investments',editingInvId),data);
-  else await addDoc(collection(db,'investments'),data);
+  if(editingInvId){
+    const idx=investments.findIndex(i=>i.id===editingInvId);
+    if(idx>=0) investments[idx]={...investments[idx],...data};
+    await updateDoc(doc(db,'investments',editingInvId),data);
+  } else { await addDoc(collection(db,'investments'),data); }
   closeModal('modal-inv');
+  if(activePage()==='investimentos') renderInvestimentos();
 };
 window.deleteInv=async id=>{
   if(!confirm('Excluir este investimento e todas as movimentações?'))return;
