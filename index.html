@@ -19,6 +19,17 @@
   --radius:6px;--radius-lg:10px;
   --shadow-md:0 4px 16px rgba(0,0,0,0.08);
 }
+[data-theme="dark"]{
+  --bg:#191919;--bg2:#222222;--bg3:#2a2a2a;--bg-hover:#2e2e2e;
+  --text:#e8e8e6;--text2:#9b9b97;--text3:#5a5a57;
+  --border:#2e2e2e;--border2:#3a3a3a;
+  --accent:#4a9eff;--accent-bg:#1a2d45;
+  --green:#2db87a;--green-bg:#0f2a1e;
+  --red:#f06a65;--red-bg:#2a1414;
+  --amber:#f0a050;--amber-bg:#2a1e0a;
+  --purple:#b085d0;--purple-bg:#1e1428;
+  --shadow-md:0 4px 16px rgba(0,0,0,0.4);
+}
 body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
 
 /* AUTH */
@@ -246,15 +257,66 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 
 /* RESPONSIVE */
 @media(max-width:768px){
-  .sidebar{width:100%;height:auto;position:relative;border-right:none;border-bottom:1px solid var(--border)}
-  .sidebar-month{border-bottom:1px solid var(--border);border-left:none;padding:8px 12px}
-  .main{margin-left:0}
-  .page{padding:20px 16px}
-  .metrics-grid{grid-template-columns:1fr 1fr}
+  /* Sidebar — bottom navigation on mobile */
+  .sidebar{width:100%;height:auto;position:fixed;bottom:0;left:0;top:auto;border-right:none;border-top:1px solid var(--border);border-bottom:none;flex-direction:row;overflow-x:auto;overflow-y:hidden;z-index:200;padding:0;background:var(--bg2)}
+  .sidebar-header{display:none}
+  .sidebar-user{display:none}
+  .sidebar-month{display:none}
+  .sidebar-section{display:none}
+  .nav-item{flex-direction:column;gap:2px;padding:8px 10px;margin:0;min-width:60px;font-size:10px;border-radius:0;align-items:center}
+  .nav-item-icon{width:22px;height:22px}
+  .main{margin-left:0;padding-bottom:70px}
+  .page{padding:16px 14px}
+  .metrics-grid{grid-template-columns:1fr 1fr;gap:8px}
   .form-row{grid-template-columns:1fr}
   .cat-amounts{display:none}
+  .page-header{flex-direction:column;gap:8px;margin-bottom:16px}
+  .page-title{font-size:22px}
+  /* Stack dashboard charts */
+  #page-dashboard .card + .card{margin-top:0}
+  /* AI panel full width on mobile */
+  .ai-panel{width:calc(100vw - 24px);right:12px;bottom:76px;height:460px}
+  .ai-btn{bottom:76px;right:12px}
+  /* Fix modal on mobile */
+  .modal{max-height:85vh;margin:0 8px;width:calc(100% - 16px)}
+  /* Parcelamento card */
+  .parc-body{grid-template-columns:1fr 1fr}
+  /* Cards grid */
+  #cartoes-grid{grid-template-columns:1fr}
+  /* Inv grid */
+  .inv-grid{grid-template-columns:1fr}
+  .goals-grid{grid-template-columns:1fr}
+  /* Dash grid stacked */
+  #page-dashboard > div[style*="grid-template-columns:1fr 1fr"]{grid-template-columns:1fr !important}
 }
-@media(max-width:480px){.metric-value{font-size:17px}.page-title{font-size:20px}}
+@media(max-width:480px){
+  .metric-value{font-size:15px}
+  .page-title{font-size:18px}
+  .metrics-grid{grid-template-columns:1fr 1fr;gap:6px}
+  .metric-card{padding:12px 10px}
+  .metric-label{font-size:10px}
+  .nav-item{min-width:52px;padding:6px 6px;font-size:9px}
+  .page{padding:12px 10px}
+  .cat-header{padding:10px 12px}
+  .cat-name{font-size:13px}
+}
+/* Mobile nav active indicator */
+@media(max-width:768px){
+  .nav-item.active{background:transparent;color:var(--accent);font-weight:600}
+  .nav-item.active .nav-item-icon svg{stroke:var(--accent)}
+  .nav-item.active .nav-item-icon{color:var(--accent)}
+}
+
+/* ── DARK MODE TOGGLE ────────────────────────────────── */
+.theme-toggle{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:16px;background:var(--bg)}
+.theme-toggle-label{font-size:14px;font-weight:500;display:flex;align-items:center;gap:10px}
+.theme-toggle-icon{font-size:18px}
+.toggle-switch{position:relative;width:44px;height:24px;flex-shrink:0}
+.toggle-switch input{opacity:0;width:0;height:0;position:absolute}
+.toggle-slider{position:absolute;inset:0;background:var(--border2);border-radius:24px;cursor:pointer;transition:background .2s}
+.toggle-slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:white;border-radius:50%;transition:transform .2s}
+.toggle-switch input:checked + .toggle-slider{background:var(--accent)}
+.toggle-switch input:checked + .toggle-slider:before{transform:translateX(20px)}
 .empty{text-align:center;padding:32px;color:var(--text2);font-size:14px}
 .divider{height:1px;background:var(--border);margin:16px 0}
 /* ── CARTÕES ──────────────────────────────────────────── */
@@ -395,11 +457,11 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
     <div id="page-dashboard" class="page active">
       <div class="page-header"><div><div class="page-title" id="dash-title"></div><div class="page-sub" id="dash-sub">Visão geral</div></div></div>
       <div class="metrics-grid" id="dash-metrics"></div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:16px">
         <div class="card"><div class="card-header"><span class="card-title">Receitas vs Despesas — <span id="dash-chart-month"></span></span></div><div class="card-body"><div class="chart-wrap"><canvas id="barChartMonth"></canvas></div></div></div>
         <div class="card"><div class="card-header"><span class="card-title">Receitas vs Despesas — últimos 6 meses</span></div><div class="card-body"><div class="chart-wrap"><canvas id="barChart"></canvas></div></div></div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:16px">
         <div class="card"><div class="card-header"><span class="card-title">Despesas por categoria</span></div><div class="card-body"><div class="chart-wrap"><canvas id="pieChart"></canvas></div></div></div>
         <div class="card"><div class="card-header"><span class="card-title">Últimos lançamentos</span></div><div class="card-body" id="dash-recent"></div></div>
       </div>
@@ -462,7 +524,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
         <div><div class="page-title">Cartões</div><div class="page-sub">Gerencie seus cartões de crédito e débito</div></div>
         <button class="btn-add" onclick="openCartaoModal()">+ Novo cartão</button>
       </div>
-      <div id="cartoes-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px"></div>
+      <div id="cartoes-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px"></div>
     </div>
 
     <!-- METAS -->
@@ -745,9 +807,12 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
           </div>
         </div>
       </div>
-            <div class="btn-row">
+            <div class="btn-row" id="ct-btn-row">
         <button class="btn-cancel" onclick="closeModal('modal-cartao')">Cancelar</button>
         <button class="btn-save" onclick="saveCartao()">Salvar cartão</button>
+      </div>
+      <div id="ct-delete-row" style="display:none;margin-top:8px">
+        <button class="btn-danger" style="width:100%" onclick="deleteCartaoFromModal()">× Excluir este cartão</button>
       </div>
     </div>
   </div>
@@ -846,6 +911,13 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 // Bridge: ensure auth functions work before module loads
 function doAuth(){ if(window._doAuth) window._doAuth(); }
 function switchTab(t){}
+</script>
+<script>
+// Dark mode init — runs before render to prevent flash
+(function(){
+  const theme = localStorage.getItem('finn-theme') || 'light';
+  if(theme === 'dark') document.documentElement.setAttribute('data-theme','dark');
+})();
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script type="module">
@@ -1322,7 +1394,7 @@ function renderCartoes(){
           <div>${getBandeiraHTML(c.bandeira)}</div>
         </div>
         <div>
-          <svg viewBox="0 0 38 28" width="36" height="26" style="opacity:.75;margin-bottom:10px">
+          <svg viewBox="0 0 38 28" width="40" height="30" style="opacity:.8;margin-bottom:12px">
             <rect x="0" y="0" width="14" height="20" rx="2" fill="rgba(255,255,255,0.5)"/>
             <rect x="11" y="0" width="14" height="20" rx="2" fill="rgba(255,255,255,0.3)"/>
           </svg>
@@ -1331,13 +1403,12 @@ function renderCartoes(){
         <div style="display:flex;justify-content:space-between;align-items:flex-end">
           <div>
             <div class="cartao-nome-titular">${c.nome||'—'}</div>
-            ${c.venc?`<div class="cartao-venc-label" style="font-size:10px;color:rgba(255,255,255,0.6);margin-top:2px">VALIDADE</div><div class="cartao-venc-val">${c.venc}</div>`:''}
-          </div>
-          <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
-            <button class="btn-sm" style="background:rgba(255,255,255,0.2);border-color:rgba(255,255,255,0.25);color:white;font-size:11px" onclick="editCartao('${c.id}')">✎</button>
-            <button class="btn-sm" style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2);color:rgba(255,255,255,0.8);font-size:11px" onclick="deleteCartao('${c.id}')">×</button>
+            ${c.venc?`<div style="font-size:10px;color:rgba(255,255,255,0.55);margin-top:3px;letter-spacing:.5px">VALIDADE</div><div class="cartao-venc-val">${c.venc}</div>`:''}
           </div>
         </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn-outline" style="flex:1;font-size:12px" onclick="editCartao('${c.id}')">✎ Editar</button>
       </div>
     </div>`;
   }).join('');
@@ -1394,6 +1465,7 @@ window.openCartaoModal=()=>{
   document.querySelectorAll('.ct-cor-opt').forEach((o,i)=>{o.style.border=i===0?'3px solid white':'2px solid transparent';o.style.outline=i===0?'2px solid #1a1a2e':'none';});
   updateCartaoPreview();
   ['ct-nome','ct-banco','ct-numero','ct-venc','ct-bandeira'].forEach(id=>{const el=document.getElementById(id);if(el)el.oninput=updateCartaoPreview;if(el&&el.tagName==='SELECT')el.onchange=updateCartaoPreview;});
+  const delRow=document.getElementById('ct-delete-row');if(delRow)delRow.style.display='block';
   openModal('modal-cartao');
 };
 
@@ -1410,6 +1482,7 @@ window.editCartao=id=>{
   document.querySelectorAll('.ct-cor-opt').forEach(o=>{o.style.border='2px solid transparent';o.style.outline='none';if(o.dataset.cor===_cartaoCorSelecionada){o.style.border='3px solid white';o.style.outline='2px solid '+_cartaoCorSelecionada;}});
   updateCartaoPreview();
   ['ct-nome','ct-banco','ct-numero','ct-venc','ct-bandeira'].forEach(id=>{const el=document.getElementById(id);if(el)el.oninput=updateCartaoPreview;if(el&&el.tagName==='SELECT')el.onchange=updateCartaoPreview;});
+  const delRow=document.getElementById('ct-delete-row');if(delRow)delRow.style.display='block';
   openModal('modal-cartao');
 };
 
@@ -1429,6 +1502,12 @@ window.saveCartao=async()=>{
 window.deleteCartao=async id=>{
   if(!confirm('Excluir este cartão?'))return;
   await deleteDoc(doc(db,'cartoes',id));
+};
+window.deleteCartaoFromModal=async()=>{
+  if(!_editingCartaoId){alert('Nenhum cartão selecionado.');return;}
+  if(!confirm('Excluir este cartão permanentemente?'))return;
+  await deleteDoc(doc(db,'cartoes',_editingCartaoId));
+  closeModal('modal-cartao');
 };
 function renderGoals(){
   const c=document.getElementById('goals-container');
@@ -2187,8 +2266,16 @@ window.removeUser=async(uid,name)=>{
 
 function renderCfgDados(){
   const keyStatus = ANTHROPIC_KEY ? '✓ Chave configurada' : '✗ Não configurada';
+  const isDark = document.documentElement.getAttribute('data-theme')==='dark';
   const keyColor = ANTHROPIC_KEY ? 'var(--green)' : 'var(--red)';
   document.getElementById('cfg-dados').innerHTML=`
+    <div class="cfg-section">
+      <div class="cfg-section-title">Aparência</div>
+      <div class="theme-toggle">
+        <div class="theme-toggle-label"><span class="theme-toggle-icon">${isDark?'🌙':'☀️'}</span>${isDark?'Modo escuro ativado':'Modo claro ativado'}</div>
+        <label class="toggle-switch"><input type="checkbox" id="theme-toggle-input" ${isDark?'checked':''} onchange="toggleDarkMode(this.checked)"><span class="toggle-slider"></span></label>
+      </div>
+    </div>
     <div class="cfg-section">
       <div class="cfg-section-title">Chave da API — Finn AI</div>
       <p style="font-size:13px;color:var(--text2);margin-bottom:12px">A chave é salva no Firebase e carregada automaticamente em todos os dispositivos. Apenas administradores podem alterar.</p>
@@ -2291,6 +2378,18 @@ window.saveApiKey=async()=>{
     alert('Chave salva com sucesso!');
     renderCfgDados();
   }catch(e){alert('Erro ao salvar: '+e.message);}
+};
+
+window.toggleDarkMode=(dark)=>{
+  if(dark){
+    document.documentElement.setAttribute('data-theme','dark');
+    localStorage.setItem('finn-theme','dark');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('finn-theme','light');
+  }
+  // Re-render cfg dados to update icon/label
+  renderCfgDados();
 };
 
 window.zerarBanco=async()=>{
