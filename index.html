@@ -11,24 +11,26 @@
   --bg:#ffffff;--bg2:#f7f6f3;--bg3:#efede8;--bg-hover:#f1f0ec;
   --text:#37352f;--text2:#787774;--text3:#b8b5ad;
   --border:#e9e8e4;--border2:#d3d1cb;
-  --accent:#2383e2;--accent-bg:#e8f1fb;
+  --accent:#3437ff;--accent-bg:#eeeeff;
   --green:#0f9d58;--green-bg:#e6f4ed;
   --red:#d44c47;--red-bg:#fdecea;
   --amber:#d9730d;--amber-bg:#fbecdd;
   --purple:#9065b0;--purple-bg:#f4eef8;
   --radius:6px;--radius-lg:10px;
   --shadow-md:0 4px 16px rgba(0,0,0,0.08);
+  --sidebar-bg:#000032;--sidebar-text:rgba(255,255,255,0.85);--sidebar-text2:rgba(255,255,255,0.5);--sidebar-border:rgba(255,255,255,0.1);--sidebar-active:rgba(255,255,255,0.12);--sidebar-hover:rgba(255,255,255,0.07);
 }
 [data-theme="dark"]{
-  --bg:#191919;--bg2:#222222;--bg3:#2a2a2a;--bg-hover:#2e2e2e;
-  --text:#e8e8e6;--text2:#9b9b97;--text3:#5a5a57;
-  --border:#2e2e2e;--border2:#3a3a3a;
-  --accent:#4a9eff;--accent-bg:#1a2d45;
-  --green:#2db87a;--green-bg:#0f2a1e;
-  --red:#f06a65;--red-bg:#2a1414;
-  --amber:#f0a050;--amber-bg:#2a1e0a;
-  --purple:#b085d0;--purple-bg:#1e1428;
-  --shadow-md:0 4px 16px rgba(0,0,0,0.4);
+  --bg:#000032;--bg2:#00003e;--bg3:#000050;--bg-hover:#00003a;
+  --text:#e8e8f8;--text2:#8888aa;--text3:#44446a;
+  --border:#0a0a50;--border2:#14145a;
+  --accent:#6b6eff;--accent-bg:#0a0a40;
+  --green:#2db87a;--green-bg:#0a1e14;
+  --red:#f06a65;--red-bg:#200a0a;
+  --amber:#f0a050;--amber-bg:#1e1400;
+  --purple:#b085d0;--purple-bg:#140a28;
+  --shadow-md:0 4px 24px rgba(0,0,50,0.6);
+  --sidebar-bg:#000000;--sidebar-text:rgba(255,255,255,0.85);--sidebar-text2:rgba(255,255,255,0.4);--sidebar-border:rgba(255,255,255,0.07);--sidebar-active:rgba(255,255,255,0.1);--sidebar-hover:rgba(255,255,255,0.05);
 }
 body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
 
@@ -54,29 +56,29 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 
 /* LAYOUT */
 #app-screen{display:none;min-height:100vh}
-.sidebar{position:fixed;top:0;left:0;width:240px;height:100vh;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:100;overflow-y:auto}
+.sidebar{position:fixed;top:0;left:0;width:240px;height:100vh;background:var(--sidebar-bg);border-right:1px solid var(--sidebar-border);display:flex;flex-direction:column;z-index:100;overflow-y:auto}
 .sidebar-header{padding:16px 14px 6px}
 .sidebar-logo{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:var(--radius)}
 .sidebar-logo-icon{width:28px;height:28px;background:var(--text);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .sidebar-logo-icon svg{width:16px;height:16px;fill:white}
 .sidebar-logo-text{font-size:15px;font-weight:600;letter-spacing:-0.3px}
-.sidebar-user{padding:10px 14px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px;margin-top:auto}
-.sidebar-user-avatar{width:32px;height:32px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--text2);flex-shrink:0;text-transform:uppercase}
+.sidebar-user{padding:10px 14px;border-top:1px solid var(--sidebar-border);display:flex;align-items:center;gap:10px;margin-top:auto}
+.sidebar-user-avatar{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:white;flex-shrink:0;text-transform:uppercase}
 .sidebar-user-info{flex:1;min-width:0}
-.sidebar-user-name{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sidebar-user-role{font-size:11px;color:var(--text3);margin-top:1px}
-.sidebar-user-role.is-admin{color:var(--amber)}
+.sidebar-user-name{font-size:13px;font-weight:500;color:rgba(255,255,255,0.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar-user-role{font-size:11px;color:rgba(255,255,255,0.45);margin-top:1px}
+.sidebar-user-role.is-admin{color:#ffd080}
 .btn-logout{background:none;border:1px solid var(--border);border-radius:5px;width:26px;height:26px;cursor:pointer;color:var(--text2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .1s}
 .btn-logout:hover{background:var(--red-bg);border-color:var(--red);color:var(--red)}
 .sidebar-section{padding:4px 10px;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:6px}
 .nav-item{display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:var(--radius);margin:1px 6px;cursor:pointer;color:var(--text2);font-size:14px;transition:all .1s;user-select:none}
-.nav-item:hover{background:var(--bg-hover);color:var(--text)}
-.nav-item.active{background:var(--bg3);color:var(--text);font-weight:500}
+.nav-item:hover{background:var(--sidebar-hover);color:var(--sidebar-text)}
+.nav-item.active{background:var(--sidebar-active);color:var(--sidebar-text);font-weight:500}
 .nav-item-icon{width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.sidebar-month{padding:8px 12px;border-bottom:1px solid var(--border)}
+.sidebar-month{padding:8px 12px;border-bottom:1px solid var(--sidebar-border)}
 .month-nav{display:flex;align-items:center;gap:6px}
-.month-btn{background:none;border:1px solid var(--border);border-radius:5px;width:26px;height:26px;cursor:pointer;color:var(--text2);font-size:14px;display:flex;align-items:center;justify-content:center}
-.month-btn:hover{background:var(--bg3)}
+.month-btn{background:none;border:1px solid var(--sidebar-border);border-radius:5px;width:26px;height:26px;cursor:pointer;color:rgba(255,255,255,0.6);font-size:14px;display:flex;align-items:center;justify-content:center}
+.month-btn:hover{background:var(--sidebar-hover)}
 .month-label{flex:1;text-align:center;font-size:13px;font-weight:500}
 
 .main{margin-left:240px;min-height:100vh}
@@ -260,7 +262,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 /* RESPONSIVE */
 @media(max-width:768px){
   /* Sidebar — bottom navigation on mobile */
-  .sidebar{width:100%;height:auto;position:fixed;bottom:0;left:0;top:auto;border-right:none;border-top:1px solid var(--border);border-bottom:none;flex-direction:row;overflow-x:auto;overflow-y:hidden;z-index:200;padding:0;background:var(--bg2)}
+  .sidebar{width:100%;height:auto;position:fixed;bottom:0;left:0;top:auto;border-right:none;border-top:1px solid var(--sidebar-border);border-bottom:none;flex-direction:row;overflow-x:auto;overflow-y:hidden;z-index:200;padding:0;background:var(--sidebar-bg)}
   .sidebar-header{display:none}
   .sidebar-user{display:none}
   .sidebar-month{display:none}
@@ -304,9 +306,10 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 }
 /* Mobile nav active indicator */
 @media(max-width:768px){
-  .nav-item.active{background:transparent;color:var(--accent);font-weight:600}
-  .nav-item.active .nav-item-icon svg{stroke:var(--accent)}
-  .nav-item.active .nav-item-icon{color:var(--accent)}
+  .nav-item.active{background:transparent;color:white;font-weight:600}
+  .nav-item.active .nav-item-icon svg{stroke:white}
+  .nav-item.active .nav-item-icon{color:white}
+  .nav-item{color:rgba(255,255,255,0.45)}
 }
 
 /* ── DARK MODE TOGGLE ────────────────────────────────── */
@@ -475,9 +478,9 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
   <div class="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-logo" style="padding:6px 8px">
-        <svg viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg" width="90" style="height:auto;display:block" fill="currentColor">
+        <svg viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg" width="90" style="height:auto;display:block" fill="white">
   <g><g><polygon points="511.4 327.5 205 365 205 282.4 511.4 282.4 511.4 327.5"/><polygon points="205 752.5 511.4 715 511.4 797.6 205 797.6 205 752.5"/></g><g><polygon points="301 720.3 236.7 727.8 236.3 380.8 300.6 373.3 301 720.3"/><polygon points="390.6 709.8 326.2 717.3 325.8 370.3 390.2 362.8 390.6 709.8"/><polygon points="480.1 699.3 415.8 706.9 415.4 359.8 479.8 352.3 480.1 699.3"/></g></g>
-  <g><path d="M605.3,750.5v-415.4h55.8v415.4h-55.8ZM649.7,385.2v-50.1h187.8v50.1h-187.8ZM649.7,565.6v-50.1l178.1-.6v50.1l-178.1.6Z"/><path d="M879.6,489.9v-43.2h101.3v43.2h-101.3ZM941.6,397.7c-12.1,0-21.2-3.2-27-9.7-5.9-6.4-8.8-14.6-8.8-24.5s2.9-18,8.8-24.5c5.9-6.4,14.9-9.7,27-9.7s21.1,3.2,27,9.7c5.9,6.5,8.8,14.6,8.8,24.5s-2.9,18-8.8,24.5c-5.9,6.5-14.9,9.7-27,9.7ZM926.3,750.5v-303.9h54.6v303.9h-54.6Z"/><path d="M1086.7,750.5v-303.9h43.2v130.3h-6.8c0-30,4.1-55.3,12.2-76,8.2-20.7,20.6-36.4,37.3-47.2,16.7-10.8,37.7-16.2,63.2-16.2h2.3c38.3,0,66.7,12,85.1,35.9,18.4,23.9,27.6,58.4,27.6,103.6v173.6h-54.6v-184.9c0-23.5-6.6-42.4-19.9-56.6-13.3-14.2-31.5-21.3-54.6-21.3s-43.2,7.4-58,22.2c-14.8,14.8-22.2,34.5-22.2,59.2v181.5h-54.6Z"/><path d="M1450.9,750.5v-303.9h43.2v130.3h-6.8c0-30,4.1-55.3,12.2-76,8.2-20.7,20.6-36.4,37.3-47.2,16.7-10.8,37.7-16.2,63.2-16.2h2.3c38.3,0,66.7,12,85.1,35.9,18.4,23.9,27.6,58.4,27.6,103.6v173.6h-54.6v-184.9c0-23.5-6.6-42.4-19.9-56.6-13.3-14.2-31.5-21.3-54.6-21.3s-43.2,7.4-58,22.2c-14.8,14.8-22.2,34.5-22.2,59.2v181.5h-54.6Z"/></g>
+  <g><path d="M605.3,750.5v-415.4h55.8v415.4h-55.8ZM649.7,385.2v-50.1h187.8v50.1h-187.8ZM649.7,565.6v-50.1l178.1-.6v50.1l-178.1.6Z"/><path d="M879.6,489.9v-43.2h101.3v43.2h-101.3ZM941.6,397.7c-12.1,0-21.2-3.2-27-9.7-5.9-6.4-8.8-14.6-8.8-24.5s2.9-18,8.8-24.5c5.9-6.4,14.9-9.7,27-9.7s21.1,3.2,27,9.7,8.8,14.6,8.8,24.5-2.9,18-8.8,24.5c-5.9,6.5-14.9,9.7-27,9.7ZM926.3,750.5v-303.9h54.6v303.9h-54.6Z"/><path d="M1086.7,750.5v-303.9h43.2v130.3h-6.8c0-30,4.1-55.3,12.2-76,8.2-20.7,20.6-36.4,37.3-47.2,16.7-10.8,37.7-16.2,63.2-16.2h2.3c38.3,0,66.7,12,85.1,35.9,18.4,23.9,27.6,58.4,27.6,103.6v173.6h-54.6v-184.9c0-23.5-6.6-42.4-19.9-56.6-13.3-14.2-31.5-21.3-54.6-21.3s-43.2,7.4-58,22.2c-14.8,14.8-22.2,34.5-22.2,59.2v181.5h-54.6Z"/><path d="M1450.9,750.5v-303.9h43.2v130.3h-6.8c0-30,4.1-55.3,12.2-76,8.2-20.7,20.6-36.4,37.3-47.2,16.7-10.8,37.7-16.2,63.2-16.2h2.3c38.3,0,66.7,12,85.1,35.9,18.4,23.9,27.6,58.4,27.6,103.6v173.6h-54.6v-184.9c0-23.5-6.6-42.4-19.9-56.6-13.3-14.2-31.5-21.3-54.6-21.3s-43.2,7.4-58,22.2c-14.8,14.8-22.2,34.5-22.2,59.2v181.5h-54.6Z"/></g>
 </svg>
       </div>
       <div class="sidebar-month">
