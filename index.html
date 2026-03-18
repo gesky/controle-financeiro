@@ -452,6 +452,25 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 
 [data-theme="dark"] .ai-btn{background:#3437ff !important;box-shadow:0 4px 20px rgba(52,55,255,0.4) !important}
 [data-theme="dark"] .ai-btn.open{background:#3437ff !important;border-color:rgba(255,255,255,0.2) !important}
+
+/* Force sidebar text/icons white always */
+.sidebar .nav-item,
+.sidebar .nav-item *{color:rgba(255,255,255,0.75) !important}
+.sidebar .nav-item:hover,
+.sidebar .nav-item:hover *{color:white !important}
+.sidebar .nav-item.active,
+.sidebar .nav-item.active *{color:white !important}
+.sidebar .nav-item-icon svg{stroke:rgba(255,255,255,0.75) !important;fill:rgba(255,255,255,0.75) !important}
+.sidebar .nav-item:hover .nav-item-icon svg{stroke:white !important;fill:white !important}
+.sidebar .nav-item.active .nav-item-icon svg{stroke:white !important;fill:white !important}
+.sidebar .month-label{color:white !important}
+.sidebar .month-btn{color:white !important;border-color:rgba(255,255,255,0.25) !important}
+.sidebar .sidebar-section{color:rgba(255,255,255,0.5) !important}
+.sidebar .sidebar-user-name{color:white !important}
+.sidebar .sidebar-user-role{color:rgba(255,255,255,0.6) !important}
+.sidebar .sidebar-user-role.is-admin{color:#ffd080 !important}
+.sidebar .logout-btn,
+.sidebar .logout-btn svg{color:rgba(255,255,255,0.8) !important;stroke:rgba(255,255,255,0.8) !important}
 </style>
 </head>
 <body>
