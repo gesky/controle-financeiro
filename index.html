@@ -1116,6 +1116,47 @@ function calcInvSaldoNow(inv){
 }
 
 // ── DASHBOARD ─────────────────────────────────────────────
+
+function renderReceitas(){ renderCatPage('receita','rec-metrics','rec-cats'); }
+function renderDespesas(){ renderCatPage('despesa','desp-metrics','desp-cats'); }
+
+function renderGoals(){
+  const c=document.getElementById('goals-container');
+  if(!c) return;
+  if(!goals.length){c.innerHTML='<div class="empty">Nenhuma meta cadastrada.</div>';return;}
+  c.innerHTML=goals.map(g=>{
+    const pct=g.target>0?Math.min(100,Math.round((g.current/g.target)*100)):0;
+    const col=pct>=100?'var(--green)':pct>=60?'var(--accent)':'var(--amber)';
+    return`<div class="goal-card"><div style="display:flex;justify-content:space-between"><div class="goal-name">${g.name}</div><button class="btn-danger-ghost" onclick="deleteGoal('${g.id}')">×</button></div><div class="goal-sub">${fmt(g.current)} de ${fmt(g.target)}${g.notes?' · '+g.notes:''}</div><div class="goal-pct" style="color:${col}">${pct}%</div><div class="pbar"><div class="pbar-fill" style="width:${pct}%;background:${col}"></div></div><button class="btn-sm" onclick="updateGoalProgress('${g.id}',${g.current},${g.target})">Atualizar valor</button></div>`;
+  }).join('');
+}
+
+window.openGoalModal=()=>{
+  editingGoalId=null;
+  ['g-name','g-notes'].forEach(id=>document.getElementById(id).value='');
+  ['g-target','g-current'].forEach(id=>document.getElementById(id).value='');
+  openModal('modal-goal');
+};
+window.saveGoal=async()=>{
+  const name=document.getElementById('g-name').value.trim();
+  const target=parseFloat(document.getElementById('g-target').value)||0;
+  const current=parseFloat(document.getElementById('g-current').value)||0;
+  const notes=document.getElementById('g-notes').value.trim();
+  if(!name){alert('Informe o nome da meta.');return;}
+  if(!target||target<=0){alert('Informe um valor alvo maior que zero.');return;}
+  const data={name,target,current,notes};
+  if(editingGoalId)await updateDoc(doc(db,'goals',editingGoalId),data);
+  else await addDoc(collection(db,'goals'),data);
+  closeModal('modal-goal');
+};
+window.deleteGoal=async id=>{if(!confirm('Excluir?'))return;await deleteDoc(doc(db,'goals',id));};
+window.updateGoalProgress=(id,cur)=>{
+  const v=prompt('Valor atual (R$):',cur);
+  if(v===null)return;
+  const n=parseFloat(v.replace(',','.'));
+  if(!isNaN(n))updateDoc(doc(db,'goals',id),{current:n});
+};
+
 function renderDashboard(){
   const mx=getMonthEntries();
   const rR=sumR(mx.filter(e=>e.tipo==='receita'));
@@ -1914,3 +1955,51 @@ window.loadConversation = async id => {
 
 </script>
 
+<div id="ai-wrapper" style="display:none">
+<button class="ai-btn" id="ai-toggle-btn" onclick="toggleAI()" title="Pergunte ao Greco">
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+    <path d="M19 4C19 4 22 4 22 8V20C22 24 18 26 14 26C10 26 6 24 6 20V10C6 6 9 4 12 4C15 4 17 6 17 9V19C17 21 15.5 22 14 22C12.5 22 11 21 11 19V10" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+    <circle cx="11.5" cy="12" r="1.2" fill="currentColor"/>
+    <circle cx="16.5" cy="12" r="1.2" fill="currentColor"/>
+    <circle cx="12" cy="11.5" r="0.4" fill="white"/>
+    <circle cx="17" cy="11.5" r="0.4" fill="white"/>
+  </svg>
+</button>
+<div class="ai-panel" id="ai-panel">
+  <div class="ai-header">
+    <div class="ai-avatar">
+      <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
+        <path d="M19 4C19 4 22 4 22 8V20C22 24 18 26 14 26C10 26 6 24 6 20V10C6 6 9 4 12 4C15 4 17 6 17 9V19C17 21 15.5 22 14 22C12.5 22 11 21 11 19V10" stroke="var(--text)" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <circle cx="11.5" cy="12" r="1.2" fill="var(--text)"/>
+        <circle cx="16.5" cy="12" r="1.2" fill="var(--text)"/>
+      </svg>
+    </div>
+    <div class="ai-header-info">
+      <div class="ai-header-name">Greco AI</div>
+      <div class="ai-header-status" id="ai-status">Online</div>
+    </div>
+    <button class="ai-history-btn" onclick="openAiHistory()">Histórico</button>
+  </div>
+  <div class="ai-messages" id="ai-messages">
+    <div class="ai-msg assistant">Olá! Sou o assistente do Greco. Pergunte sobre seus lançamentos, gastos, metas ou investimentos.</div>
+  </div>
+  <div class="ai-footer">
+    <input class="ai-input" id="ai-input" placeholder="Pergunte algo..." onkeydown="aiKeydown(event)">
+    <button class="ai-send" id="ai-send-btn" onclick="sendAiMessage()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+</div>
+<div class="ai-hist-overlay" id="ai-hist-overlay" onclick="if(event.target===this)closeAiHistory()">
+  <div class="ai-hist-modal">
+    <div class="ai-hist-header">
+      <span style="font-size:15px;font-weight:600">Histórico de conversas</span>
+      <button class="modal-close" onclick="closeAiHistory()">×</button>
+    </div>
+    <div class="ai-hist-body" id="ai-hist-body"></div>
+  </div>
+</div>
+</div>
+</html>
