@@ -883,8 +883,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
                 <div id="ct-preview-bandeira"></div>
               </div>
               <div>
-                <svg viewBox="0 0 38 28" width="32" height="24" style="opacity:.75;margin-bottom:8px"><rect x="0" y="0" width="14" height="20" rx="2" fill="rgba(255,255,255,0.5)"/><rect x="11" y="0" width="14" height="20" rx="2" fill="rgba(255,255,255,0.3)"/></svg>
-                <div id="ct-preview-numero" class="cartao-numero" style="font-size:13px">•••• •••• •••• ••••</div>
+                  <div id="ct-preview-numero" class="cartao-numero" style="font-size:13px;margin-bottom:8px">•••• •••• •••• ••••</div>
               </div>
               <div style="display:flex;justify-content:space-between;align-items:flex-end">
                 <div id="ct-preview-nome" class="cartao-nome-titular" style="font-size:10px">NOME DO TITULAR</div>
@@ -915,7 +914,10 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
         <div class="fg"><label>Valor alvo (R$)</label><input type="number" id="g-target" placeholder="30000" min="0"></div>
         <div class="fg"><label>Valor atual (R$)</label><input type="number" id="g-current" placeholder="0" min="0"></div>
       </div>
-      <div class="form-row single"><div class="fg"><label>Observações</label><textarea id="g-notes" placeholder="Prazo, estratégia..."></textarea></div></div>
+      <div class="form-row">
+        <div class="fg"><label>Data de conclusão</label><input type="date" id="g-deadline"></div>
+        <div class="fg"><label>Observações</label><input id="g-notes" placeholder="Estratégia, detalhes..."></div>
+      </div>
       <div class="btn-row"><button class="btn-cancel" onclick="closeModal('modal-goal')">Cancelar</button><button class="btn-save" onclick="saveGoal()">Salvar</button></div>
     </div>
   </div>
@@ -1486,17 +1488,11 @@ function renderCartoes(){
           <div>${getBandeiraHTML(c.bandeira)}</div>
         </div>
         <div>
-          <svg viewBox="0 0 38 28" width="40" height="30" style="opacity:.8;margin-bottom:12px">
-            <rect x="0" y="0" width="14" height="20" rx="2" fill="rgba(255,255,255,0.5)"/>
-            <rect x="11" y="0" width="14" height="20" rx="2" fill="rgba(255,255,255,0.3)"/>
-          </svg>
           <div class="cartao-numero">${numDisplay}</div>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:flex-end">
-          <div>
-            <div class="cartao-nome-titular">${c.nome||'—'}</div>
-            ${c.venc?`<div style="font-size:10px;color:rgba(255,255,255,0.55);margin-top:3px;letter-spacing:.5px">VALIDADE</div><div class="cartao-venc-val">${c.venc}</div>`:''}
-          </div>
+          <div class="cartao-nome-titular">${c.nome||'—'}</div>
+          ${c.venc?`<div class="cartao-venc-val">${c.venc}</div>`:''}
         </div>
       </div>
       <div style="display:flex;gap:8px;margin-top:10px">
@@ -1608,7 +1604,8 @@ function renderGoals(){
   c.innerHTML=goals.map(g=>{
     const pct=g.target>0?Math.min(100,Math.round((g.current/g.target)*100)):0;
     const col=pct>=100?'var(--green)':pct>=60?'var(--accent)':'var(--amber)';
-    return`<div class="goal-card"><div style="display:flex;justify-content:space-between"><div class="goal-name">${g.name}</div><button class="btn-danger-ghost" onclick="deleteGoal('${g.id}')">×</button></div><div class="goal-sub">${fmt(g.current)} de ${fmt(g.target)}${g.notes?' · '+g.notes:''}</div><div class="goal-pct" style="color:${col}">${pct}%</div><div class="pbar"><div class="pbar-fill" style="width:${pct}%;background:${col}"></div></div><button class="btn-sm" onclick="updateGoalProgress('${g.id}',${g.current},${g.target})">Atualizar valor</button></div>`;
+    const deadlineStr=g.deadline?new Date(g.deadline+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'}):'';
+    return`<div class="goal-card"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div class="goal-name">${g.name}</div><button class="btn-danger-ghost" onclick="deleteGoal('${g.id}')">×</button></div><div class="goal-sub">${fmt(g.current)} de ${fmt(g.target)}${g.notes?' · '+g.notes:''}</div>${deadlineStr?`<div style="font-size:11px;color:var(--text3);margin:4px 0">🗓 Prazo: ${deadlineStr}</div>`:''}<div class="goal-pct" style="color:${col}">${pct}%</div><div class="pbar"><div class="pbar-fill" style="width:${pct}%;background:${col}"></div></div><button class="btn-sm" onclick="updateGoalProgress('${g.id}',${g.current},${g.target})">Atualizar valor</button></div>`;
   }).join('');
 }
 
@@ -1616,6 +1613,7 @@ window.openGoalModal=()=>{
   editingGoalId=null;
   ['g-name','g-notes'].forEach(id=>document.getElementById(id).value='');
   ['g-target','g-current'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('g-deadline').value='';
   openModal('modal-goal');
 };
 window.saveGoal=async()=>{
@@ -1623,9 +1621,10 @@ window.saveGoal=async()=>{
   const target=parseFloat(document.getElementById('g-target').value)||0;
   const current=parseFloat(document.getElementById('g-current').value)||0;
   const notes=document.getElementById('g-notes').value.trim();
+  const deadline=document.getElementById('g-deadline').value||'';
   if(!name){alert('Informe o nome da meta.');return;}
   if(!target||target<=0){alert('Informe um valor alvo maior que zero.');return;}
-  const data={name,target,current,notes};
+  const data={name,target,current,notes,deadline};
   if(editingGoalId){
     const idx=goals.findIndex(g=>g.id===editingGoalId);
     if(idx>=0) goals[idx]={...goals[idx],...data};
