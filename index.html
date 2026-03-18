@@ -33,21 +33,23 @@
 body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
 
 /* AUTH */
-#auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg2)}
-.auth-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:40px;width:100%;max-width:380px;box-shadow:var(--shadow-md)}
+#auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:radial-gradient(ellipse at 20% 100%, #3437ff 0%, #1a1ccc 25%, #0a0b6e 55%, #000032 100%);position:relative;overflow:hidden}
+#auth-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 90%, #3437ff55 0%, transparent 50%);pointer-events:none}
+#auth-screen::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 110%, #3437ff33 0%, transparent 60%);pointer-events:none}
+.auth-card{background:rgba(255,255,255,0.06);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:40px;width:100%;max-width:380px;box-shadow:0 8px 48px rgba(0,0,32,0.6),inset 0 1px 0 rgba(255,255,255,0.1);position:relative;z-index:1}
 .auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:28px}
-.auth-logo-icon{width:36px;height:36px;background:var(--text);border-radius:8px;display:flex;align-items:center;justify-content:center}
+.auth-logo-icon{width:36px;height:36px;background:rgba(255,255,255,0.15);border-radius:8px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.2)}
 .auth-logo-icon svg{width:20px;height:20px;fill:white}
-.auth-logo-text{font-size:18px;font-weight:600;letter-spacing:-0.3px}
+.auth-logo-text{font-size:18px;font-weight:600;letter-spacing:-0.3px;color:white}
 .auth-tabs{display:flex;margin-bottom:22px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
 .auth-tab{flex:1;padding:8px;text-align:center;font-size:13px;font-weight:500;cursor:pointer;background:transparent;border:none;color:var(--text2);font-family:'Sora',sans-serif;transition:all .15s}
 .auth-tab.active{background:var(--text);color:white}
 .field{margin-bottom:13px}
 .field label{display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.04em}
-.field input{width:100%;padding:9px 11px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;font-family:'Sora',sans-serif;color:var(--text);background:var(--bg)}
-.field input:focus{outline:none;border-color:var(--accent)}
-.btn-primary{width:100%;padding:10px;background:var(--text);color:white;border:none;border-radius:var(--radius);font-size:14px;font-weight:500;cursor:pointer;font-family:'Sora',sans-serif}
-.btn-primary:hover{opacity:.85}
+.field input{width:100%;padding:9px 11px;border:1px solid rgba(255,255,255,0.18);border-radius:var(--radius);font-size:14px;font-family:'Sora',sans-serif;color:white;background:rgba(255,255,255,0.08)}
+.field input:focus{outline:none;border-color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.12)}
+.btn-primary{width:100%;padding:10px;background:white;color:#000032;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif;transition:opacity .15s}
+.btn-primary:hover{opacity:.9}
 .auth-err{font-size:13px;color:var(--red);margin-top:10px;text-align:center;min-height:18px}
 
 /* LAYOUT */
@@ -389,7 +391,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 
 /* Dark mode specific fixes */
 [data-theme="dark"] select option{background:var(--bg);color:var(--text)}
-[data-theme="dark"] .auth-card{background:var(--bg)}
+[data-theme="dark"] .auth-card{background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.1)}
 [data-theme="dark"] .goal-card{background:var(--bg)}
 [data-theme="dark"] .inv-card{background:var(--bg)}
 [data-theme="dark"] .parc-card{background:var(--bg)}
@@ -451,7 +453,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 <!-- AUTH -->
 <div id="auth-screen">
   <div class="auth-card">
-    <div class="auth-logo" style="margin-bottom:28px;justify-content:center">
+    <div class="auth-logo" style="margin-bottom:28px;justify-content:center;color:white">
       <svg viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg" width="160" style="height:auto;display:block" fill="currentColor">
   <g><g><polygon points="511.4 327.5 205 365 205 282.4 511.4 282.4 511.4 327.5"/><polygon points="205 752.5 511.4 715 511.4 797.6 205 797.6 205 752.5"/></g><g><polygon points="301 720.3 236.7 727.8 236.3 380.8 300.6 373.3 301 720.3"/><polygon points="390.6 709.8 326.2 717.3 325.8 370.3 390.2 362.8 390.6 709.8"/><polygon points="480.1 699.3 415.8 706.9 415.4 359.8 479.8 352.3 480.1 699.3"/></g></g>
   <g><path d="M605.3,750.5v-415.4h55.8v415.4h-55.8ZM649.7,385.2v-50.1h187.8v50.1h-187.8ZM649.7,565.6v-50.1l178.1-.6v50.1l-178.1.6Z"/><path d="M879.6,489.9v-43.2h101.3v43.2h-101.3ZM941.6,397.7c-12.1,0-21.2-3.2-27-9.7-5.9-6.4-8.8-14.6-8.8-24.5s2.9-18,8.8-24.5c5.9-6.4,14.9-9.7,27-9.7s21.1,3.2,27,9.7c5.9,6.5,8.8,14.6,8.8,24.5s-2.9,18-8.8,24.5c-5.9,6.5-14.9,9.7-27,9.7ZM926.3,750.5v-303.9h54.6v303.9h-54.6Z"/><path d="M1086.7,750.5v-303.9h43.2v130.3h-6.8c0-30,4.1-55.3,12.2-76,8.2-20.7,20.6-36.4,37.3-47.2,16.7-10.8,37.7-16.2,63.2-16.2h2.3c38.3,0,66.7,12,85.1,35.9,18.4,23.9,27.6,58.4,27.6,103.6v173.6h-54.6v-184.9c0-23.5-6.6-42.4-19.9-56.6-13.3-14.2-31.5-21.3-54.6-21.3s-43.2,7.4-58,22.2c-14.8,14.8-22.2,34.5-22.2,59.2v181.5h-54.6Z"/><path d="M1450.9,750.5v-303.9h43.2v130.3h-6.8c0-30,4.1-55.3,12.2-76,8.2-20.7,20.6-36.4,37.3-47.2,16.7-10.8,37.7-16.2,63.2-16.2h2.3c38.3,0,66.7,12,85.1,35.9,18.4,23.9,27.6,58.4,27.6,103.6v173.6h-54.6v-184.9c0-23.5-6.6-42.4-19.9-56.6-13.3-14.2-31.5-21.3-54.6-21.3s-43.2,7.4-58,22.2c-14.8,14.8-22.2,34.5-22.2,59.2v181.5h-54.6Z"/></g>
@@ -463,7 +465,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
     <button class="btn-primary" id="auth-btn" onclick="doAuth()">Entrar</button>
     <div class="auth-err" id="auth-err"></div>
     <div style="text-align:center;margin-top:10px">
-      <button onclick="sendPasswordReset()" style="background:none;border:none;font-size:12px;color:var(--text3);cursor:pointer;font-family:'Sora',sans-serif;text-decoration:underline">Esqueci minha senha</button>
+      <button onclick="sendPasswordReset()" style="background:none;border:none;font-size:12px;color:rgba(255,255,255,0.5);cursor:pointer;font-family:'Sora',sans-serif;text-decoration:underline">Esqueci minha senha</button>
     </div>
   </div>
 </div>
