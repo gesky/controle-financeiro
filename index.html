@@ -117,7 +117,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 .cat-pct-label{font-size:11px;font-family:'DM Mono',monospace;min-width:34px;text-align:right}
 .cat-chevron{font-size:11px;color:var(--text3);transition:transform .2s;margin-left:2px}
 .cat-chevron.open{transform:rotate(90deg)}
-.cat-body{display:block;border-top:1px solid var(--border)}
+.cat-body{display:none;border-top:1px solid var(--border)}
 .cat-body.open{display:block}
 .cat-actions{display:flex;gap:6px;padding:8px 16px;background:var(--bg);border-bottom:1px solid var(--border)}
 
@@ -1188,6 +1188,9 @@ function renderDashboard(){
 
 // ── CAT PAGE ──────────────────────────────────────────────
 function renderCatPage(tipo,metricsId,catsId){
+  // Capture currently open categories before re-render
+  const openCats = new Set();
+  document.querySelectorAll('.cat-body.open').forEach(el=>openCats.add(el.id));
   const mx=getMonthEntries();
   const typeE=mx.filter(e=>e.tipo===tipo);
   const totalR=sumR(typeE);
@@ -1237,6 +1240,14 @@ function renderCatPage(tipo,metricsId,catsId){
     </div>`;
   });
   document.getElementById(catsId).innerHTML=html||'<div class="empty">Nenhuma categoria.</div>';
+  // Restore open state — if first render (nothing was open), open all by default
+  const allBodies = document.querySelectorAll(`#${catsId} .cat-body`);
+  allBodies.forEach(el=>{
+    const shouldOpen = openCats.size===0 || openCats.has(el.id);
+    el.classList.toggle('open', shouldOpen);
+    const chev = document.getElementById('chev-'+el.id);
+    if(chev) chev.textContent = shouldOpen ? '▼' : '▶';
+  });
 }
 
 window.toggleCatBody=id=>{const el=document.getElementById(id);const ch=document.getElementById('chev-'+id);el.classList.toggle('open');if(ch)ch.textContent=el.classList.contains('open')?'▼':'▶';};
