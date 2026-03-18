@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Finn</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCI+PHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iOS40IiByeT0iOS40IiBmaWxsPSIjMDAwMDMyIi8+PGc+PGc+PHBvbHlnb24gZmlsbD0id2hpdGUiIHBvaW50cz0iMzIuNyAxMiAxNS4zIDE0LjEgMTUuMyA5LjQgMzIuNyA5LjQgMzIuNyAxMiIvPjxwb2x5Z29uIGZpbGw9IndoaXRlIiBwb2ludHM9IjE1LjMgMzYgMzIuNyAzMy45IDMyLjcgMzguNiAxNS4zIDM4LjYgMTUuMyAzNiIvPjwvZz48Zz48cG9seWdvbiBmaWxsPSJ3aGl0ZSIgcG9pbnRzPSIyMC44IDM0LjIgMTcuMSAzNC42IDE3LjEgMTUgMjAuNyAxNC42IDIwLjggMzQuMiIvPjxwb2x5Z29uIGZpbGw9IndoaXRlIiBwb2ludHM9IjI1LjggMzMuNiAyMi4yIDM0IDIyLjIgMTQuNCAyNS44IDE0IDI1LjggMzMuNiIvPjxwb2x5Z29uIGZpbGw9IndoaXRlIiBwb2ludHM9IjMwLjkgMzMgMjcuMyAzMy41IDI3LjIgMTMuOCAzMC45IDEzLjQgMzAuOSAzMyIvPjwvZz48L2c+PC9zdmc+">
+  <link rel="shortcut icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCI+PHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iOS40IiByeT0iOS40IiBmaWxsPSIjMDAwMDMyIi8+PGc+PGc+PHBvbHlnb24gZmlsbD0id2hpdGUiIHBvaW50cz0iMzIuNyAxMiAxNS4zIDE0LjEgMTUuMyA5LjQgMzIuNyA5LjQgMzIuNyAxMiIvPjxwb2x5Z29uIGZpbGw9IndoaXRlIiBwb2ludHM9IjE1LjMgMzYgMzIuNyAzMy45IDMyLjcgMzguNiAxNS4zIDM4LjYgMTUuMyAzNiIvPjwvZz48Zz48cG9seWdvbiBmaWxsPSJ3aGl0ZSIgcG9pbnRzPSIyMC44IDM0LjIgMTcuMSAzNC42IDE3LjEgMTUgMjAuNyAxNC42IDIwLjggMzQuMiIvPjxwb2x5Z29uIGZpbGw9IndoaXRlIiBwb2ludHM9IjI1LjggMzMuNiAyMi4yIDM0IDIyLjIgMTQuNCAyNS44IDE0IDI1LjggMzMuNiIvPjxwb2x5Z29uIGZpbGw9IndoaXRlIiBwb2ludHM9IjMwLjkgMzMgMjcuMyAzMy41IDI3LjIgMTMuOCAzMC45IDEzLjQgMzAuOSAzMyIvPjwvZz48L2c+PC9zdmc+">
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -454,15 +456,13 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 [data-theme="dark"] .ai-btn.open{background:#3437ff !important;border-color:rgba(255,255,255,0.2) !important}
 
 /* Force sidebar text/icons white always */
-.sidebar .nav-item,
-.sidebar .nav-item *{color:rgba(255,255,255,0.75) !important}
-.sidebar .nav-item:hover,
-.sidebar .nav-item:hover *{color:white !important}
-.sidebar .nav-item.active,
-.sidebar .nav-item.active *{color:white !important}
-.sidebar .nav-item-icon svg{stroke:rgba(255,255,255,0.75) !important;fill:rgba(255,255,255,0.75) !important}
-.sidebar .nav-item:hover .nav-item-icon svg{stroke:white !important;fill:white !important}
-.sidebar .nav-item.active .nav-item-icon svg{stroke:white !important;fill:white !important}
+.sidebar .nav-item{color:rgba(255,255,255,0.75) !important}
+.sidebar .nav-item:hover{color:white !important}
+.sidebar .nav-item.active{color:white !important}
+.sidebar .nav-item-icon svg{stroke:rgba(255,255,255,0.75) !important;fill:none !important}
+.sidebar .nav-item-icon svg *{stroke:inherit;fill:none !important}
+.sidebar .nav-item:hover .nav-item-icon svg{stroke:white !important}
+.sidebar .nav-item.active .nav-item-icon svg{stroke:white !important}
 .sidebar .month-label{color:white !important}
 .sidebar .month-btn{color:white !important;border-color:rgba(255,255,255,0.25) !important}
 .sidebar .sidebar-section{color:rgba(255,255,255,0.5) !important}
