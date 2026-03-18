@@ -257,6 +257,14 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 @media(max-width:480px){.metric-value{font-size:17px}.page-title{font-size:20px}}
 .empty{text-align:center;padding:32px;color:var(--text2);font-size:14px}
 .divider{height:1px;background:var(--border);margin:16px 0}
+/* ── CARTÕES ──────────────────────────────────────────── */
+.cartao-card{border-radius:12px;padding:18px 20px;min-height:110px;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
+.cartao-card:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,0.12)}
+.cartao-nome{font-size:15px;font-weight:600;letter-spacing:-0.2px}
+.cartao-banco{font-size:12px;opacity:.75;margin-top:2px}
+.cartao-chip{width:28px;height:20px;border-radius:4px;background:rgba(255,255,255,0.4);margin-bottom:8px}
+.cartao-selected{box-shadow:0 0 0 3px var(--accent) !important}
+
 /* ── DRAG AND DROP ────────────────────────────────────── */
 .drag-handle{cursor:grab;color:var(--text3);padding:2px 4px;font-size:16px;line-height:1;user-select:none;flex-shrink:0}
 .drag-handle:hover{color:var(--text)}
@@ -361,6 +369,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
     <div class="nav-item" onclick="showPage('despesas',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></div>Despesas</div>
     <div class="nav-item" onclick="showPage('investimentos',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>Investimentos</div>
     <div class="nav-item" onclick="showPage('parcelamentos',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/><line x1="7" y1="15" x2="9" y2="15"/><line x1="12" y1="15" x2="17" y2="15"/></svg></div>Parcelamentos</div>
+    <div class="nav-item" onclick="showPage('cartoes',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>Cartões</div>
     <div class="nav-item" onclick="showPage('metas',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>Metas</div>
     <div class="nav-item" onclick="showPage('relatorios',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></div>Relatórios</div>
     <div class="nav-item" onclick="showPage('configuracoes',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>Configurações</div>
@@ -385,10 +394,13 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
       <div class="page-header"><div><div class="page-title" id="dash-title"></div><div class="page-sub" id="dash-sub">Visão geral</div></div></div>
       <div class="metrics-grid" id="dash-metrics"></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div class="card"><div class="card-header"><span class="card-title">Receitas vs Despesas — <span id="dash-chart-month"></span></span></div><div class="card-body"><div class="chart-wrap"><canvas id="barChartMonth"></canvas></div></div></div>
         <div class="card"><div class="card-header"><span class="card-title">Receitas vs Despesas — últimos 6 meses</span></div><div class="card-body"><div class="chart-wrap"><canvas id="barChart"></canvas></div></div></div>
-        <div class="card"><div class="card-header"><span class="card-title">Despesas por categoria</span></div><div class="card-body"><div class="chart-wrap"><canvas id="pieChart"></canvas></div></div></div>
       </div>
-      <div class="card"><div class="card-header"><span class="card-title">Últimos lançamentos</span></div><div class="card-body" id="dash-recent"></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div class="card"><div class="card-header"><span class="card-title">Despesas por categoria</span></div><div class="card-body"><div class="chart-wrap"><canvas id="pieChart"></canvas></div></div></div>
+        <div class="card"><div class="card-header"><span class="card-title">Últimos lançamentos</span></div><div class="card-body" id="dash-recent"></div></div>
+      </div>
     </div>
 
     <!-- RECEITAS -->
@@ -415,7 +427,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
     <div id="page-parcelamentos" class="page">
       <div class="page-header">
         <div><div class="page-title">Parcelamentos</div><div class="page-sub">Compras parceladas e cartão de crédito</div></div>
-        <button class="btn-add" onclick="openParcModal()">+ Novo parcelamento</button>
+
       </div>
       <div class="metrics-grid" id="parc-metrics"></div>
       <div class="card">
@@ -442,6 +454,15 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
       <div class="inv-grid" id="inv-cards"></div>
     </div>
 
+    <!-- CARTÕES -->
+    <div id="page-cartoes" class="page">
+      <div class="page-header">
+        <div><div class="page-title">Cartões</div><div class="page-sub">Gerencie seus cartões de crédito e débito</div></div>
+        <button class="btn-add" onclick="openCartaoModal()">+ Novo cartão</button>
+      </div>
+      <div id="cartoes-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px"></div>
+    </div>
+
     <!-- METAS -->
     <div id="page-metas" class="page">
       <div class="page-header">
@@ -455,7 +476,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
     <div id="page-parcelamentos" class="page">
       <div class="page-header">
         <div><div class="page-title">Parcelamentos</div><div class="page-sub">Compras parceladas e cartão de crédito</div></div>
-        <button class="btn-add" onclick="openParcModal()">+ Novo parcelamento</button>
+
       </div>
       <div class="metrics-grid" id="parc-metrics"></div>
       <div id="parc-list"></div>
@@ -465,7 +486,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
     <div id="page-parcelamentos" class="page">
       <div class="page-header">
         <div><div class="page-title">Parcelamentos</div><div class="page-sub">Compras parceladas em aberto</div></div>
-        <button class="btn-add" onclick="openParcModal()">+ Novo parcelamento</button>
+
       </div>
       <div class="metrics-grid" id="parc-metrics"></div>
       <div id="parc-active"></div>
@@ -524,6 +545,26 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
       </div>
       <div class="form-row single"><div class="fg"><label>Descrição</label><input id="me-desc" placeholder="Ex: Supermercado Extra, Salário março..."></div></div>
 
+      <!-- Parcelamento section (only for despesas) -->
+      <div id="parc-check-row" style="display:none;margin-bottom:12px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:500">
+          <input type="checkbox" id="me-is-parc" onchange="toggleParcFields()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent)">
+          Este lançamento é um parcelamento
+        </label>
+      </div>
+      <div id="parc-extra-fields" style="display:none;border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;margin-bottom:12px;background:var(--bg2)">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px">Detalhes do parcelamento</div>
+        <div class="form-row">
+          <div class="fg"><label>Nº de parcelas</label><input type="number" id="me-parc-num" placeholder="Ex: 12" min="2" max="360" oninput="calcParcPreviewInline()"></div>
+          <div class="fg"><label>Parcela atual</label><input type="number" id="me-parc-atual" placeholder="Ex: 1" min="1" value="1" oninput="calcParcPreviewInline()"></div>
+        </div>
+        <div class="form-row">
+          <div class="fg"><label>Cartão</label><select id="me-parc-cartao"><option value="">Nenhum / Débito</option></select></div>
+          <div class="fg"><label>Banco / Instituição</label><input id="me-parc-banco" placeholder="Ex: Itaú, Nubank..."></div>
+        </div>
+        <div class="form-row single"><div class="fg"><label>Observações</label><input id="me-parc-obs" placeholder="Ex: IPVA parcelado, geladeira..."></div></div>
+        <div id="parc-inline-preview" style="font-size:12px;color:var(--text2);margin-top:4px"></div>
+      </div>
       <div class="btn-row" id="entry-btn-row">
         <button class="btn-cancel" onclick="closeModal('modal-entry')">Cancelar</button>
         <button class="btn-save" onclick="saveEntry()">Salvar</button>
@@ -640,6 +681,48 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
       <div class="btn-row">
         <button class="btn-cancel" onclick="closeModal('modal-edit-user')">Cancelar</button>
         <button class="btn-save" onclick="saveEditUser()">Salvar alterações</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CARTÃO -->
+<div class="modal-overlay" id="modal-cartao">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title" id="mc2-title">Novo cartão</span><button class="modal-close" onclick="closeModal('modal-cartao')">×</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="fg"><label>Nome do cartão</label><input id="ct-nome" placeholder="Ex: Nubank, Inter, XP..."></div>
+        <div class="fg"><label>Banco / Instituição</label><input id="ct-banco" placeholder="Ex: Nubank, Itaú..."></div>
+      </div>
+      <div class="form-row">
+        <div class="fg"><label>Últimos 4 dígitos</label><input id="ct-digitos" placeholder="1234" maxlength="4"></div>
+        <div class="fg"><label>Cor do cartão</label>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px" id="ct-cores">
+            <div class="ct-cor-opt" data-cor="#1a1a2e" style="width:28px;height:28px;border-radius:6px;background:#1a1a2e;cursor:pointer;border:2px solid transparent" onclick="selectCartaoCor(this,'#1a1a2e')"></div>
+            <div class="ct-cor-opt" data-cor="#7c3aed" style="width:28px;height:28px;border-radius:6px;background:#7c3aed;cursor:pointer;border:2px solid transparent" onclick="selectCartaoCor(this,'#7c3aed')"></div>
+            <div class="ct-cor-opt" data-cor="#2563eb" style="width:28px;height:28px;border-radius:6px;background:#2563eb;cursor:pointer;border:2px solid transparent" onclick="selectCartaoCor(this,'#2563eb')"></div>
+            <div class="ct-cor-opt" data-cor="#059669" style="width:28px;height:28px;border-radius:6px;background:#059669;cursor:pointer;border:2px solid transparent" onclick="selectCartaoCor(this,'#059669')"></div>
+            <div class="ct-cor-opt" data-cor="#dc2626" style="width:28px;height:28px;border-radius:6px;background:#dc2626;cursor:pointer;border:2px solid transparent" onclick="selectCartaoCor(this,'#dc2626')"></div>
+            <div class="ct-cor-opt" data-cor="#d97706" style="width:28px;height:28px;border-radius:6px;background:#d97706;cursor:pointer;border:2px solid transparent" onclick="selectCartaoCor(this,'#d97706')"></div>
+            <div class="ct-cor-opt" data-cor="#0f172a" style="width:28px;height:28px;border-radius:6px;background:#0f172a;cursor:pointer;border:2px solid transparent" onclick="selectCartaoCor(this,'#0f172a')"></div>
+            <div class="ct-cor-opt" data-cor="#be185d" style="width:28px;height:28px;border-radius:6px;background:#be185d;cursor:pointer;border:2px solid transparent" onclick="selectCartaoCor(this,'#be185d')"></div>
+          </div>
+        </div>
+      </div>
+      <div style="margin:14px 0 4px">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Preview</div>
+        <div id="ct-preview" style="border-radius:12px;padding:16px 18px;min-height:90px;display:flex;flex-direction:column;justify-content:space-between;background:#1a1a2e;max-width:200px">
+          <div style="width:24px;height:18px;border-radius:3px;background:rgba(255,255,255,0.35)"></div>
+          <div>
+            <div id="ct-preview-nome" style="font-size:13px;font-weight:600;color:white">Nome do cartão</div>
+            <div id="ct-preview-banco" style="font-size:11px;color:rgba(255,255,255,0.65)">Banco</div>
+          </div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-cancel" onclick="closeModal('modal-cartao')">Cancelar</button>
+        <button class="btn-save" onclick="saveCartao()">Salvar cartão</button>
       </div>
     </div>
   </div>
@@ -783,13 +866,16 @@ const DEFAULT_INV_TIPOS = ['Renda Fixa','Renda Variável','Criptomoedas','Previd
 
 // ── STATE ──────────────────────────────────────────────────
 let currentUser=null, isAdmin=false;
+let cartoes=[];
+let _cartaoCorSelecionada='#1a1a2e';
+let _editingCartaoId=null;
 let viewMonth=new Date().getMonth(), viewYear=new Date().getFullYear();
 let entries=[], goals=[], investments=[], invMovimentos=[];
 let cats={receita:[],despesa:[]}, previstos={}, invTipos=[...DEFAULT_INV_TIPOS];
 let editingEntryId=null, editingGoalId=null, editingInvId=null, editingParcId=null;
 let parcelamentos=[];
 let currentInvForMov=null, currentPrevistoKey=null, _catTipo='despesa', _subcatTipo='despesa';
-let barChartInst, pieChartInst, lineChartInst, invBarChartInst, invPieChartInst;
+let barChartInst, pieChartInst, lineChartInst, invBarChartInst, invPieChartInst, barChartMonthInst;
 let unsubs=[];
 let registeredUsers=[];
 
@@ -930,6 +1016,7 @@ function renderParcelamentos(){
       const pct=Math.round((pagas/total)*100);
       const barColor=pct>=80?'var(--green)':pct>=40?'var(--accent)':'var(--amber)';
       const catName=allCats('despesa').find(c=>c.id===p.catId)?.label||p.catId||'—';
+      const cartao=cartoes.find(c=>c.id===p.cartaoId);
       const estesMes=getParcSaldoMes(p,viewMonth,viewYear)>0;
       const vence=(()=>{
         if(!p.inicio)return '—';
@@ -941,7 +1028,7 @@ function renderParcelamentos(){
         <div class="parc-header">
           <div>
             <div class="parc-name">${p.descricao}${estesMes?'<span style="margin-left:8px;padding:2px 7px;background:var(--red-bg);color:var(--red);border-radius:20px;font-size:11px;font-weight:500">Vence este mês</span>':''}</div>
-            <div class="parc-cat">${catName}</div>
+            <div class="parc-cat" style="display:flex;align-items:center;gap:6px">${catName}${cartao?`<span style="display:inline-block;padding:1px 8px;border-radius:20px;font-size:11px;font-weight:500;background:${cartao.cor};color:white">${cartao.nome}${cartao.digitos?' ···'+cartao.digitos:''}</span>`:''}${p.banco?`<span style="font-size:11px;color:var(--text3)">${p.banco}</span>`:''}</div>
           </div>
           <div style="display:flex;gap:6px">
             <button class="btn-sm" onclick="editParc('${p.id}')">✎ Editar</button>
@@ -1073,6 +1160,7 @@ function listenAll(){
   unsubs.push(onSnapshot(collection(db,'investments'),s=>{investments=s.docs.map(d=>({id:d.id,...d.data()}));if(activePage()==='investimentos')renderInvestimentos();}));
   unsubs.push(onSnapshot(query(collection(db,'invMovimentos'),orderBy('date','desc')),s=>{invMovimentos=s.docs.map(d=>({id:d.id,...d.data()}));if(activePage()==='investimentos')renderInvestimentos();}));
   unsubs.push(onSnapshot(collection(db,'parcelamentos'),s=>{parcelamentos=s.docs.map(d=>({id:d.id,...d.data()}));if(activePage()==='parcelamentos')renderParcelamentos();if(activePage()==='dashboard')renderDashboard();}));
+  unsubs.push(onSnapshot(collection(db,'cartoes'),s=>{cartoes=s.docs.map(d=>({id:d.id,...d.data()}));if(activePage()==='cartoes')renderCartoes();}));
 }
 
 function activePage(){const el=document.querySelector('.page.active');return el?el.id.replace('page-',''):'';}
@@ -1084,6 +1172,7 @@ function renderPage(id){
   else if(id==='investimentos')renderInvestimentos();
   else if(id==='metas')renderGoals();
   else if(id==='parcelamentos')renderParcelamentos();
+  else if(id==='cartoes')renderCartoes();
   else if(id==='relatorios')renderRelatorios();
   else if(id==='configuracoes')renderConfig();
 }
@@ -1177,6 +1266,102 @@ function calcInvSaldoNow(inv){
 function renderReceitas(){ renderCatPage('receita','rec-metrics','rec-cats'); }
 function renderDespesas(){ renderCatPage('despesa','desp-metrics','desp-cats'); }
 
+
+// ── CARTÕES ───────────────────────────────────────────────
+function renderCartoes(){
+  const el=document.getElementById('cartoes-grid');
+  if(!el)return;
+  if(!cartoes.length){
+    el.innerHTML='<div class="empty" style="grid-column:1/-1">Nenhum cartão cadastrado. Clique em "+ Novo cartão" para adicionar.</div>';
+    return;
+  }
+  el.innerHTML=cartoes.map(c=>{
+    const cor=c.cor||'#1a1a2e';
+    const textColor='white';
+    return`<div class="cartao-card" style="background:${cor};color:${textColor};border:2px solid ${cor}">
+      <div><div style="width:24px;height:18px;border-radius:3px;background:rgba(255,255,255,0.35);margin-bottom:12px"></div></div>
+      <div>
+        <div class="cartao-nome">${c.nome}${c.digitos?' ···'+c.digitos:''}</div>
+        <div class="cartao-banco">${c.banco||''}</div>
+        <div style="display:flex;gap:6px;margin-top:10px">
+          <button class="btn-sm" style="background:rgba(255,255,255,0.2);border-color:rgba(255,255,255,0.3);color:white;font-size:11px" onclick="editCartao('${c.id}')">✎ Editar</button>
+          <button class="btn-sm" style="background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.2);color:white;font-size:11px" onclick="deleteCartao('${c.id}')">× Excluir</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.selectCartaoCor=(el,cor)=>{
+  _cartaoCorSelecionada=cor;
+  document.querySelectorAll('.ct-cor-opt').forEach(o=>o.style.border='2px solid transparent');
+  el.style.border='2px solid white';
+  el.style.outline='2px solid '+cor;
+  const prev=document.getElementById('ct-preview');
+  if(prev) prev.style.background=cor;
+};
+
+window.openCartaoModal=()=>{
+  _editingCartaoId=null;
+  _cartaoCorSelecionada='#1a1a2e';
+  document.getElementById('mc2-title').textContent='Novo cartão';
+  ['ct-nome','ct-banco','ct-digitos'].forEach(id=>document.getElementById(id).value='');
+  document.querySelectorAll('.ct-cor-opt').forEach(o=>{o.style.border='2px solid transparent';o.style.outline='none';});
+  const firstCor=document.querySelector('.ct-cor-opt');
+  if(firstCor){firstCor.style.border='2px solid white';firstCor.style.outline='2px solid #1a1a2e';}
+  document.getElementById('ct-preview').style.background='#1a1a2e';
+  document.getElementById('ct-preview-nome').textContent='Nome do cartão';
+  document.getElementById('ct-preview-banco').textContent='Banco';
+  // live preview
+  ['ct-nome','ct-banco'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.oninput=()=>{
+      const n=document.getElementById('ct-nome').value||'Nome do cartão';
+      const b=document.getElementById('ct-banco').value||'Banco';
+      document.getElementById('ct-preview-nome').textContent=n;
+      document.getElementById('ct-preview-banco').textContent=b;
+    };
+  });
+  openModal('modal-cartao');
+};
+
+window.editCartao=id=>{
+  const c=cartoes.find(x=>x.id===id);if(!c)return;
+  _editingCartaoId=id;
+  _cartaoCorSelecionada=c.cor||'#1a1a2e';
+  document.getElementById('mc2-title').textContent='Editar cartão';
+  document.getElementById('ct-nome').value=c.nome||'';
+  document.getElementById('ct-banco').value=c.banco||'';
+  document.getElementById('ct-digitos').value=c.digitos||'';
+  document.getElementById('ct-preview').style.background=_cartaoCorSelecionada;
+  document.getElementById('ct-preview-nome').textContent=c.nome||'Nome do cartão';
+  document.getElementById('ct-preview-banco').textContent=c.banco||'Banco';
+  // highlight selected color
+  document.querySelectorAll('.ct-cor-opt').forEach(o=>{
+    o.style.border='2px solid transparent';o.style.outline='none';
+    if(o.dataset.cor===_cartaoCorSelecionada){o.style.border='2px solid white';o.style.outline='2px solid '+_cartaoCorSelecionada;}
+  });
+  openModal('modal-cartao');
+};
+
+window.saveCartao=async()=>{
+  const nome=document.getElementById('ct-nome').value.trim();
+  const banco=document.getElementById('ct-banco').value.trim();
+  const digitos=document.getElementById('ct-digitos').value.trim().slice(0,4);
+  if(!nome){alert('Informe o nome do cartão.');return;}
+  const data={nome,banco,digitos,cor:_cartaoCorSelecionada,criadoEm:new Date().toISOString()};
+  if(_editingCartaoId){
+    await updateDoc(doc(db,'cartoes',_editingCartaoId),data);
+  } else {
+    await addDoc(collection(db,'cartoes'),data);
+  }
+  closeModal('modal-cartao');
+};
+
+window.deleteCartao=async id=>{
+  if(!confirm('Excluir este cartão?'))return;
+  await deleteDoc(doc(db,'cartoes',id));
+};
 function renderGoals(){
   const c=document.getElementById('goals-container');
   if(!c) return;
@@ -1232,6 +1417,22 @@ function renderDashboard(){
     <div class="metric-card"><div class="metric-label">Despesa realizada</div><div class="metric-value neg">${fmtK(dR)}</div><div class="metric-badge">+ Parcelas: ${fmtK(parcMes)}</div></div>
     <div class="metric-card"><div class="metric-label">Saldo líquido</div><div class="metric-value ${saldoLiquido>=0?'pos':'neg'}">${fmtK(saldoLiquido)}</div></div>
     <div class="metric-card"><div class="metric-label">Patrimônio investido</div><div class="metric-value acc">${fmtK(totalInv)}</div></div>`;
+
+  // Month chart label
+  const dashChartMonthEl=document.getElementById('dash-chart-month');
+  if(dashChartMonthEl) dashChartMonthEl.textContent=MESES[viewMonth]+' '+viewYear;
+
+  // Month bar chart — current month by category
+  const catLabels=[],catRecData=[],catDespData=[];
+  allCats('despesa').forEach(cat=>{
+    const catR=sumR(mx.filter(e=>e.tipo==='despesa'&&e.catId===cat.id));
+    const catPrev=Number(previstos[cat.id]||0);
+    if(catR>0||catPrev>0){catLabels.push(cat.icon+' '+cat.label.slice(0,10));catRecData.push(Math.round(catPrev));catDespData.push(Math.round(catR));}
+  });
+  if(barChartMonthInst)barChartMonthInst.destroy();
+  if(catLabels.length){
+    barChartMonthInst=new Chart(document.getElementById('barChartMonth'),{type:'bar',data:{labels:catLabels,datasets:[{label:'Previsto',data:catRecData,backgroundColor:'#2383e233',borderRadius:3},{label:'Realizado',data:catDespData,backgroundColor:'#d44c4755',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10},boxWidth:8,padding:8}}},scales:{x:{grid:{display:false},ticks:{color:'#787774',font:{size:9},maxRotation:35}},y:{grid:{color:'rgba(120,119,116,0.12)'},ticks:{color:'#787774',font:{size:10},callback:v=>'R$'+Math.round(v/1000)+'k'}}}}});
+  }
 
   const labels=[],recData=[],despData=[],parcData=[];
   for(let i=5;i>=0;i--){let m=viewMonth-i,y=viewYear;if(m<0){m+=12;y--;}labels.push(MESES[m].slice(0,3));const mt=getMonthEntries(m,y);recData.push(Math.round(sumR(mt.filter(e=>e.tipo==='receita'))));despData.push(Math.round(sumR(mt.filter(e=>e.tipo==='despesa'))));parcData.push(Math.round(getParcTotalMonth(m,y)));}
@@ -1316,16 +1517,57 @@ window.toggleCatBody=id=>{const el=document.getElementById(id);const ch=document
 window.toggleTxList=id=>{const el=document.getElementById(id);if(el)el.classList.toggle('open');};
 
 // ── PREVISTO ──────────────────────────────────────────────
-window.openPrevistoModal=(catId,atual,label)=>{currentPrevistoKey=catId;document.getElementById('mp-title').textContent='Previsto — '+label;document.getElementById('mp-val').value=atual||'';openModal('modal-previsto');};
+window.openPrevistoModal=(catId,atual,label)=>{
+  currentPrevistoKey=catId;
+  document.getElementById('mp-title').textContent='Previsto — '+label;
+  const inp=document.getElementById('mp-val');
+  inp.value=atual||'';
+  openModal('modal-previsto');
+  setTimeout(()=>{inp.focus();inp.select();},100);
+};
 window.savePrevisto=async()=>{const v=parseFloat(document.getElementById('mp-val').value)||0;previstos[currentPrevistoKey]=v;await savePrevistos();closeModal('modal-previsto');refreshActivePage();};
+// Fix bug: save when pressing Enter in previsto input
+document.addEventListener('DOMContentLoaded',()=>{
+  const inp=document.getElementById('mp-val');
+  if(inp){
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')window.savePrevisto();});
+  }
+});
 
 // ── ENTRY MODAL ───────────────────────────────────────────
+
+window.toggleParcFields=()=>{
+  const checked=document.getElementById('me-is-parc').checked;
+  document.getElementById('parc-extra-fields').style.display=checked?'block':'none';
+  if(checked) populateParcCartaoSelect();
+};
+
+window.calcParcPreviewInline=()=>{
+  const val=parseFloat(document.getElementById('me-val').value)||0;
+  const num=parseInt(document.getElementById('me-parc-num').value)||0;
+  const atual=parseInt(document.getElementById('me-parc-atual').value)||1;
+  const prev=document.getElementById('parc-inline-preview');
+  if(val>0&&num>0){
+    const mens=val/num;
+    prev.textContent=`Parcela ${atual} de ${num} · R$ ${mens.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}/mês · Total: R$ ${val.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
+  } else { prev.textContent=''; }
+};
+
+function populateParcCartaoSelect(){
+  const sel=document.getElementById('me-parc-cartao');
+  if(!sel)return;
+  sel.innerHTML='<option value="">Nenhum / Débito</option>'+cartoes.map(c=>`<option value="${c.id}">${c.nome} ${c.digitos?'···'+c.digitos:''}</option>`).join('');
+}
+
 window.openEntryModal=(tipo='despesa',catId,subcat)=>{
   editingEntryId=null;
   document.getElementById('me-title').textContent='Novo lançamento';
   document.getElementById('me-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('me-val').value='';document.getElementById('me-prev').value='';document.getElementById('me-desc').value='';
   document.getElementById('me-tipo').value=tipo;
+  document.getElementById('parc-check-row').style.display=tipo==='despesa'?'block':'none';
+  document.getElementById('me-is-parc').checked=false;
+  document.getElementById('parc-extra-fields').style.display='none';
   populateCatSelect(tipo,catId);
   if(subcat){const s=document.getElementById('me-subcat');for(let o of s.options)if(o.value===subcat){o.selected=true;break;}}
   openModal('modal-entry');
@@ -1337,6 +1579,9 @@ window.editEntry=id=>{
   editingEntryId=id;
   document.getElementById('me-title').textContent='Editar lançamento';
   document.getElementById('me-tipo').value=e.tipo;
+  document.getElementById('parc-check-row').style.display=e.tipo==='despesa'?'block':'none';
+  document.getElementById('me-is-parc').checked=false;
+  document.getElementById('parc-extra-fields').style.display='none';
   document.getElementById('me-date').value=e.date||'';
   document.getElementById('me-val').value=e.valor||'';
   document.getElementById('me-prev').value=e.previsto||'';
@@ -1373,13 +1618,44 @@ window.saveEntry=async()=>{
   if(!val&&!prev){alert('Informe ao menos um valor.');return;}
   const data={tipo,catId,subcategoria:subcat,descricao:desc,date,valor:val,previsto:prev,por:currentUser.displayName||currentUser.email};
   if(editingEntryId){
-    // update locally immediately so UI reflects change without waiting for snapshot
     const idx=entries.findIndex(e=>e.id===editingEntryId);
     if(idx>=0) entries[idx]={...entries[idx],...data};
     await updateDoc(doc(db,'entries',editingEntryId),data);
   } else {
     await addDoc(collection(db,'entries'),data);
   }
+
+  // If parcelamento checkbox is checked, create parcelamento record
+  const isParcChecked = document.getElementById('me-is-parc')?.checked;
+  if(isParcChecked && tipo==='despesa' && !editingEntryId){
+    const numParcelas=parseInt(document.getElementById('me-parc-num').value)||0;
+    const parcAtual=parseInt(document.getElementById('me-parc-atual').value)||1;
+    const cartaoId=document.getElementById('me-parc-cartao').value;
+    const banco=document.getElementById('me-parc-banco').value.trim();
+    const obs=document.getElementById('me-parc-obs').value.trim();
+    if(numParcelas>=2&&val>0){
+      const mensalidade=val/numParcelas;
+      const cartao=cartoes.find(c=>c.id===cartaoId);
+      // Calculate inicio month: go back (parcAtual-1) months from current date
+      const inicioDate=new Date(date+'T12:00:00');
+      inicioDate.setMonth(inicioDate.getMonth()-(parcAtual-1));
+      const inicio=inicioDate.getFullYear()+'-'+String(inicioDate.getMonth()+1).padStart(2,'0');
+      await addDoc(collection(db,'parcelamentos'),{
+        descricao:desc||subcat,
+        valorTotal:val,
+        numParcelas,
+        parcPagas:parcAtual-1,
+        inicio,
+        catId,
+        cartaoId:cartaoId||null,
+        cartaoNome:cartao?cartao.nome:'',
+        banco,
+        obs,
+        createdAt:new Date().toISOString()
+      });
+    }
+  }
+
   editingEntryId=null;
   closeModal('modal-entry');
   refreshActivePage();
@@ -1398,27 +1674,31 @@ function renderInvestimentos(){
     <div class="metric-card"><div class="metric-label">Rendimentos</div><div class="metric-value pos">${fmtK(totalRendimentos)}</div></div>
     <div class="metric-card"><div class="metric-label">Ativos</div><div class="metric-value">${investments.length}</div></div>`;
 
-  // Stacked bar chart by month
-  const labels=[],initialData=[],aportesData=[],rendData=[];
+  // Line chart — patrimony evolution month by month
+  const labels=[], totalData=[], aportadoData=[], rendimentoData=[];
   for(let m=0;m<12;m++){
     labels.push(MESES[m].slice(0,3));
-    let ini=0,aport=0,rend=0;
+    let saldoTotal=0, aporTotal=0, rendTotal=0;
     investments.forEach(inv=>{
       const r=calcInvSaldoByMonth(inv,m,viewYear);
-      ini+=Number(inv.valorInicial||0);
-      aport+=r.totalAportes-Number(inv.valorInicial||0);
-      rend+=r.totalRendimentos;
+      saldoTotal+=r.saldo;
+      aporTotal+=r.totalAportes;
+      rendTotal+=r.totalRendimentos;
     });
-    initialData.push(Math.round(Math.max(0,ini)));
-    aportesData.push(Math.round(Math.max(0,aport)));
-    rendData.push(Math.round(Math.max(0,rend)));
+    totalData.push(Math.round(saldoTotal));
+    aportadoData.push(Math.round(aporTotal));
+    rendimentoData.push(Math.round(rendTotal));
   }
   if(invBarChartInst)invBarChartInst.destroy();
-  invBarChartInst=new Chart(document.getElementById('invBarChart'),{type:'bar',data:{labels,datasets:[
-    {label:'Valor inicial',data:initialData,backgroundColor:'#2383e255',stack:'s',borderRadius:0},
-    {label:'Aportes',data:aportesData,backgroundColor:'#0f9d5855',stack:'s',borderRadius:0},
-    {label:'Rendimentos',data:rendData,backgroundColor:'#9065b055',stack:'s',borderRadius:4}
-  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:11},boxWidth:10}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:'#787774',font:{size:10}}},y:{stacked:true,grid:{color:'rgba(120,119,116,0.12)'},ticks:{color:'#787774',font:{size:11},callback:v=>'R$'+Math.round(v/1000)+'k'}}}}});
+  invBarChartInst=new Chart(document.getElementById('invBarChart'),{
+    type:'line',
+    data:{labels,datasets:[
+      {label:'Patrimônio total',data:totalData,borderColor:'#2383e2',backgroundColor:'#2383e218',tension:.3,fill:true,borderWidth:2,pointRadius:3,pointBackgroundColor:'#2383e2'},
+      {label:'Total aportado',data:aportadoData,borderColor:'#0f9d58',backgroundColor:'transparent',tension:.3,fill:false,borderWidth:1.5,borderDash:[4,3],pointRadius:2,pointBackgroundColor:'#0f9d58'},
+      {label:'Rendimentos',data:rendimentoData,borderColor:'#9065b0',backgroundColor:'transparent',tension:.3,fill:false,borderWidth:1.5,borderDash:[2,3],pointRadius:2,pointBackgroundColor:'#9065b0'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:11},boxWidth:10,padding:10}}},scales:{x:{grid:{display:false},ticks:{color:'#787774',font:{size:11}}},y:{grid:{color:'rgba(120,119,116,0.12)'},ticks:{color:'#787774',font:{size:11},callback:v=>'R$'+Math.round(v/1000)+'k'}}}}
+  });
 
   // Pie by type
   const typeMap={};
