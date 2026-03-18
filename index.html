@@ -53,8 +53,8 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 .sidebar-user-name{font-size:13px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sidebar-user-role{font-size:11px;color:var(--text3);margin-top:1px}
 .sidebar-user-role.is-admin{color:var(--amber)}
-.btn-logout{background:none;border:none;cursor:pointer;color:var(--text3);padding:4px;border-radius:4px;display:flex;align-items:center;flex-shrink:0}
-.btn-logout:hover{color:var(--red);background:var(--red-bg)}
+.btn-logout{background:none;border:1px solid var(--border);border-radius:5px;width:26px;height:26px;cursor:pointer;color:var(--text2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .1s}
+.btn-logout:hover{background:var(--red-bg);border-color:var(--red);color:var(--red)}
 .sidebar-section{padding:4px 10px;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-top:6px}
 .nav-item{display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:var(--radius);margin:1px 6px;cursor:pointer;color:var(--text2);font-size:14px;transition:all .1s;user-select:none}
 .nav-item:hover{background:var(--bg-hover);color:var(--text)}
@@ -288,8 +288,8 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
         <div class="sidebar-user-role" id="user-role-display"></div>
       </div>
       <button class="btn-logout" onclick="doLogout()" title="Sair">
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
-          <path d="M13 15l4-5-4-5M17 10H7M10 3H4a1 1 0 00-1 1v12a1 1 0 001 1h6"/>
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+          <path d="M11 13l3-4-3-4M14 9H6M9 3H4a1 1 0 00-1 1v10a1 1 0 001 1h5"/>
         </svg>
       </button>
     </div>
@@ -597,7 +597,7 @@ window.doAuth = async ()=>{
       await signInWithEmailAndPassword(auth,email,pw);
     }
   } catch(e){
-    const m={'auth/email-already-in-use':'Email já cadastrado.','auth/wrong-password':'Senha incorreta.','auth/user-not-found':'Usuário não encontrado.','auth/weak-password':'Senha mínimo 6 caracteres.','auth/invalid-credential':'Email ou senha incorretos.'};
+    const m={'auth/email-already-in-use':'Email já cadastrado.','auth/wrong-password':'Senha incorreta.','auth/user-not-found':'Usuário não encontrado.','auth/weak-password':'Senha muito fraca (mínimo 6 caracteres).','auth/invalid-credential':'Email ou senha incorretos.'};
     errEl.textContent=m[e.code]||'Erro: '+e.message;
   }
 };
@@ -694,6 +694,9 @@ window.changeMonth=d=>{
   viewMonth+=d;
   if(viewMonth>11){viewMonth=0;viewYear++;}
   if(viewMonth<0){viewMonth=11;viewYear--;}
+  const now=new Date();
+  if(viewYear>now.getFullYear()+2){viewYear=now.getFullYear()+2;viewMonth=11;}
+  if(viewYear<2020){viewYear=2020;viewMonth=0;}
   updateMonthLabel();refreshActivePage();
 };
 function updateMonthLabel(){
@@ -706,7 +709,7 @@ function updateMonthLabel(){
 }
 
 // ── HELPERS ──────────────────────────────────────────────
-const fmt=v=>'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt=v=>{const n=Number(v||0);return'R$ '+(isFinite(n)?n:0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});};
 const fmtK=v=>{v=Number(v||0);if(Math.abs(v)>=1000)return'R$'+(v/1000).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'k';return fmt(v);};
 function getMonthEntries(m=viewMonth,y=viewYear){return entries.filter(e=>{const d=new Date(e.date+'T12:00:00');return d.getMonth()===m&&d.getFullYear()===y;});}
 const sumR=arr=>arr.reduce((s,e)=>s+(Number(e.valor)||0),0);
@@ -727,7 +730,8 @@ function calcInvSaldoByMonth(inv, upToMonth, upToYear){
 
   // iterate month by month from start
   let curM=start.getMonth(), curY=start.getFullYear();
-  while(curY<upToYear||(curY===upToYear&&curM<=upToMonth)){
+  let safeIter=0;
+  while((curY<upToYear||(curY===upToYear&&curM<=upToMonth))&&safeIter++<120){
     // apply movimentos this month
     movs.filter(m=>{const d=new Date(m.date+'T12:00:00');return d.getMonth()===curM&&d.getFullYear()===curY;}).forEach(m=>{
       if(m.tipo==='aporte'){saldo+=Number(m.valor||0);totalAportes+=Number(m.valor||0);}
@@ -854,7 +858,7 @@ function populateSubcatSelect(catId,tipo){
 }
 window.onEntryTipoChange=()=>populateCatSelect(document.getElementById('me-tipo').value);
 window.onEntryCatChange=()=>populateSubcatSelect(document.getElementById('me-cat').value);
-window.handleTagInput=e=>{if(e.key==='Enter'||e.key===','){e.preventDefault();const v=e.target.value.trim();if(v&&!currentTags.includes(v)){currentTags.push(v);const chip=document.createElement('span');chip.className='tag-chip';chip.innerHTML=v+'<button onclick="removeTag(this,\''+v+'\')">×</button>';e.target.before(chip);}e.target.value='';}};
+window.handleTagInput=e=>{if(e.key==='Enter'||e.key===','){e.preventDefault();const v=e.target.value.trim().slice(0,30);if(v&&!currentTags.includes(v)&&currentTags.length<10){currentTags.push(v);const chip=document.createElement('span');chip.className='tag-chip';chip.innerHTML=v+'<button onclick="removeTag(this,\''+v+'\')">×</button>';e.target.before(chip);}e.target.value='';}};
 window.removeTag=(btn,tag)=>{currentTags=currentTags.filter(t=>t!==tag);btn.parentElement.remove();};
 window.saveEntry=async()=>{
   const tipo=document.getElementById('me-tipo').value;
@@ -863,7 +867,7 @@ window.saveEntry=async()=>{
   const date=document.getElementById('me-date').value;
   const val=parseFloat(document.getElementById('me-val').value)||0;
   const prev=parseFloat(document.getElementById('me-prev').value)||0;
-  const desc=document.getElementById('me-desc').value.trim();
+  const desc=(document.getElementById('me-desc').value||'').trim();
   const tags=[...currentTags];
   const ti=document.getElementById('tags-input');
   if(ti.value.trim())tags.push(ti.value.trim());
@@ -967,7 +971,8 @@ window.saveInv=async()=>{
   const nome=document.getElementById('mi-name').value.trim();
   const tipo=document.getElementById('mi-type').value;
   const valorInicial=parseFloat(document.getElementById('mi-initial').value)||0;
-  const taxa=parseFloat(document.getElementById('mi-taxa').value)||0;
+  const taxaRaw=parseFloat(document.getElementById('mi-taxa').value)||0;
+  const taxa=isFinite(taxaRaw)&&taxaRaw>=0&&taxaRaw<=100?taxaRaw:0;
   const startDate=document.getElementById('mi-start').value;
   const notas=document.getElementById('mi-notes').value.trim();
   if(!nome){alert('Informe o nome.');return;}
@@ -987,7 +992,8 @@ window.saveInvMov=async()=>{
   const date=document.getElementById('mim-date').value;
   const valor=parseFloat(document.getElementById('mim-val').value)||0;
   const descricao=document.getElementById('mim-desc').value.trim();
-  if(!date||!valor){alert('Informe data e valor.');return;}
+  if(!date){alert('Informe a data.');return;}
+  if(!valor||valor<=0){alert('Informe um valor maior que zero.');return;}
   await addDoc(collection(db,'invMovimentos'),{invId:currentInvForMov,tipo,date,valor,descricao});
   closeModal('modal-inv-mov');
 };
@@ -1009,7 +1015,8 @@ window.saveGoal=async()=>{
   const target=parseFloat(document.getElementById('g-target').value)||0;
   const current=parseFloat(document.getElementById('g-current').value)||0;
   const notes=document.getElementById('g-notes').value.trim();
-  if(!name||!target){alert('Preencha nome e valor alvo.');return;}
+  if(!name){alert('Informe o nome da meta.');return;}
+  if(!target||target<=0){alert('Informe um valor alvo maior que zero.');return;}
   const data={name,target,current,notes};
   if(editingGoalId)await updateDoc(doc(db,'goals',editingGoalId),data);
   else await addDoc(collection(db,'goals'),data);
@@ -1124,6 +1131,31 @@ window.startCatNameEdit = function(catId, tipo, spanEl){
   input.addEventListener('keydown',e=>{if(e.key==='Enter')input.blur();if(e.key==='Escape'){input.value=currentName;input.blur();}});
 };
 
+window.startSubcatNameEdit = function(spanEl, tipo, catId, idx){
+  const currentName = spanEl.textContent.trim();
+  const input = document.createElement('input');
+  input.value = currentName;
+  input.style.cssText = 'flex:1;padding:2px 6px;border:1px solid var(--accent);border-radius:4px;font-size:13px;font-family:inherit;background:var(--bg);color:var(--text);outline:none;min-width:0;width:100%';
+  spanEl.replaceWith(input);
+  input.focus(); input.select();
+  const save = async () => {
+    const newName = input.value.trim();
+    if(newName && newName !== currentName){
+      const cat = cats[tipo].find(c=>c.id===catId);
+      if(cat && cat.subcats[idx]!==undefined){
+        cat.subcats[idx] = newName;
+        await saveCategories();
+      }
+    }
+    renderCfgCats(tipo);
+  };
+  input.addEventListener('blur', save);
+  input.addEventListener('keydown', e=>{
+    if(e.key==='Enter') input.blur();
+    if(e.key==='Escape'){ input.value=currentName; input.blur(); }
+  });
+};
+
 function renderCfgCats(tipo){
   const panelId='cfg-'+(tipo==='despesa'?'despesas':'receitas');
   let html=`<div class="cfg-section"><div class="cfg-section-title">Categorias de ${tipo==='despesa'?'Despesa':'Receita'}</div>
@@ -1141,7 +1173,7 @@ function renderCfgCats(tipo){
         <button class="btn-ghost" style="color:var(--red);font-size:12px" onclick="deleteCat('${tipo}','${safeId}')">Excluir</button>
       </div>
       <div style="padding:8px 14px 12px">
-        ${cat.subcats.map(sub=>`<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--border)"><span style="flex:1;font-size:13px">${sub}</span><button class="btn-ghost" style="font-size:11px;color:var(--red)" onclick="deleteSubcat('${tipo}','${safeId}','${sub.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">×</button></div>`).join('')}
+        ${cat.subcats.map((sub,si)=>`<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--border)"><span onclick="startSubcatNameEdit(this,'${tipo}','${safeId}',${si})" title="Clique para editar" style="flex:1;font-size:13px;cursor:text;padding:2px 4px;border-radius:4px;border:1px dashed transparent;transition:border-color .15s" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='transparent'">${sub}</span><button class="btn-ghost" style="font-size:11px;color:var(--red)" onclick="deleteSubcat('${tipo}','${safeId}','${sub.replace(/'/g,"\\'").replace(/"/g,'&quot;')}')">×</button></div>`).join('')}
         <button class="add-tx-inline" style="margin-top:8px" onclick="openSubcatModal('${tipo}','${safeId}')">+ subcategoria</button>
       </div>
     </div>`;
@@ -1185,7 +1217,8 @@ async function renderCfgUsuarios(){
 
 window.removeUser=async(uid,name)=>{
   if(!isAdmin){alert('Apenas administradores podem excluir usuários.');return;}
-  if(!confirm(`Excluir o usuário "${name}"? Esta ação não pode ser desfeita.`))return;
+  if(uid===currentUser.uid){alert('Você não pode excluir sua própria conta aqui.');return;}
+  if(!confirm(`Excluir o usuário "${name}"? Esta ação remove apenas o registro. A conta de autenticação permanece ativa.`))return;
   try{
     await deleteDoc(doc(db,'users',uid));
     await renderCfgUsuarios();
@@ -1206,6 +1239,7 @@ function renderCfgDados(){
 
 window.zerarBanco=async()=>{
   if(!isAdmin){alert('Apenas administradores podem zerar o banco.');return;}
+  if(!currentUser){alert('Não autenticado.');return;}
   const conf=prompt('Digite CONFIRMAR para zerar todos os dados:');
   if(conf!=='CONFIRMAR'){alert('Operação cancelada.');return;}
   try{
