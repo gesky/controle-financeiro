@@ -260,7 +260,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 /* ── AI ASSISTANT ─────────────────────────────────────── */
 .ai-btn{position:fixed;bottom:24px;right:24px;width:52px;height:52px;border-radius:50%;background:var(--text);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,0.18);z-index:400;transition:transform .2s,box-shadow .2s}
 .ai-btn:hover{transform:scale(1.08);box-shadow:0 6px 20px rgba(0,0,0,0.22)}
-.ai-btn.open{background:var(--bg3);border:1px solid var(--border)}
+.ai-btn.open{background:var(--text);border:1px solid var(--border)}
 .ai-panel{position:fixed;bottom:88px;right:24px;width:360px;height:520px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);z-index:399;display:flex;flex-direction:column;transform:scale(0.92) translateY(12px);opacity:0;pointer-events:none;transition:transform .2s,opacity .2s;transform-origin:bottom right}
 .ai-panel.open{transform:scale(1) translateY(0);opacity:1;pointer-events:all}
 .ai-header{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
@@ -1919,7 +1919,7 @@ function buildContext(){
 
   const previstosSummary = Object.entries(previstos).map(([k,v])=>`Previsto ${catMap[k]||k}: R$${Number(v).toFixed(2)}/mês`).join('\n');
 
-  return `Você é o Finn AI, assistente financeiro pessoal do casal. Responda em português brasileiro de forma direta, amigável e útil. Use os dados abaixo para responder perguntas sobre finanças pessoais do casal.
+  return `Você é o Finn AI, assistente financeiro do casal. Responda em português, de forma MUITO direta e curta — máximo 2 linhas. Sem introduções, sem perguntas de volta, sem "é isso que você queria?". Só o essencial. Use os dados abaixo.
 
 DATA ATUAL: ${new Date().toLocaleDateString('pt-BR')} | Mês visualizado: ${MESES[viewMonth]}/${viewYear}
 
@@ -1938,7 +1938,7 @@ ${parcSummary || 'Nenhum parcelamento ativo.'}
 === LIMITES PREVISTOS POR CATEGORIA ===
 ${previstosSummary || 'Nenhum previsto definido.'}
 
-Responda de forma concisa. Se não encontrar a informação nos dados, diga que não foi lançado ainda.`;
+Se não encontrar nos dados, responda: "Não encontrado nos lançamentos."`;
 }
 
 window.aiKeydown = e => { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAiMessage();} };
