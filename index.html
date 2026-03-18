@@ -327,7 +327,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
     <div class="field"><label>Email</label><input type="email" id="auth-email" placeholder="seu@email.com"></div>
     <div class="field"><label>Senha</label><input type="password" id="auth-password" placeholder="••••••••"></div>
     <div class="field" id="field-name" style="display:none"><label>Nome</label><input type="text" id="auth-name" placeholder="Pedro ou Amanda"></div>
-    <button class="btn-primary" id="auth-btn" onclick="doAuth()">Entrar</button>
+    <button class="btn-primary" id="auth-btn">Entrar</button>
     <div class="auth-err" id="auth-err"></div>
   </div>
 </div>
@@ -699,6 +699,11 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
   </div>
 </div>
 
+<script>
+// Bridge: ensure auth functions work before module loads
+function doAuth(){ if(window._doAuth) window._doAuth(); }
+function switchTab(t){ if(window._switchTab) window._switchTab(t); else { var tabs=document.querySelectorAll('.auth-tab'); tabs.forEach(function(el,i){el.classList.toggle('active',(i===0&&t==='login')||(i===1&&t==='register'));}); document.getElementById('field-name').style.display=t==='register'?'block':'none'; document.getElementById('auth-btn').textContent=t==='login'?'Entrar':'Criar conta'; } }
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
@@ -754,14 +759,14 @@ let registeredUsers=[];
 
 // ── AUTH ──────────────────────────────────────────────────
 let _authTab='login';
-window.switchTab = t=>{
+window._switchTab = window.switchTab = t=>{
   _authTab=t;
   document.querySelectorAll('.auth-tab').forEach((el,i)=>el.classList.toggle('active',(i===0&&t==='login')||(i===1&&t==='register')));
   document.getElementById('field-name').style.display=t==='register'?'block':'none';
   document.getElementById('auth-btn').textContent=t==='login'?'Entrar':'Criar conta';
   document.getElementById('auth-err').textContent='';
 };
-window.doAuth = async ()=>{
+window._doAuth = window.doAuth = async ()=>{
   const email=document.getElementById('auth-email').value.trim();
   const pw=document.getElementById('auth-password').value;
   const name=document.getElementById('auth-name').value.trim();
@@ -812,6 +817,15 @@ onAuthStateChanged(auth,async user=>{
 });
 
 // ── INIT ──────────────────────────────────────────────────
+// Wire up auth button via JS (more reliable than inline onclick in modules)
+document.addEventListener('DOMContentLoaded', ()=>{
+  const btn = document.getElementById('auth-btn');
+  if(btn) btn.addEventListener('click', ()=>{ if(window.doAuth) window.doAuth(); });
+  // also wire Enter key on password field
+  const pw = document.getElementById('auth-password');
+  if(pw) pw.addEventListener('keydown', e=>{ if(e.key==='Enter' && window.doAuth) window.doAuth(); });
+});
+
 async function initApp(){
   updateMonthLabel();
   await loadConfig();
