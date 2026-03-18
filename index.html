@@ -59,8 +59,8 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 .nav-item{display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:var(--radius);margin:1px 6px;cursor:pointer;color:var(--text2);font-size:14px;transition:all .1s;user-select:none}
 .nav-item:hover{background:var(--bg-hover);color:var(--text)}
 .nav-item.active{background:var(--bg3);color:var(--text);font-weight:500}
-.nav-item-icon{width:20px;text-align:center;font-size:14px;flex-shrink:0}
-.sidebar-month{padding:10px 14px;margin-top:auto;border-top:1px solid var(--border)}
+.nav-item-icon{width:20px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sidebar-month{padding:8px 12px;border-bottom:1px solid var(--border)}
 .month-nav{display:flex;align-items:center;gap:6px}
 .month-btn{background:none;border:1px solid var(--border);border-radius:5px;width:26px;height:26px;cursor:pointer;color:var(--text2);font-size:14px;display:flex;align-items:center;justify-content:center}
 .month-btn:hover{background:var(--bg3)}
@@ -138,13 +138,15 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 .tx-date{font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;min-width:46px}
 .tx-desc{flex:1;font-size:13px}
 .tx-tags{display:flex;gap:3px;flex-wrap:wrap}
-.tag-badge{padding:1px 7px;background:var(--bg3);border-radius:20px;font-size:11px;color:var(--text2)}
+
 .tx-val{font-size:13px;font-family:'DM Mono',monospace;font-weight:500;min-width:85px;text-align:right}
 .tx-val.pos{color:var(--green)}
 .tx-val.neg{color:var(--red)}
 .tx-del{opacity:0;background:none;border:none;cursor:pointer;color:var(--text3);font-size:15px;padding:1px 4px;border-radius:3px}
-.tx-item:hover .tx-del{opacity:1}
+.tx-edit{opacity:0;background:none;border:none;cursor:pointer;color:var(--text3);font-size:12px;padding:2px 5px;border-radius:3px;font-family:'Sora',sans-serif}
+.tx-item:hover .tx-del,.tx-item:hover .tx-edit{opacity:1}
 .tx-del:hover{color:var(--red)}
+.tx-edit:hover{color:var(--accent);background:var(--accent-bg)}
 
 /* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:300;align-items:center;justify-content:center;padding:20px}
@@ -168,11 +170,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 .btn-save:hover{opacity:.85}
 
 /* TAGS */
-.tags-wrap{display:flex;flex-wrap:wrap;gap:4px;padding:5px 8px;border:1px solid var(--border);border-radius:var(--radius);min-height:36px;cursor:text;align-items:center}
-.tags-wrap:focus-within{border-color:var(--accent)}
-.tag-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;background:var(--bg3);border-radius:20px;font-size:12px}
-.tag-chip button{background:none;border:none;cursor:pointer;color:var(--text2);font-size:13px;line-height:1}
-.tags-wrap input{border:none;outline:none;font-size:13px;font-family:'Sora',sans-serif;background:transparent;min-width:80px;flex:1}
+
 
 /* CHARTS */
 .chart-wrap{position:relative;height:220px}
@@ -196,6 +194,28 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 .inv-tx-del{background:none;border:none;cursor:pointer;color:var(--text3);opacity:0;font-size:13px}
 .inv-tx-item:hover .inv-tx-del{opacity:1}
 .inv-tx-del:hover{color:var(--red)}
+
+/* PARCELAMENTOS */
+.parc-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px;margin-bottom:10px}
+.parc-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.parc-desc{font-size:15px;font-weight:600;letter-spacing:-0.2px}
+.parc-cartao{font-size:12px;color:var(--text2);margin-top:2px}
+.parc-progress-wrap{display:flex;align-items:center;gap:10px;margin:10px 0}
+.parc-pbar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.parc-pbar-fill{height:100%;border-radius:3px;transition:width .5s}
+.parc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px}
+.parc-stat{background:var(--bg2);border-radius:var(--radius);padding:8px 12px}
+.parc-stat-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px}
+.parc-stat-val{font-size:14px;font-weight:600;font-family:'DM Mono',monospace}
+.parc-status{display:inline-flex;align-items:center;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.parc-status.active{background:var(--green-bg);color:var(--green)}
+.parc-status.ending{background:var(--amber-bg);color:var(--amber)}
+.parc-status.done{background:var(--bg3);color:var(--text3)}
+.parc-parcelas-list{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}
+.parc-parcela-chip{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;cursor:default}
+.parc-parcela-chip.paid{background:var(--green-bg);color:var(--green)}
+.parc-parcela-chip.current{background:var(--accent);color:white}
+.parc-parcela-chip.future{background:var(--border);color:var(--text3)}
 
 /* GOALS */
 .goals-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
@@ -227,7 +247,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 /* RESPONSIVE */
 @media(max-width:768px){
   .sidebar{width:100%;height:auto;position:relative;border-right:none;border-bottom:1px solid var(--border)}
-  .sidebar-month{margin-top:0;border-top:none;border-left:1px solid var(--border);padding:8px 14px}
+  .sidebar-month{border-bottom:1px solid var(--border);border-left:none;padding:8px 12px}
   .main{margin-left:0}
   .page{padding:20px 16px}
   .metrics-grid{grid-template-columns:1fr 1fr}
@@ -237,6 +257,56 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 @media(max-width:480px){.metric-value{font-size:17px}.page-title{font-size:20px}}
 .empty{text-align:center;padding:32px;color:var(--text2);font-size:14px}
 .divider{height:1px;background:var(--border);margin:16px 0}
+/* ── AI ASSISTANT ─────────────────────────────────────── */
+.ai-btn{position:fixed;bottom:24px;right:24px;width:52px;height:52px;border-radius:50%;background:var(--text);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,0,0,0.18);z-index:400;transition:transform .2s,box-shadow .2s}
+.ai-btn:hover{transform:scale(1.08);box-shadow:0 6px 20px rgba(0,0,0,0.22)}
+.ai-btn.open{background:var(--bg3);border:1px solid var(--border)}
+.ai-panel{position:fixed;bottom:88px;right:24px;width:360px;height:520px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);z-index:399;display:flex;flex-direction:column;transform:scale(0.92) translateY(12px);opacity:0;pointer-events:none;transition:transform .2s,opacity .2s;transform-origin:bottom right}
+.ai-panel.open{transform:scale(1) translateY(0);opacity:1;pointer-events:all}
+.ai-header{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-shrink:0}
+.ai-avatar{width:30px;height:30px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.ai-header-info{flex:1}
+.ai-header-name{font-size:13px;font-weight:600}
+.ai-header-status{font-size:11px;color:var(--green)}
+.ai-history-btn{background:none;border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-size:11px;color:var(--text2);cursor:pointer;font-family:'Sora',sans-serif}
+.ai-history-btn:hover{background:var(--bg2)}
+.ai-messages{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.ai-msg{max-width:88%;padding:8px 11px;border-radius:var(--radius-lg);font-size:13px;line-height:1.5}
+.ai-msg.user{background:var(--text);color:white;align-self:flex-end;border-radius:var(--radius-lg) var(--radius-lg) 4px var(--radius-lg)}
+.ai-msg.assistant{background:var(--bg2);color:var(--text);align-self:flex-start;border-radius:var(--radius-lg) var(--radius-lg) var(--radius-lg) 4px}
+.ai-msg.thinking{color:var(--text3);font-style:italic;background:none;padding:4px 0}
+.ai-msg-time{font-size:10px;opacity:.5;margin-top:3px}
+.ai-footer{padding:10px 12px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0}
+.ai-input{flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:'Sora',sans-serif;color:var(--text);background:var(--bg);resize:none;height:36px;overflow:hidden}
+.ai-input:focus{outline:none;border-color:var(--accent)}
+.ai-send{width:36px;height:36px;background:var(--text);color:white;border:none;border-radius:var(--radius);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ai-send:hover{opacity:.85}
+.ai-send:disabled{opacity:.4;cursor:default}
+.ai-hist-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:500;display:none;align-items:center;justify-content:center}
+.ai-hist-overlay.open{display:flex}
+.ai-hist-modal{background:var(--bg);border-radius:var(--radius-lg);width:540px;max-height:80vh;display:flex;flex-direction:column;box-shadow:var(--shadow-md)}
+.ai-hist-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.ai-hist-body{flex:1;overflow-y:auto;padding:16px 20px}
+.ai-conv-item{border:1px solid var(--border);border-radius:var(--radius-lg);padding:12px 14px;margin-bottom:8px;cursor:pointer}
+.ai-conv-item:hover{background:var(--bg2)}
+.ai-conv-date{font-size:11px;color:var(--text3);margin-bottom:4px}
+.ai-conv-preview{font-size:13px;color:var(--text2)}
+@media(max-width:480px){.ai-panel{width:calc(100vw - 32px);right:16px;bottom:80px}.ai-btn{bottom:16px;right:16px}}
+
+.parc-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:10px}
+.parc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:10px}
+.parc-name{font-size:15px;font-weight:600;letter-spacing:-0.2px}
+.parc-cat{font-size:11px;color:var(--text2);margin-top:1px}
+.parc-body{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}
+.parc-stat{text-align:center}
+.parc-stat-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px}
+.parc-stat-val{font-size:15px;font-weight:600;font-family:'DM Mono',monospace}
+.parc-progress{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.parc-bar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.parc-bar-fill{height:100%;border-radius:3px;transition:width .5s,background .4s}
+.parc-pct{font-size:12px;font-family:'DM Mono',monospace;min-width:36px;text-align:right}
+.parc-actions{display:flex;gap:6px}
+.parc-hist-card{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:6px;opacity:.7}
 </style>
 </head>
 <body>
@@ -266,21 +336,28 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 <div id="app-screen">
   <div class="sidebar">
     <div class="sidebar-header">
-      <div class="sidebar-logo" style="padding:4px 6px">
-        <svg viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg" width="110" height="auto" fill="currentColor" style="display:block">
+      <div class="sidebar-logo" style="padding:6px 8px">
+        <svg viewBox="0 0 1920 1080" xmlns="http://www.w3.org/2000/svg" width="100" height="auto" fill="currentColor" style="display:block">
           <g><path d="M622.7,730.4c-28.1,0-53.6-4.6-76.4-13.9-22.8-9.3-42.4-22.3-58.8-39.2-16.4-16.9-29-36.8-37.9-59.8-8.9-23-13.4-48-13.4-75.1v-10.9c0-23.1,4-45.5,12.2-67.2,8.1-21.6,19.8-41.2,35.2-58.5,15.4-17.4,34.1-31.1,56.3-41.2,22.1-10.1,47.1-15.1,74.9-15.1s56.9,5.7,80.3,17.1c23.5,11.4,42.3,27.3,56.5,47.6,14.2,20.3,22.5,43.9,24.8,70.7h-49.6c-2.3-20.2-8.9-36.9-19.8-50.3-10.9-13.4-24.4-23.5-40.4-30.3-16-6.8-33.3-10.2-51.8-10.2s-36.2,3.4-52.1,10.2c-15.9,6.8-29.5,16.5-40.9,29-11.4,12.6-20.3,27.6-26.5,45.1-6.3,17.5-9.4,37.2-9.4,59s3.4,46.5,10.2,65.2c6.8,18.7,16.3,34.2,28.5,46.6,12.2,12.4,26.7,21.7,43.4,28,16.7,6.3,35,9.4,54.8,9.4,28.1,0,52.8-5.7,74.1-17.1,21.3-11.4,37.4-26.2,48.4-44.4l-17.9,59v-107.6h45.6v86.3c-16.2,21.2-37,37.7-62.5,49.6-25.5,11.9-54.7,17.9-87.8,17.9ZM609.9,586.6v-40.7h193.9v40.7h-193.9Z"/><path d="M856.8,721.5v-264.8h37.7v109.1h-2c0-38.7,8.5-67,25.5-85.1,17-18,42.6-27,76.6-27h8.9v42.6h-16.9c-26.5,0-46.8,7-61,21.1-14.2,14.1-21.3,34.3-21.3,60.7v143.3h-47.6Z"/><path d="M1160.3,730.4c-23.1,0-43.1-4-60-11.9-16.9-7.9-30.6-18.4-41.2-31.5-10.6-13.1-18.4-27.7-23.6-43.9-5.1-16.2-7.7-32.7-7.7-49.6v-8.9c0-17.2,2.6-33.9,7.7-50.1,5.1-16.2,13-30.8,23.6-43.9,10.6-13.1,24.1-23.5,40.4-31.2,16.4-7.8,35.6-11.7,57.8-11.7s52.5,6.2,71.2,18.6c18.7,12.4,32.6,28.4,41.7,47.9,9.1,19.5,13.6,40.3,13.6,62.5v21.3h-235.1v-35.7h200.4l-10.9,19.3c0-18.8-3-35.1-8.9-48.8-6-13.7-14.9-24.4-26.8-32-11.9-7.6-27-11.4-45.1-11.4s-34.5,4.3-46.9,12.9c-12.4,8.6-21.7,20.3-27.8,35.2-6.1,14.9-9.2,32.1-9.2,51.6s3.1,35.8,9.2,50.8c6.1,15.1,15.6,27,28.5,35.7,12.9,8.8,29.3,13.1,49.1,13.1s37.8-4.6,50.8-13.9c13.1-9.3,20.9-20,23.6-32.2h44.6c-3.6,18.2-10.9,33.9-21.8,47.1-10.9,13.2-24.6,23.3-41.2,30.3-16.5,6.9-35.2,10.4-56,10.4Z"/><path d="M1455.4,730.4c-22.8,0-42.6-4-59.3-11.9-16.7-7.9-30.5-18.6-41.4-32-10.9-13.4-19.1-28.2-24.5-44.4-5.5-16.2-8.2-32.4-8.2-48.6v-8.9c0-16.9,2.7-33.4,8.2-49.6,5.5-16.2,13.7-30.8,24.8-43.9,11.1-13.1,24.9-23.6,41.4-31.5,16.5-7.9,35.9-11.9,58-11.9s42.1,4.1,59.8,12.4c17.7,8.3,31.9,19.9,42.7,35,10.7,15,16.8,32.8,18.1,53.3h-45.6c-2.3-16.5-9.9-30.3-22.8-41.4-12.9-11.1-30.3-16.6-52.1-16.6s-34.6,4.3-47.1,12.9c-12.6,8.6-22,20.3-28.3,35.2-6.3,14.9-9.4,31.7-9.4,50.6s3.1,34.8,9.4,49.8c6.3,15,15.8,26.9,28.5,35.7,12.7,8.8,28.7,13.1,47.9,13.1s27.8-2.6,38.7-7.9c10.9-5.3,19.7-12.4,26.3-21.3,6.6-8.9,10.6-19,11.9-30.3h45.6c-1,20.8-7,38.9-18.1,54.1-11.1,15.2-25.6,27-43.6,35.5-18,8.4-38.3,12.6-60.8,12.6Z"/><path d="M1754.9,730.4c-23.1,0-43.5-4-61-11.9-17.5-7.9-32.3-18.4-44.4-31.5-12.1-13.1-21.2-27.7-27.3-43.9-6.1-16.2-9.2-32.7-9.2-49.6v-8.9c0-16.9,3.1-33.5,9.4-49.8,6.3-16.4,15.5-31.1,27.8-44.1,12.2-13.1,27.1-23.5,44.6-31.2,17.5-7.8,37.5-11.7,60-11.7s42.5,3.9,60,11.7c17.5,7.8,32.4,18.2,44.6,31.2,12.2,13.1,21.5,27.8,27.8,44.1,6.3,16.4,9.4,33,9.4,49.8v8.9c0,16.9-3.1,33.4-9.2,49.6-6.1,16.2-15.2,30.8-27.3,43.9-12.1,13.1-26.9,23.6-44.4,31.5-17.5,7.9-37.9,11.9-61,11.9ZM1754.9,687.8c19.8,0,36.8-4.4,50.8-13.1,14-8.8,24.8-20.6,32.2-35.5,7.4-14.9,11.2-31.6,11.2-50.1s-3.8-35.7-11.4-50.6c-7.6-14.9-18.4-26.6-32.5-35.2-14.1-8.6-30.8-12.9-50.3-12.9s-35.9,4.3-50.1,12.9c-14.2,8.6-25.1,20.3-32.7,35.2-7.6,14.9-11.4,31.7-11.4,50.6s3.7,35.2,11.2,50.1c7.4,14.9,18.2,26.7,32.2,35.5,14,8.8,31,13.1,50.8,13.1Z"/></g>
           <g><polygon points="329.6 327.5 23.2 365 23.2 282.4 329.6 282.4 329.6 327.5"/><polygon points="23.2 752.5 329.6 715 329.6 797.6 23.2 797.6 23.2 752.5"/><polygon points="119.2 720.3 54.9 727.8 54.5 380.8 118.8 373.3 119.2 720.3"/><polygon points="208.8 709.8 144.4 717.3 144 370.3 208.4 362.8 208.8 709.8"/><polygon points="298.3 699.3 234 706.9 233.6 359.8 298 352.3 298.3 699.3"/></g>
         </svg>
       </div>
+      <div class="sidebar-month">
+        <div class="month-nav">
+          <button class="month-btn" onclick="changeMonth(-1)">&#8249;</button>
+          <span class="month-label" id="monthLabel"></span>
+          <button class="month-btn" onclick="changeMonth(1)">&#8250;</button>
+        </div>
+      </div>
     </div>
-    <div class="sidebar-section">Menu</div>
-    <div class="nav-item active" onclick="showPage('dashboard',this)"><div class="nav-item-icon">⊞</div>Painel</div>
-    <div class="nav-item" onclick="showPage('receitas',this)"><div class="nav-item-icon">↑</div>Receitas</div>
-    <div class="nav-item" onclick="showPage('despesas',this)"><div class="nav-item-icon">↓</div>Despesas</div>
-    <div class="nav-item" onclick="showPage('investimentos',this)"><div class="nav-item-icon">◈</div>Investimentos</div>
-    <div class="nav-item" onclick="showPage('metas',this)"><div class="nav-item-icon">◎</div>Metas</div>
-    <div class="nav-item" onclick="showPage('relatorios',this)"><div class="nav-item-icon">≋</div>Relatórios</div>
-    <div class="nav-item" onclick="showPage('configuracoes',this)"><div class="nav-item-icon">⚙</div>Configurações</div>
+    <div class="nav-item active" onclick="showPage('dashboard',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>Painel</div>
+    <div class="nav-item" onclick="showPage('receitas',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></div>Receitas</div>
+    <div class="nav-item" onclick="showPage('despesas',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></div>Despesas</div>
+    <div class="nav-item" onclick="showPage('investimentos',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>Investimentos</div>
+    <div class="nav-item" onclick="showPage('parcelamentos',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/><line x1="7" y1="15" x2="9" y2="15"/><line x1="12" y1="15" x2="17" y2="15"/></svg></div>Parcelamentos</div>
+    <div class="nav-item" onclick="showPage('metas',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>Metas</div>
+    <div class="nav-item" onclick="showPage('relatorios',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></div>Relatórios</div>
+    <div class="nav-item" onclick="showPage('configuracoes',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>Configurações</div>
     <div class="sidebar-user" id="sidebar-user-block">
       <div class="sidebar-user-avatar" id="user-avatar-initials"></div>
       <div class="sidebar-user-info">
@@ -292,13 +369,6 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
           <path d="M11 13l3-4-3-4M14 9H6M9 3H4a1 1 0 00-1 1v10a1 1 0 001 1h5"/>
         </svg>
       </button>
-    </div>
-    <div class="sidebar-month">
-      <div class="month-nav">
-        <button class="month-btn" onclick="changeMonth(-1)">‹</button>
-        <span class="month-label" id="monthLabel"></span>
-        <button class="month-btn" onclick="changeMonth(1)">›</button>
-      </div>
     </div>
   </div>
 
@@ -335,6 +405,23 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
       <div id="desp-cats"></div>
     </div>
 
+    <!-- PARCELAMENTOS -->
+    <div id="page-parcelamentos" class="page">
+      <div class="page-header">
+        <div><div class="page-title">Parcelamentos</div><div class="page-sub">Compras parceladas e cartão de crédito</div></div>
+        <button class="btn-add" onclick="openParcModal()">+ Novo parcelamento</button>
+      </div>
+      <div class="metrics-grid" id="parc-metrics"></div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Parcelamentos ativos</span></div>
+        <div class="card-body" id="parc-list"></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Concluídos / encerrados</span></div>
+        <div class="card-body" id="parc-done-list"></div>
+      </div>
+    </div>
+
     <!-- INVESTIMENTOS -->
     <div id="page-investimentos" class="page">
       <div class="page-header">
@@ -356,6 +443,33 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
         <button class="btn-add" onclick="openGoalModal()">+ Nova meta</button>
       </div>
       <div class="goals-grid" id="goals-container"></div>
+    </div>
+
+    <!-- PARCELAMENTOS -->
+    <div id="page-parcelamentos" class="page">
+      <div class="page-header">
+        <div><div class="page-title">Parcelamentos</div><div class="page-sub">Compras parceladas e cartão de crédito</div></div>
+        <button class="btn-add" onclick="openParcModal()">+ Novo parcelamento</button>
+      </div>
+      <div class="metrics-grid" id="parc-metrics"></div>
+      <div id="parc-list"></div>
+    </div>
+
+    <!-- PARCELAMENTOS -->
+    <div id="page-parcelamentos" class="page">
+      <div class="page-header">
+        <div><div class="page-title">Parcelamentos</div><div class="page-sub">Compras parceladas em aberto</div></div>
+        <button class="btn-add" onclick="openParcModal()">+ Novo parcelamento</button>
+      </div>
+      <div class="metrics-grid" id="parc-metrics"></div>
+      <div id="parc-active"></div>
+      <div id="parc-history-section" style="display:none">
+        <div style="display:flex;align-items:center;gap:10px;margin:20px 0 12px;cursor:pointer" onclick="toggleParcHistory()">
+          <span style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Histórico de concluídos</span>
+          <span id="parc-history-chevron" style="font-size:11px;color:var(--text3)">▶</span>
+        </div>
+        <div id="parc-history" style="display:none"></div>
+      </div>
     </div>
 
     <!-- RELATÓRIOS -->
@@ -403,14 +517,57 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
         <div class="fg"><label>Valor previsto (R$)</label><input type="number" id="me-prev" placeholder="0,00" step="0.01" min="0"></div>
       </div>
       <div class="form-row single"><div class="fg"><label>Descrição</label><input id="me-desc" placeholder="Ex: Supermercado Extra, Salário março..."></div></div>
-      <div class="form-row single">
-        <div class="fg"><label>Tags</label>
-          <div class="tags-wrap" id="tags-wrap" onclick="document.getElementById('tags-input').focus()">
-            <input id="tags-input" placeholder="Digite e Enter..." onkeydown="handleTagInput(event)">
-          </div>
-        </div>
+
+      <div class="btn-row" id="entry-btn-row">
+        <button class="btn-cancel" onclick="closeModal('modal-entry')">Cancelar</button>
+        <button class="btn-save" onclick="saveEntry()">Salvar</button>
       </div>
-      <div class="btn-row"><button class="btn-cancel" onclick="closeModal('modal-entry')">Cancelar</button><button class="btn-save" onclick="saveEntry()">Salvar</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PARCELAMENTO -->
+<div class="modal-overlay" id="modal-parc">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title" id="mp2-title">Novo parcelamento</span><button class="modal-close" onclick="closeModal('modal-parc')">×</button></div>
+    <div class="modal-body">
+      <div class="form-row single"><div class="fg"><label>Descrição</label><input id="parc-desc" placeholder="Ex: iPhone 15, Sofá, Geladeira..."></div></div>
+      <div class="form-row">
+        <div class="fg"><label>Valor total (R$)</label><input type="number" id="parc-total" placeholder="0,00" step="0.01" min="0"></div>
+        <div class="fg"><label>Número de parcelas</label><input type="number" id="parc-num" placeholder="12" min="1" max="120"></div>
+      </div>
+      <div class="form-row">
+        <div class="fg"><label>Data 1ª parcela</label><input type="date" id="parc-start"></div>
+        <div class="fg"><label>Categoria de despesa</label><select id="parc-cat"></select></div>
+      </div>
+      <div class="form-row single"><div class="fg"><label>Cartão / Banco</label><input id="parc-cartao" placeholder="Ex: Nubank, Itaú Visa..."></div></div>
+      <div class="form-row single"><div class="fg"><label>Observações</label><input id="parc-notes" placeholder="Opcional"></div></div>
+      <div class="btn-row"><button class="btn-cancel" onclick="closeModal('modal-parc')">Cancelar</button><button class="btn-save" onclick="saveParc()">Salvar</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PARCELAMENTO -->
+<div class="modal-overlay" id="modal-parc">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title" id="mp2-title">Novo parcelamento</span><button class="modal-close" onclick="closeModal('modal-parc')">×</button></div>
+    <div class="modal-body">
+      <div class="form-row single"><div class="fg"><label>Descrição</label><input id="parc-desc" placeholder="Ex: iPhone 16, Sofá, Curso..."></div></div>
+      <div class="form-row">
+        <div class="fg"><label>Valor total (R$)</label><input type="number" id="parc-total" placeholder="0,00" step="0.01" min="0" oninput="calcParcPrestacao()"></div>
+        <div class="fg"><label>Nº de parcelas</label><input type="number" id="parc-num" placeholder="12" min="1" max="360" oninput="calcParcPrestacao()"></div>
+      </div>
+      <div class="form-row">
+        <div class="fg"><label>Parcela mensal (R$)</label><input type="number" id="parc-prestacao" placeholder="0,00" step="0.01" min="0" oninput="calcParcTotal()"></div>
+        <div class="fg"><label>Mês da 1ª parcela</label><input type="month" id="parc-inicio"></div>
+      </div>
+      <div class="form-row">
+        <div class="fg"><label>Categoria</label><select id="parc-cat"></select></div>
+        <div class="fg"><label>Cartão / conta</label><input id="parc-cartao" placeholder="Ex: Nubank, Inter..."></div>
+      </div>
+      <div class="form-row single"><div class="fg"><label>Observações</label><input id="parc-obs" placeholder="Opcional"></div></div>
+      <div id="parc-preview" style="background:var(--bg2);border-radius:var(--radius);padding:10px 12px;font-size:13px;color:var(--text2);margin-top:4px;display:none"></div>
+      <div class="btn-row"><button class="btn-cancel" onclick="closeModal('modal-parc')">Cancelar</button><button class="btn-save" onclick="saveParc()">Salvar</button></div>
     </div>
   </div>
 </div>
@@ -508,6 +665,29 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
   </div>
 </div>
 
+<!-- MODAL PARCELAMENTO -->
+<div class="modal-overlay" id="modal-parc">
+  <div class="modal">
+    <div class="modal-header"><span class="modal-title" id="mp2-title">Novo parcelamento</span><button class="modal-close" onclick="closeModal('modal-parc')">×</button></div>
+    <div class="modal-body">
+      <div class="form-row single"><div class="fg"><label>Descrição</label><input id="parc-desc" placeholder="Ex: iPhone 15, Sofá, Viagem..."></div></div>
+      <div class="form-row">
+        <div class="fg"><label>Valor total (R$)</label><input type="number" id="parc-total" placeholder="1200,00" step="0.01" min="0" oninput="calcParcValue()"></div>
+        <div class="fg"><label>Nº de parcelas</label><input type="number" id="parc-num" placeholder="12" min="1" max="360" oninput="calcParcValue()"></div>
+      </div>
+      <div class="form-row">
+        <div class="fg"><label>Valor por parcela</label><input type="text" id="parc-valor-display" readonly style="background:var(--bg2);color:var(--text2)"></div>
+        <div class="fg"><label>1ª parcela em</label><input type="month" id="parc-inicio"></div>
+      </div>
+      <div class="form-row">
+        <div class="fg"><label>Categoria</label><select id="parc-cat"></select></div>
+        <div class="fg"><label>Parcelas já pagas</label><input type="number" id="parc-pagas" placeholder="0" min="0" value="0"></div>
+      </div>
+      <div class="btn-row"><button class="btn-cancel" onclick="closeModal('modal-parc')">Cancelar</button><button class="btn-save" onclick="saveParc()">Salvar</button></div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL TIPO INVESTIMENTO -->
 <div class="modal-overlay" id="modal-inv-tipo">
   <div class="modal">
@@ -565,7 +745,8 @@ let currentUser=null, isAdmin=false;
 let viewMonth=new Date().getMonth(), viewYear=new Date().getFullYear();
 let entries=[], goals=[], investments=[], invMovimentos=[];
 let cats={receita:[],despesa:[]}, previstos={}, invTipos=[...DEFAULT_INV_TIPOS];
-let currentTags=[], editingEntryId=null, editingGoalId=null, editingInvId=null;
+let editingEntryId=null, editingGoalId=null, editingInvId=null, editingParcId=null;
+let parcelamentos=[];
 let currentInvForMov=null, currentPrevistoKey=null, _catTipo='despesa', _subcatTipo='despesa';
 let barChartInst, pieChartInst, lineChartInst, invBarChartInst, invPieChartInst;
 let unsubs=[];
@@ -634,7 +815,15 @@ onAuthStateChanged(auth,async user=>{
 async function initApp(){
   updateMonthLabel();
   await loadConfig();
+  await loadApiKey();
   listenAll();
+}
+
+async function loadApiKey(){
+  try {
+    const snap = await getDoc(doc(db,'config','secrets'));
+    if(snap.exists()) ANTHROPIC_KEY = snap.data().anthropicKey || null;
+  } catch(e){ console.warn('Could not load API key', e); }
 }
 async function loadConfig(){
   const cd=await getDoc(doc(db,'config','categories'));
@@ -649,6 +838,197 @@ async function loadConfig(){
 async function saveCategories(){await setDoc(doc(db,'config','categories'),cats);}
 async function savePrevistos(){await setDoc(doc(db,'config','previstos'),previstos);}
 async function saveInvTipos(){await setDoc(doc(db,'config','invTipos'),{tipos:invTipos});}
+
+// ── PARCELAMENTOS ─────────────────────────────────────────
+let parcelas = [];
+let editingParcId = null;
+let unsubParc = null;
+
+function listenParc(){
+  if(unsubParc) unsubParc();
+  unsubParc = onSnapshot(collection(db,'parcelas'), s=>{
+    parcelas = s.docs.map(d=>({id:d.id,...d.data()}));
+    if(activePage()==='parcelamentos') renderParcelamentos();
+    if(activePage()==='dashboard') renderDashboard();
+  });
+}
+
+// Returns parcela value for a given month/year
+function getParcValForMonth(parc, m, y){
+  const start = new Date(parc.inicio+'-01T12:00:00');
+  const sm = start.getMonth(), sy = start.getFullYear();
+  const monthIdx = (y - sy)*12 + (m - sm);
+  if(monthIdx < 0 || monthIdx >= Number(parc.numParcelas)) return 0;
+  return Number(parc.prestacao)||0;
+}
+
+// Total parcelamentos value for current view month
+function getParcTotalMonth(m=viewMonth, y=viewYear){
+  return parcelas.filter(p=>!p.cancelado).reduce((s,p)=>s+getParcValForMonth(p,m,y),0);
+}
+
+function getParcStatus(parc){
+  const start = new Date(parc.inicio+'-01T12:00:00');
+  const end = new Date(start);
+  end.setMonth(end.getMonth() + Number(parc.numParcelas) - 1);
+  const now = new Date();
+  const paidMonths = Math.max(0,Math.min(Number(parc.numParcelas),(now.getFullYear()-start.getFullYear())*12+(now.getMonth()-start.getMonth())+1));
+  const remaining = Number(parc.numParcelas) - paidMonths;
+  return { start, end, paidMonths, remaining, done: remaining <= 0 || parc.cancelado };
+}
+
+function renderParcelamentos(){
+  const ativas = parcelas.filter(p=>{ const s=getParcStatus(p); return !s.done && !p.cancelado; });
+  const encerradas = parcelas.filter(p=>{ const s=getParcStatus(p); return s.done || p.cancelado; });
+
+  const totalMes = getParcTotalMonth();
+  const totalRestante = ativas.reduce((s,p)=>{ const st=getParcStatus(p); return s+st.remaining*Number(p.prestacao); },0);
+  const totalParcelas = ativas.reduce((s,p)=>s+Number(p.numParcelas),0);
+  const paidTotal = ativas.reduce((s,p)=>{ const st=getParcStatus(p); return s+st.paidMonths*Number(p.prestacao); },0);
+
+  document.getElementById('parc-metrics').innerHTML=`
+    <div class="metric-card"><div class="metric-label">Este mês</div><div class="metric-value neg">${fmt(totalMes)}</div><div class="metric-badge">${ativas.length} parcelamento${ativas.length!==1?'s':''} ativo${ativas.length!==1?'s':''}</div></div>
+    <div class="metric-card"><div class="metric-label">Total restante</div><div class="metric-value neg">${fmt(totalRestante)}</div></div>
+    <div class="metric-card"><div class="metric-label">Já pago</div><div class="metric-value">${fmt(paidTotal)}</div></div>
+    <div class="metric-card"><div class="metric-label">Encerram em breve</div><div class="metric-value amber">${ativas.filter(p=>getParcStatus(p).remaining<=3).length} parcela${ativas.filter(p=>getParcStatus(p).remaining<=3).length!==1?'s':''}</div></div>`;
+
+  const listEl = document.getElementById('parc-list');
+  if(!ativas.length){ listEl.innerHTML='<div class="empty">Nenhum parcelamento ativo.</div>'; }
+  else {
+    listEl.innerHTML = ativas.map(p=>{
+      const st = getParcStatus(p);
+      const pct = Math.round((st.paidMonths/Number(p.numParcelas))*100);
+      const endStr = st.end.toLocaleDateString('pt-BR',{month:'short',year:'numeric'});
+      const urgency = st.remaining<=2?'var(--green)':st.remaining<=6?'var(--amber)':'var(--accent)';
+      const mesAtual = getParcValForMonth(p, viewMonth, viewYear);
+      return`<div style="display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)">
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:500;margin-bottom:2px">${p.descricao}</div>
+          <div style="font-size:12px;color:var(--text2)">${p.cartao?p.cartao+' · ':''}${p.catLabel||p.cat||'—'}</div>
+          ${p.obs?`<div style="font-size:11px;color:var(--text3);font-style:italic">${p.obs}</div>`:''}
+        </div>
+        <div style="text-align:center;min-width:70px">
+          <div style="font-size:13px;font-weight:600;font-family:'DM Mono',monospace;color:${mesAtual>0?'var(--red)':'var(--text3)'}">${mesAtual>0?fmt(mesAtual):'—'}</div>
+          <div style="font-size:11px;color:var(--text2)">este mês</div>
+        </div>
+        <div style="text-align:center;min-width:90px">
+          <div style="font-size:13px;font-weight:600;font-family:'DM Mono',monospace">${fmt(p.prestacao)}</div>
+          <div style="font-size:11px;color:var(--text2)">${st.paidMonths}/${p.numParcelas} pagas</div>
+        </div>
+        <div style="min-width:110px">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
+            <div style="flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;border-radius:3px;background:${urgency};width:${pct}%"></div></div>
+            <span style="font-size:11px;font-family:'DM Mono',monospace;color:${urgency}">${pct}%</span>
+          </div>
+          <div style="font-size:11px;color:var(--text2)">Termina ${endStr} · ${st.remaining} rest.</div>
+        </div>
+        <div style="display:flex;gap:4px;flex-shrink:0">
+          <button class="btn-ghost" onclick="editParc('${p.id}')" style="font-size:12px">✎</button>
+          <button class="btn-ghost" onclick="cancelParc('${p.id}')" style="font-size:12px;color:var(--red)" title="Encerrar">×</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  const doneEl = document.getElementById('parc-done-list');
+  if(!encerradas.length){ doneEl.innerHTML='<div class="empty">Nenhum encerrado ainda.</div>'; }
+  else {
+    doneEl.innerHTML = encerradas.map(p=>{
+      const label = p.cancelado?'Cancelado':'Concluído';
+      return`<div style="display:flex;align-items:center;gap:14px;padding:10px 0;border-bottom:1px solid var(--border);opacity:.6">
+        <div style="flex:1"><div style="font-size:13px;font-weight:500">${p.descricao}</div><div style="font-size:12px;color:var(--text2)">${p.cartao||''} · ${p.numParcelas}x ${fmt(p.prestacao)}</div></div>
+        <span style="font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg3);color:var(--text2)">${label}</span>
+        <button class="btn-ghost" onclick="deleteParc('${p.id}')" style="font-size:12px;color:var(--red)">Excluir</button>
+      </div>`;
+    }).join('');
+  }
+}
+
+window.calcParcPrestacao = ()=>{
+  const total=parseFloat(document.getElementById('parc-total').value)||0;
+  const num=parseInt(document.getElementById('parc-num').value)||0;
+  if(total>0&&num>0){ document.getElementById('parc-prestacao').value=(total/num).toFixed(2); }
+  updateParcPreview();
+};
+window.calcParcTotal = ()=>{
+  const prest=parseFloat(document.getElementById('parc-prestacao').value)||0;
+  const num=parseInt(document.getElementById('parc-num').value)||0;
+  if(prest>0&&num>0){ document.getElementById('parc-total').value=(prest*num).toFixed(2); }
+  updateParcPreview();
+};
+function updateParcPreview(){
+  const prest=parseFloat(document.getElementById('parc-prestacao').value)||0;
+  const num=parseInt(document.getElementById('parc-num').value)||0;
+  const inicio=document.getElementById('parc-inicio').value;
+  const preview=document.getElementById('parc-preview');
+  if(!prest||!num||!inicio){preview.style.display='none';return;}
+  const start=new Date(inicio+'-01T12:00:00');
+  const end=new Date(start);
+  end.setMonth(end.getMonth()+num-1);
+  const endStr=end.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  preview.style.display='block';
+  preview.innerHTML=`<strong>${num}x</strong> de <strong>${fmt(prest)}</strong> · Total: <strong>${fmt(prest*num)}</strong> · Última parcela: <strong>${endStr}</strong>`;
+}
+
+window.openParcModal=()=>{
+  editingParcId=null;
+  document.getElementById('mp2-title').textContent='Novo parcelamento';
+  ['parc-desc','parc-cartao','parc-obs'].forEach(id=>document.getElementById(id).value='');
+  ['parc-total','parc-num','parc-prestacao'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('parc-inicio').value=`${viewYear}-${String(viewMonth+1).padStart(2,'0')}`;
+  document.getElementById('parc-preview').style.display='none';
+  // populate cats
+  const sel=document.getElementById('parc-cat');
+  sel.innerHTML=allCats('despesa').map(c=>`<option value="${c.id}" data-label="${c.label}">${c.icon} ${c.label}</option>`).join('');
+  openModal('modal-parc');
+};
+
+window.editParc=id=>{
+  const p=parcelas.find(x=>x.id===id);if(!p)return;
+  editingParcId=id;
+  document.getElementById('mp2-title').textContent='Editar parcelamento';
+  document.getElementById('parc-desc').value=p.descricao||'';
+  document.getElementById('parc-total').value=p.valorTotal||'';
+  document.getElementById('parc-num').value=p.numParcelas||'';
+  document.getElementById('parc-prestacao').value=p.prestacao||'';
+  document.getElementById('parc-inicio').value=p.inicio||'';
+  document.getElementById('parc-cartao').value=p.cartao||'';
+  document.getElementById('parc-obs').value=p.obs||'';
+  const sel=document.getElementById('parc-cat');
+  sel.innerHTML=allCats('despesa').map(c=>`<option value="${c.id}" data-label="${c.label}"${c.id===p.cat?' selected':''}>${c.icon} ${c.label}</option>`).join('');
+  updateParcPreview();
+  openModal('modal-parc');
+};
+
+window.saveParc=async()=>{
+  const desc=(document.getElementById('parc-desc').value||'').trim();
+  const num=parseInt(document.getElementById('parc-num').value)||0;
+  const prestacao=parseFloat(document.getElementById('parc-prestacao').value)||0;
+  const inicio=document.getElementById('parc-inicio').value;
+  const catSel=document.getElementById('parc-cat');
+  const cat=catSel.value;
+  const catLabel=catSel.options[catSel.selectedIndex]?.dataset?.label||cat;
+  const cartao=(document.getElementById('parc-cartao').value||'').trim();
+  const obs=(document.getElementById('parc-obs').value||'').trim();
+  const valorTotal=prestacao*num;
+  if(!desc){alert('Informe a descrição.');return;}
+  if(!num||num<1){alert('Informe o número de parcelas.');return;}
+  if(!prestacao||prestacao<=0){alert('Informe o valor da parcela.');return;}
+  if(!inicio){alert('Informe o mês da primeira parcela.');return;}
+  const data={descricao:desc,numParcelas:num,prestacao,valorTotal,inicio,cat,catLabel,cartao,obs,cancelado:false,criadoEm:new Date().toISOString()};
+  if(editingParcId) await updateDoc(doc(db,'parcelas',editingParcId),data);
+  else await addDoc(collection(db,'parcelas'),data);
+  closeModal('modal-parc');
+};
+
+window.cancelParc=async id=>{
+  if(!confirm('Marcar como encerrado?'))return;
+  await updateDoc(doc(db,'parcelas',id),{cancelado:true});
+};
+window.deleteParc=async id=>{
+  if(!confirm('Excluir permanentemente?'))return;
+  await deleteDoc(doc(db,'parcelas',id));
+};
 
 function listenAll(){
   unsubs.push(onSnapshot(query(collection(db,'entries'),orderBy('date','desc')),s=>{
@@ -668,6 +1048,7 @@ function listenAll(){
   unsubs.push(onSnapshot(collection(db,'goals'),s=>{goals=s.docs.map(d=>({id:d.id,...d.data()}));if(activePage()==='metas')renderGoals();}));
   unsubs.push(onSnapshot(collection(db,'investments'),s=>{investments=s.docs.map(d=>({id:d.id,...d.data()}));if(activePage()==='investimentos')renderInvestimentos();}));
   unsubs.push(onSnapshot(query(collection(db,'invMovimentos'),orderBy('date','desc')),s=>{invMovimentos=s.docs.map(d=>({id:d.id,...d.data()}));if(activePage()==='investimentos')renderInvestimentos();}));
+  unsubs.push(onSnapshot(collection(db,'parcelamentos'),s=>{parcelamentos=s.docs.map(d=>({id:d.id,...d.data()}));if(activePage()==='parcelamentos')renderParcelamentos();if(activePage()==='dashboard')renderDashboard();}));
 }
 
 function activePage(){const el=document.querySelector('.page.active');return el?el.id.replace('page-',''):'';}
@@ -678,6 +1059,7 @@ function renderPage(id){
   else if(id==='despesas')renderCatPage('despesa','desp-metrics','desp-cats');
   else if(id==='investimentos')renderInvestimentos();
   else if(id==='metas')renderGoals();
+  else if(id==='parcelamentos')renderParcelamentos();
   else if(id==='relatorios')renderRelatorios();
   else if(id==='configuracoes')renderConfig();
 }
@@ -757,16 +1139,18 @@ function renderDashboard(){
   const saldo=rR-dR;
   const totalInv=investments.reduce((s,inv)=>s+calcInvSaldoNow(inv).saldo,0);
 
+  const parcMes = parcelamentos.reduce((s,p)=>s+getParcSaldoMes(p,viewMonth,viewYear),0);
+  const saldoLiquido = rR - dR - parcMes;
   document.getElementById('dash-metrics').innerHTML=`
     <div class="metric-card"><div class="metric-label">Receita realizada</div><div class="metric-value pos">${fmtK(rR)}</div></div>
-    <div class="metric-card"><div class="metric-label">Despesa realizada</div><div class="metric-value neg">${fmtK(dR)}</div></div>
-    <div class="metric-card"><div class="metric-label">Saldo do mês</div><div class="metric-value ${saldo>=0?'pos':'neg'}">${fmtK(saldo)}</div></div>
+    <div class="metric-card"><div class="metric-label">Despesa realizada</div><div class="metric-value neg">${fmtK(dR)}</div><div class="metric-badge">+ Parcelas: ${fmtK(parcMes)}</div></div>
+    <div class="metric-card"><div class="metric-label">Saldo líquido</div><div class="metric-value ${saldoLiquido>=0?'pos':'neg'}">${fmtK(saldoLiquido)}</div></div>
     <div class="metric-card"><div class="metric-label">Patrimônio investido</div><div class="metric-value acc">${fmtK(totalInv)}</div></div>`;
 
-  const labels=[],recData=[],despData=[];
-  for(let i=5;i>=0;i--){let m=viewMonth-i,y=viewYear;if(m<0){m+=12;y--;}labels.push(MESES[m].slice(0,3));const mt=getMonthEntries(m,y);recData.push(Math.round(sumR(mt.filter(e=>e.tipo==='receita'))));despData.push(Math.round(sumR(mt.filter(e=>e.tipo==='despesa'))));}
+  const labels=[],recData=[],despData=[],parcData=[];
+  for(let i=5;i>=0;i--){let m=viewMonth-i,y=viewYear;if(m<0){m+=12;y--;}labels.push(MESES[m].slice(0,3));const mt=getMonthEntries(m,y);recData.push(Math.round(sumR(mt.filter(e=>e.tipo==='receita'))));despData.push(Math.round(sumR(mt.filter(e=>e.tipo==='despesa'))));parcData.push(Math.round(getParcTotalMonth(m,y)));}
   if(barChartInst)barChartInst.destroy();
-  barChartInst=new Chart(document.getElementById('barChart'),{type:'bar',data:{labels,datasets:[{label:'Receitas',data:recData,backgroundColor:'#0f9d5855',borderRadius:4,borderSkipped:false},{label:'Despesas',data:despData,backgroundColor:'#d44c4755',borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{color:'#787774',font:{size:11}}},y:{grid:{color:'rgba(120,119,116,0.12)'},ticks:{color:'#787774',font:{size:11},callback:v=>'R$'+Math.round(v/1000)+'k'}}}}});
+  barChartInst=new Chart(document.getElementById('barChart'),{type:'bar',data:{labels,datasets:[{label:'Receitas',data:recData,backgroundColor:'#0f9d5855',borderRadius:4,borderSkipped:false},{label:'Despesas',data:despData,backgroundColor:'#d44c4755',stack:'d',borderRadius:0,borderSkipped:false},{label:'Parcelas',data:parcData,backgroundColor:'#d9730d66',stack:'d',borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{font:{size:10},boxWidth:8,padding:10}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:'#787774',font:{size:11}}},y:{stacked:true,grid:{color:'rgba(120,119,116,0.12)'},ticks:{color:'#787774',font:{size:11},callback:v=>'R$'+Math.round(v/1000)+'k'}}}}});
 
   const catTotals={};
   mx.filter(e=>e.tipo==='despesa').forEach(e=>{const cat=getCatById(e.catId,'despesa');const lbl=cat?cat.label:(e.catId||'Outros');catTotals[lbl]=(catTotals[lbl]||0)+(Number(e.valor)||0);});
@@ -775,7 +1159,7 @@ function renderDashboard(){
   if(catArr.length){const COLS=['#0f9d58','#2383e2','#d9730d','#d44c47','#9065b0','#b8b5ad'];pieChartInst=new Chart(document.getElementById('pieChart'),{type:'doughnut',data:{labels:catArr.map(c=>c[0]),datasets:[{data:catArr.map(c=>Math.round(c[1])),backgroundColor:COLS,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{font:{size:11},boxWidth:10,padding:7}}},cutout:'60%'}});}
 
   const recent=[...mx].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,8);
-  document.getElementById('dash-recent').innerHTML=recent.length?recent.map(t=>{const d=new Date(t.date+'T12:00:00');return`<div class="tx-item"><span class="tx-date">${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}</span><span class="tx-desc">${t.descricao||t.subcategoria||'—'}</span><span class="tx-tags">${(t.tags||[]).map(tg=>`<span class="tag-badge">${tg}</span>`).join('')}</span><span class="tx-val ${t.tipo==='receita'?'pos':'neg'}">${t.tipo==='receita'?'+':'-'}${fmt(t.valor)}</span></div>`;}).join(''):'<div class="empty">Sem lançamentos este mês.</div>';
+  document.getElementById('dash-recent').innerHTML=recent.length?recent.map(t=>{const d=new Date(t.date+'T12:00:00');return`<div class="tx-item"><span class="tx-date">${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}</span><span class="tx-desc">${t.descricao||t.subcategoria||'—'}</span><span class="tx-val ${t.tipo==='receita'?'pos':'neg'}">${t.tipo==='receita'?'+':'-'}${fmt(t.valor)}</span><button class="tx-edit" onclick="editEntry('${t.id}')">✎ editar</button></div>`;}).join(''):'<div class="empty">Sem lançamentos este mês.</div>';
 }
 
 // ── CAT PAGE ──────────────────────────────────────────────
@@ -784,11 +1168,14 @@ function renderCatPage(tipo,metricsId,catsId){
   const typeE=mx.filter(e=>e.tipo===tipo);
   const totalR=sumR(typeE);
   const totalP=allCats(tipo).reduce((s,c)=>s+(Number(previstos[c.id])||0),0);
+  const totalParcMes=tipo==='despesa'?getParcTotalMonth():0;
+  const totalRComParc=totalR+totalParcMes;
 
   document.getElementById(metricsId).innerHTML=`
     <div class="metric-card"><div class="metric-label">Previsto</div><div class="metric-value">${fmt(totalP)}</div></div>
-    <div class="metric-card"><div class="metric-label">Realizado</div><div class="metric-value ${tipo==='receita'?'pos':'neg'}">${fmt(totalR)}</div></div>
-    <div class="metric-card"><div class="metric-label">Diferença</div><div class="metric-value ${tipo==='receita'?(totalR>=totalP?'pos':'neg'):(totalR<=totalP?'pos':'neg')}">${fmt(totalR-totalP)}</div></div>
+    <div class="metric-card"><div class="metric-label">Realizado</div><div class="metric-value ${tipo==='receita'?'pos':'neg'}">${fmt(totalR)}</div>${tipo==='despesa'&&totalParcMes>0?`<div class="metric-badge">+${fmt(totalParcMes)} parcelas</div>`:''}
+    </div>
+    <div class="metric-card"><div class="metric-label">${tipo==='despesa'?'Total c/ parcelas':'Diferença'}</div><div class="metric-value ${tipo==='receita'?(totalR>=totalP?'pos':'neg'):'neg'}">${tipo==='despesa'?fmt(totalRComParc):fmt(totalR-totalP)}</div></div>
     <div class="metric-card"><div class="metric-label">% uso</div><div class="metric-value">${totalP>0?Math.round((totalR/totalP)*100):0}%</div></div>`;
 
   let html='';
@@ -819,7 +1206,7 @@ function renderCatPage(tipo,metricsId,catsId){
           const subE=catE.filter(e=>e.subcategoria===sub);
           const subR=sumR(subE);
           const txId='txlist-'+cat.id+'-'+sub.replace(/[\s\/\(\)\-\&\.\']/g,'_');
-          const txHtml=subE.map(e=>{const d=new Date(e.date+'T12:00:00');return`<div class="tx-item"><span class="tx-date">${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}</span><span class="tx-desc">${e.descricao||'—'}</span><span class="tx-tags">${(e.tags||[]).map(t=>`<span class="tag-badge">${t}</span>`).join('')}</span><span class="tx-val ${tipo==='receita'?'pos':'neg'}">${tipo==='receita'?'+':'-'}${fmt(e.valor)}</span><button class="tx-del" onclick="deleteEntry('${e.id}')">×</button></div>`;}).join('');
+          const txHtml=subE.map(e=>{const d=new Date(e.date+'T12:00:00');return`<div class="tx-item"><span class="tx-date">${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}</span><span class="tx-desc">${e.descricao||'—'}</span><span class="tx-val ${tipo==='receita'?'pos':'neg'}">${tipo==='receita'?'+':'-'}${fmt(e.valor)}</span><button class="tx-edit" onclick="editEntry('${e.id}')">✎ editar</button><button class="tx-del" onclick="deleteEntry('${e.id}')">×</button></div>`;}).join('');
           return`<div class="subcat-row"><button class="subcat-name-btn" onclick="toggleTxList('${txId}')">▸ ${sub}</button><span class="subcat-real" style="color:${subR>0?'var(--text)':'var(--text3)'}">${subR>0?fmt(subR):'—'}</span><button class="add-tx-inline" onclick="openEntryModal('${tipo}','${cat.id}','${sub.replace(/'/g,"\\'")}')">+ lançar</button></div><div class="tx-list" id="${txId}">${txHtml||'<div style="padding:4px 8px;font-size:12px;color:var(--text3)">Sem lançamentos</div>'}</div>`;
         }).join('')}
       </div>
@@ -837,13 +1224,31 @@ window.savePrevisto=async()=>{const v=parseFloat(document.getElementById('mp-val
 
 // ── ENTRY MODAL ───────────────────────────────────────────
 window.openEntryModal=(tipo='despesa',catId,subcat)=>{
-  editingEntryId=null;currentTags=[];
+  editingEntryId=null;
+  document.getElementById('me-title').textContent='Novo lançamento';
   document.getElementById('me-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('me-val').value='';document.getElementById('me-prev').value='';document.getElementById('me-desc').value='';
-  document.getElementById('tags-wrap').innerHTML='<input id="tags-input" placeholder="Digite e Enter..." onkeydown="handleTagInput(event)">';
   document.getElementById('me-tipo').value=tipo;
   populateCatSelect(tipo,catId);
   if(subcat){const s=document.getElementById('me-subcat');for(let o of s.options)if(o.value===subcat){o.selected=true;break;}}
+  openModal('modal-entry');
+};
+
+window.editEntry=id=>{
+  const e=entries.find(x=>x.id===id);
+  if(!e)return;
+  editingEntryId=id;
+  document.getElementById('me-title').textContent='Editar lançamento';
+  document.getElementById('me-tipo').value=e.tipo;
+  document.getElementById('me-date').value=e.date||'';
+  document.getElementById('me-val').value=e.valor||'';
+  document.getElementById('me-prev').value=e.previsto||'';
+  document.getElementById('me-desc').value=e.descricao||'';
+  // populate categories
+  populateCatSelect(e.tipo,e.catId);
+  // select correct subcat
+  const subSel=document.getElementById('me-subcat');
+  for(let o of subSel.options)if(o.value===e.subcategoria){o.selected=true;break;}
   openModal('modal-entry');
 };
 function populateCatSelect(tipo,selCatId){
@@ -858,8 +1263,8 @@ function populateSubcatSelect(catId,tipo){
 }
 window.onEntryTipoChange=()=>populateCatSelect(document.getElementById('me-tipo').value);
 window.onEntryCatChange=()=>populateSubcatSelect(document.getElementById('me-cat').value);
-window.handleTagInput=e=>{if(e.key==='Enter'||e.key===','){e.preventDefault();const v=e.target.value.trim().slice(0,30);if(v&&!currentTags.includes(v)&&currentTags.length<10){currentTags.push(v);const chip=document.createElement('span');chip.className='tag-chip';chip.innerHTML=v+'<button onclick="removeTag(this,\''+v+'\')">×</button>';e.target.before(chip);}e.target.value='';}};
-window.removeTag=(btn,tag)=>{currentTags=currentTags.filter(t=>t!==tag);btn.parentElement.remove();};
+e.target.value='';}};
+
 window.saveEntry=async()=>{
   const tipo=document.getElementById('me-tipo').value;
   const catId=document.getElementById('me-cat').value;
@@ -868,14 +1273,12 @@ window.saveEntry=async()=>{
   const val=parseFloat(document.getElementById('me-val').value)||0;
   const prev=parseFloat(document.getElementById('me-prev').value)||0;
   const desc=(document.getElementById('me-desc').value||'').trim();
-  const tags=[...currentTags];
-  const ti=document.getElementById('tags-input');
-  if(ti.value.trim())tags.push(ti.value.trim());
   if(!date){alert('Selecione uma data.');return;}
   if(!val&&!prev){alert('Informe ao menos um valor.');return;}
-  const data={tipo,catId,subcategoria:subcat,descricao:desc,date,valor:val,previsto:prev,tags,por:currentUser.displayName||currentUser.email};
+  const data={tipo,catId,subcategoria:subcat,descricao:desc,date,valor:val,previsto:prev,por:currentUser.displayName||currentUser.email};
   if(editingEntryId)await updateDoc(doc(db,'entries',editingEntryId),data);
   else await addDoc(collection(db,'entries'),data);
+  editingEntryId=null;
   closeModal('modal-entry');
 };
 window.deleteEntry=async id=>{if(!confirm('Excluir este lançamento?'))return;await deleteDoc(doc(db,'entries',id));};
@@ -1000,6 +1403,167 @@ window.saveInvMov=async()=>{
 window.deleteInvMov=async id=>{if(!confirm('Excluir?'))return;await deleteDoc(doc(db,'invMovimentos',id));};
 
 // ── METAS ─────────────────────────────────────────────────
+// ── PARCELAMENTOS ─────────────────────────────────────────
+function getParcMensalidade(p){ return Math.round((Number(p.valorTotal)||0)/(Number(p.numParcelas)||1)*100)/100; }
+
+function getParcSaldoMes(p, m, y){
+  // returns value owed in given month/year (0 if outside range)
+  const [startY, startM] = (p.inicio||'').split('-').map(Number);
+  if(!startY||!startM) return 0;
+  const parcsIdx = (y - startY)*12 + (m - (startM-1)); // 1-indexed
+  if(parcsIdx < 1 || parcsIdx > Number(p.numParcelas)) return 0;
+  return getParcMensalidade(p);
+}
+
+function renderParcelamentos(){
+  const active = parcelamentos.filter(p=>Number(p.parcPagas||0)<Number(p.numParcelas||0));
+  const done = parcelamentos.filter(p=>Number(p.parcPagas||0)>=Number(p.numParcelas||0));
+  const totalMes = parcelamentos.reduce((s,p)=>s+getParcSaldoMes(p,viewMonth,viewYear),0);
+  const totalRestante = active.reduce((s,p)=>{const mens=getParcMensalidade(p);const restante=Number(p.numParcelas||0)-Number(p.parcPagas||0);return s+mens*restante;},0);
+  const totalOriginal = active.reduce((s,p)=>s+(Number(p.valorTotal)||0),0);
+
+  document.getElementById('parc-metrics').innerHTML=`
+    <div class="metric-card"><div class="metric-label">Parcelas este mês</div><div class="metric-value neg">${fmt(totalMes)}</div></div>
+    <div class="metric-card"><div class="metric-label">Em aberto</div><div class="metric-value">${active.length}</div></div>
+    <div class="metric-card"><div class="metric-label">Valor restante total</div><div class="metric-value neg">${fmt(totalRestante)}</div></div>
+    <div class="metric-card"><div class="metric-label">Concluídos</div><div class="metric-value pos">${done.length}</div></div>`;
+
+  const activeEl = document.getElementById('parc-active');
+  if(!active.length){
+    activeEl.innerHTML='<div class="empty">Nenhum parcelamento em aberto.</div>';
+  } else {
+    activeEl.innerHTML = active.map(p=>{
+      const mens = getParcMensalidade(p);
+      const pagas = Number(p.parcPagas||0);
+      const total = Number(p.numParcelas||0);
+      const restante = total - pagas;
+      const pct = Math.round((pagas/total)*100);
+      const barColor = pct>=80?'var(--green)':pct>=40?'var(--accent)':'var(--amber)';
+      const catName = allCats('despesa').find(c=>c.id===p.catId)?.label || p.catId || '—';
+      const venceEm = (() => {
+        if(!p.inicio) return '—';
+        const [sy,sm] = p.inicio.split('-').map(Number);
+        const lastM = new Date(sy, sm-1+total-1);
+        return MESES[lastM.getMonth()]+'/'+lastM.getFullYear();
+      })();
+      const estesMes = getParcSaldoMes(p,viewMonth,viewYear)>0;
+      return`<div class="parc-card">
+        <div class="parc-header">
+          <div>
+            <div class="parc-name">${p.descricao}${estesMes?'<span style="margin-left:8px;padding:2px 7px;background:var(--red-bg);color:var(--red);border-radius:20px;font-size:11px;font-weight:500">Vence este mês</span>':''}</div>
+            <div class="parc-cat">${catName}</div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn-sm" onclick="editParc('${p.id}')">✎ Editar</button>
+            <button class="btn-sm" onclick="pagarParcela('${p.id}',${pagas},${total})">✓ Marcar paga</button>
+            <button class="btn-sm" style="color:var(--red)" onclick="deleteParc('${p.id}')">×</button>
+          </div>
+        </div>
+        <div class="parc-body">
+          <div class="parc-stat"><div class="parc-stat-label">Por parcela</div><div class="parc-stat-val">${fmt(mens)}</div></div>
+          <div class="parc-stat"><div class="parc-stat-label">Pagas</div><div class="parc-stat-val">${pagas}/${total}</div></div>
+          <div class="parc-stat"><div class="parc-stat-label">Restam</div><div class="parc-stat-val">${fmt(mens*restante)}</div></div>
+          <div class="parc-stat"><div class="parc-stat-label">Termina em</div><div class="parc-stat-val" style="font-size:12px">${venceEm}</div></div>
+        </div>
+        <div class="parc-progress">
+          <div class="parc-bar"><div class="parc-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+          <span class="parc-pct" style="color:${barColor}">${pct}%</span>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // History
+  const histSec = document.getElementById('parc-history-section');
+  histSec.style.display = done.length ? 'block' : 'none';
+  document.getElementById('parc-history').innerHTML = done.map(p=>{
+    const catName = allCats('despesa').find(c=>c.id===p.catId)?.label || '—';
+    return`<div class="parc-hist-card">
+      <div style="flex:1"><div style="font-size:13px;font-weight:500">${p.descricao}</div><div style="font-size:12px;color:var(--text3)">${catName} · ${p.numParcelas}x ${fmt(getParcMensalidade(p))}</div></div>
+      <span style="font-size:13px;font-weight:600;font-family:'DM Mono',monospace">${fmt(p.valorTotal)}</span>
+      <button class="btn-sm" style="color:var(--red);font-size:12px" onclick="deleteParc('${p.id}')">×</button>
+    </div>`;
+  }).join('');
+}
+
+window.toggleParcHistory=()=>{
+  const el=document.getElementById('parc-history');
+  const ch=document.getElementById('parc-history-chevron');
+  const open=el.style.display==='none';
+  el.style.display=open?'block':'none';
+  ch.textContent=open?'▼':'▶';
+};
+
+window.calcParcValue=()=>{
+  const total=parseFloat(document.getElementById('parc-total').value)||0;
+  const num=parseInt(document.getElementById('parc-num').value)||0;
+  const disp=document.getElementById('parc-valor-display');
+  if(total>0&&num>0){
+    const v=total/num;
+    disp.value='R$ '+(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  } else { disp.value='—'; }
+};
+
+window.openParcModal=()=>{
+  editingParcId=null;
+  document.getElementById('mp2-title').textContent='Novo parcelamento';
+  document.getElementById('parc-desc').value='';
+  document.getElementById('parc-total').value='';
+  document.getElementById('parc-num').value='';
+  document.getElementById('parc-valor-display').value='';
+  document.getElementById('parc-pagas').value='0';
+  const now=new Date();
+  document.getElementById('parc-inicio').value=now.getFullYear()+'-'+String(now.getMonth()+1).padStart(2,'0');
+  document.getElementById('parc-cat').innerHTML=allCats('despesa').map(c=>`<option value="${c.id}">${c.icon} ${c.label}</option>`).join('');
+  openModal('modal-parc');
+};
+
+window.editParc=id=>{
+  const p=parcelamentos.find(x=>x.id===id);
+  if(!p)return;
+  editingParcId=id;
+  document.getElementById('mp2-title').textContent='Editar parcelamento';
+  document.getElementById('parc-desc').value=p.descricao||'';
+  document.getElementById('parc-total').value=p.valorTotal||'';
+  document.getElementById('parc-num').value=p.numParcelas||'';
+  document.getElementById('parc-pagas').value=p.parcPagas||0;
+  document.getElementById('parc-inicio').value=p.inicio||'';
+  document.getElementById('parc-cat').innerHTML=allCats('despesa').map(c=>`<option value="${c.id}"${c.id===p.catId?' selected':''}>${c.icon} ${c.label}</option>`).join('');
+  calcParcValue();
+  openModal('modal-parc');
+};
+
+window.saveParc=async()=>{
+  const descricao=document.getElementById('parc-desc').value.trim();
+  const valorTotal=parseFloat(document.getElementById('parc-total').value)||0;
+  const numParcelas=parseInt(document.getElementById('parc-num').value)||0;
+  const inicio=document.getElementById('parc-inicio').value;
+  const catId=document.getElementById('parc-cat').value;
+  const parcPagas=Math.min(parseInt(document.getElementById('parc-pagas').value)||0,numParcelas);
+  if(!descricao){alert('Informe a descrição.');return;}
+  if(!valorTotal||valorTotal<=0){alert('Informe o valor total.');return;}
+  if(!numParcelas||numParcelas<1){alert('Informe o número de parcelas.');return;}
+  if(!inicio){alert('Informe o mês da 1ª parcela.');return;}
+  const data={descricao,valorTotal,numParcelas,inicio,catId,parcPagas,createdAt:new Date().toISOString()};
+  if(editingParcId)await updateDoc(doc(db,'parcelamentos',editingParcId),data);
+  else await addDoc(collection(db,'parcelamentos'),data);
+  editingParcId=null;
+  closeModal('modal-parc');
+};
+
+window.pagarParcela=async(id,pagas,total)=>{
+  const nova=pagas+1;
+  if(nova>total){alert('Todas as parcelas já foram pagas!');return;}
+  const msg=nova>=total?`Marcar última parcela como paga? O parcelamento irá para o histórico.`:`Marcar parcela ${nova}/${total} como paga?`;
+  if(!confirm(msg))return;
+  await updateDoc(doc(db,'parcelamentos',id),{parcPagas:nova});
+};
+
+window.deleteParc=async id=>{
+  if(!confirm('Excluir este parcelamento?'))return;
+  await deleteDoc(doc(db,'parcelamentos',id));
+};
+
 function renderGoals(){
   const c=document.getElementById('goals-container');
   if(!goals.length){c.innerHTML='<div class="empty">Nenhuma meta cadastrada.</div>';return;}
@@ -1025,6 +1589,172 @@ window.saveGoal=async()=>{
 window.deleteGoal=async id=>{if(!confirm('Excluir?'))return;await deleteDoc(doc(db,'goals',id));};
 window.updateGoalProgress=(id,cur)=>{const v=prompt('Valor atual (R$):',cur);if(v===null)return;const n=parseFloat(v.replace(',','.'));if(!isNaN(n))updateDoc(doc(db,'goals',id),{current:n});};
 
+// ── PARCELAMENTOS ────────────────────────────────────────
+let parcelamentos = [];
+let editingParcId = null;
+
+function getParcValorMes(parc, m=viewMonth, y=viewYear){
+  // returns the installment value for a given month/year, or 0 if not applicable
+  const start = new Date(parc.startDate+'T12:00:00');
+  const startM = start.getMonth(), startY = start.getFullYear();
+  const parcIdx = (y - startY)*12 + (m - startM); // 0-based index
+  if(parcIdx < 0 || parcIdx >= parc.numParcelas) return 0;
+  return Number(parc.valorParcela)||0;
+}
+
+function getParcStatus(parc){
+  const now = new Date();
+  const start = new Date(parc.startDate+'T12:00:00');
+  const endDate = new Date(start);
+  endDate.setMonth(endDate.getMonth() + parc.numParcelas - 1);
+  if(now > endDate) return 'done';
+  const monthsLeft = (endDate.getFullYear()-now.getFullYear())*12 + (endDate.getMonth()-now.getMonth()) + 1;
+  if(monthsLeft <= 3) return 'ending';
+  return 'active';
+}
+
+function getParcPaid(parc){
+  const now = new Date();
+  const start = new Date(parc.startDate+'T12:00:00');
+  const paid = (now.getFullYear()-start.getFullYear())*12 + (now.getMonth()-start.getMonth());
+  return Math.max(0, Math.min(paid, parc.numParcelas));
+}
+
+function renderParcelamentos(){
+  // metrics
+  const totalMes = parcelamentos.reduce((s,p)=>s+getParcValorMes(p),0);
+  const ativos = parcelamentos.filter(p=>getParcStatus(p)!=='done').length;
+  const totalRestante = parcelamentos.reduce((s,p)=>{
+    const paid=getParcPaid(p);
+    return s+(parc=>parc.valorParcela*(parc.numParcelas-paid))(p);
+  },0);
+  const totalPago = parcelamentos.reduce((s,p)=>s+getParcPaid(p)*p.valorParcela,0);
+
+  document.getElementById('parc-metrics').innerHTML=`
+    <div class="metric-card"><div class="metric-label">Parcelas este mês</div><div class="metric-value neg">${fmt(totalMes)}</div></div>
+    <div class="metric-card"><div class="metric-label">Ativos</div><div class="metric-value">${ativos}</div></div>
+    <div class="metric-card"><div class="metric-label">Total restante</div><div class="metric-value neg">${fmtK(totalRestante)}</div></div>
+    <div class="metric-card"><div class="metric-label">Total pago</div><div class="metric-value pos">${fmtK(totalPago)}</div></div>`;
+
+  if(!parcelamentos.length){
+    document.getElementById('parc-list').innerHTML='<div class="empty">Nenhum parcelamento cadastrado.</div>';
+    return;
+  }
+
+  // sort: active first, then ending, then done
+  const order = {active:0,ending:1,done:2};
+  const sorted = [...parcelamentos].sort((a,b)=>order[getParcStatus(a)]-order[getParcStatus(b)]);
+
+  document.getElementById('parc-list').innerHTML = sorted.map(parc=>{
+    const status = getParcStatus(parc);
+    const paid = getParcPaid(parc);
+    const pct = Math.round((paid/parc.numParcelas)*100);
+    const valorMes = getParcValorMes(parc);
+    const restante = parc.valorParcela*(parc.numParcelas-paid);
+
+    const start = new Date(parc.startDate+'T12:00:00');
+    const endDate = new Date(start);
+    endDate.setMonth(endDate.getMonth() + parc.numParcelas - 1);
+    const endStr = `${MESES[endDate.getMonth()].slice(0,3)} ${endDate.getFullYear()}`;
+
+    const statusLabels = {active:'Em andamento', ending:'Encerrando em breve', done:'Quitado'};
+    const barColor = status==='done'?'var(--text3)':status==='ending'?'var(--amber)':'var(--accent)';
+
+    // parcela chips (max 24 shown)
+    const maxShow = Math.min(parc.numParcelas, 24);
+    const chips = Array.from({length:maxShow},(_,i)=>{
+      const cls = i<paid?'paid':i===paid&&status!=='done'?'current':'future';
+      return `<div class="parc-parcela-chip ${cls}" title="Parcela ${i+1}">${i+1}</div>`;
+    }).join('');
+    const moreChips = parc.numParcelas>24?`<div style="font-size:11px;color:var(--text3);align-self:center">+${parc.numParcelas-24}</div>`:'';
+
+    return `<div class="parc-card">
+      <div class="parc-header">
+        <div>
+          <div class="parc-desc">${parc.descricao}</div>
+          <div class="parc-cartao">${parc.cartao||''}${parc.cartao&&parc.categoria?' · ':''}${parc.categoria||''}</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="parc-status ${status}">${statusLabels[status]}</span>
+          <button class="btn-ghost" onclick="editParc('${parc.id}')" style="font-size:12px">✎</button>
+          <button class="btn-danger-ghost" onclick="deleteParc('${parc.id}')">×</button>
+        </div>
+      </div>
+      <div class="parc-progress-wrap">
+        <span style="font-size:12px;color:var(--text2);min-width:60px">${paid}/${parc.numParcelas} pagas</span>
+        <div class="parc-pbar"><div class="parc-pbar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+        <span style="font-size:12px;font-weight:600;min-width:34px;text-align:right;color:${barColor}">${pct}%</span>
+      </div>
+      <div class="parc-grid">
+        <div class="parc-stat"><div class="parc-stat-label">Parcela mensal</div><div class="parc-stat-val" style="color:var(--red)">${fmt(parc.valorParcela)}</div></div>
+        <div class="parc-stat"><div class="parc-stat-label">Restante</div><div class="parc-stat-val">${fmt(restante)}</div></div>
+        <div class="parc-stat"><div class="parc-stat-label">Termina em</div><div class="parc-stat-val" style="font-size:12px;color:${status==='ending'?'var(--amber)':'inherit'}">${endStr}</div></div>
+      </div>
+      ${valorMes>0?`<div style="font-size:12px;color:var(--text2);margin-top:8px">Este mês: <strong style="color:var(--red)">${fmt(valorMes)}</strong></div>`:''}
+      <div style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em">Parcelas</div>
+        <div class="parc-parcelas-list">${chips}${moreChips}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+window.openParcModal = ()=>{
+  editingParcId=null;
+  document.getElementById('mp2-title').textContent='Novo parcelamento';
+  document.getElementById('parc-desc').value='';
+  document.getElementById('parc-total').value='';
+  document.getElementById('parc-num').value='';
+  document.getElementById('parc-start').value=new Date().toISOString().split('T')[0];
+  document.getElementById('parc-cartao').value='';
+  document.getElementById('parc-notes').value='';
+  // populate cat select
+  const sel=document.getElementById('parc-cat');
+  sel.innerHTML=allCats('despesa').map(c=>`<option value="${c.label}">${c.icon} ${c.label}</option>`).join('');
+  openModal('modal-parc');
+};
+
+window.editParc = id=>{
+  const p=parcelamentos.find(x=>x.id===id);
+  if(!p) return;
+  editingParcId=id;
+  document.getElementById('mp2-title').textContent='Editar parcelamento';
+  document.getElementById('parc-desc').value=p.descricao||'';
+  document.getElementById('parc-total').value=p.valorTotal||'';
+  document.getElementById('parc-num').value=p.numParcelas||'';
+  document.getElementById('parc-start').value=p.startDate||'';
+  document.getElementById('parc-cartao').value=p.cartao||'';
+  document.getElementById('parc-notes').value=p.notas||'';
+  const sel=document.getElementById('parc-cat');
+  sel.innerHTML=allCats('despesa').map(c=>`<option value="${c.label}"${c.label===p.categoria?' selected':''}>${c.icon} ${c.label}</option>`).join('');
+  openModal('modal-parc');
+};
+
+window.saveParc = async()=>{
+  const descricao=document.getElementById('parc-desc').value.trim();
+  const valorTotal=parseFloat(document.getElementById('parc-total').value)||0;
+  const numParcelas=parseInt(document.getElementById('parc-num').value)||0;
+  const startDate=document.getElementById('parc-start').value;
+  const cartao=document.getElementById('parc-cartao').value.trim();
+  const categoria=document.getElementById('parc-cat').value;
+  const notas=document.getElementById('parc-notes').value.trim();
+  if(!descricao){alert('Informe a descrição.');return;}
+  if(!valorTotal||valorTotal<=0){alert('Informe o valor total.');return;}
+  if(!numParcelas||numParcelas<=0){alert('Informe o número de parcelas.');return;}
+  if(!startDate){alert('Informe a data da primeira parcela.');return;}
+  const valorParcela=Math.round((valorTotal/numParcelas)*100)/100;
+  const data={descricao,valorTotal,valorParcela,numParcelas,startDate,cartao,categoria,notas,criadoEm:new Date().toISOString()};
+  if(editingParcId) await updateDoc(doc(db,'parcelamentos',editingParcId),data);
+  else await addDoc(collection(db,'parcelamentos'),data);
+  editingParcId=null;
+  closeModal('modal-parc');
+};
+
+window.deleteParc = async id=>{
+  if(!confirm('Excluir este parcelamento?')) return;
+  await deleteDoc(doc(db,'parcelamentos',id));
+};
+
 // ── RELATÓRIOS ────────────────────────────────────────────
 function renderRelatorios(){
   const labels=[],recData=[],despData=[];
@@ -1034,6 +1764,11 @@ function renderRelatorios(){
   let html='<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr><th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text3);white-space:nowrap">Categoria</th>';
   for(let m=0;m<12;m++)html+=`<th style="padding:6px 4px;border-bottom:1px solid var(--border);color:var(--text3)">${MESES[m].slice(0,3)}</th>`;
   html+='<th style="padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text3)">Total</th></tr></thead><tbody>';
+  // Add parcelas row
+  let parcTotal2=0;
+  html+=`<tr><td style="padding:6px 8px;border-bottom:1px solid var(--border);white-space:nowrap">💳 Parcelamentos</td>`;
+  for(let m=0;m<12;m++){const v=Math.round(getParcTotalMonth(m,viewYear));parcTotal2+=v;html+=`<td style="padding:6px 4px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;text-align:right;color:${v>0?'var(--red)':'var(--text3)'}">${v>0?fmtK(v):'—'}</td>`;}
+  html+=`<td style="padding:6px 8px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-weight:600;text-align:right;color:var(--red)">${fmt(parcTotal2)}</td></tr>`;
   allCats('despesa').forEach(cat=>{
     let total=0;
     html+=`<tr><td style="padding:6px 8px;border-bottom:1px solid var(--border);white-space:nowrap">${cat.icon} ${cat.label}</td>`;
@@ -1226,7 +1961,20 @@ window.removeUser=async(uid,name)=>{
 };
 
 function renderCfgDados(){
+  const keyStatus = ANTHROPIC_KEY ? '✓ Chave configurada' : '✗ Não configurada';
+  const keyColor = ANTHROPIC_KEY ? 'var(--green)' : 'var(--red)';
   document.getElementById('cfg-dados').innerHTML=`
+    <div class="cfg-section">
+      <div class="cfg-section-title">Chave da API — Greco AI</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">A chave é salva no Firebase e carregada automaticamente em todos os dispositivos. Apenas administradores podem alterar.</p>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="font-size:13px;font-weight:500;color:${keyColor}">${keyStatus}</span>
+      </div>
+      ${isAdmin ? `<div style="display:flex;gap:8px;align-items:center">
+        <input id="api-key-input" type="password" placeholder="sk-ant-api03-..." style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:'Sora',sans-serif;background:var(--bg);color:var(--text)">
+        <button class="btn-add" onclick="saveApiKey()">Salvar</button>
+      </div>` : '<p style="font-size:12px;color:var(--text3)">Apenas o administrador pode alterar a chave.</p>'}
+    </div>
     <div class="cfg-section">
       <div class="cfg-section-title">Zona de perigo</div>
       <div style="border:1px solid var(--red);border-radius:var(--radius-lg);padding:20px;background:var(--red-bg)">
@@ -1236,6 +1984,18 @@ function renderCfgDados(){
       </div>
     </div>`;
 }
+
+window.saveApiKey=async()=>{
+  if(!isAdmin){alert('Apenas administradores podem alterar a chave.');return;}
+  const key=document.getElementById('api-key-input')?.value.trim();
+  if(!key||!key.startsWith('sk-ant-')){alert('Chave inválida. Deve começar com sk-ant-');return;}
+  try{
+    await setDoc(doc(db,'config','secrets'),{anthropicKey:key});
+    ANTHROPIC_KEY=key;
+    alert('Chave salva com sucesso!');
+    renderCfgDados();
+  }catch(e){alert('Erro ao salvar: '+e.message);}
+};
 
 window.zerarBanco=async()=>{
   if(!isAdmin){alert('Apenas administradores podem zerar o banco.');return;}
@@ -1311,6 +2071,272 @@ window.openModal=id=>document.getElementById(id).classList.add('open');
 window.closeModal=id=>document.getElementById(id).classList.remove('open');
 document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
 updateMonthLabel();
+
+// ── AI ASSISTANT ──────────────────────────────────────────
+let ANTHROPIC_KEY = null; // loaded from Firestore after login
+let aiOpen = false;
+let aiConversations = []; // {id, date, messages:[{role,content,time}]}
+let aiCurrentConv = null;
+let aiTyping = false;
+
+window.toggleAI = () => {
+  aiOpen = !aiOpen;
+  document.getElementById('ai-panel').classList.toggle('open', aiOpen);
+  document.getElementById('ai-toggle-btn').classList.toggle('open', aiOpen);
+  if(aiOpen){
+    if(!aiCurrentConv) startNewConv();
+    document.getElementById('ai-input').focus();
+  }
+};
+
+function startNewConv(){
+  aiCurrentConv = {id: Date.now().toString(), date: new Date().toISOString(), messages:[{role:'assistant',content:'Olá! Sou o assistente do Greco. Pergunte sobre seus lançamentos, gastos, metas ou investimentos.',time:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})}]};
+  renderAiMessages();
+}
+
+function renderAiMessages(){
+  if(!aiCurrentConv) return;
+  const el = document.getElementById('ai-messages');
+  el.innerHTML = aiCurrentConv.messages.map(m=>`
+    <div class="ai-msg ${m.role}">
+      ${m.content.replace(/\n/g,'<br>')}
+      <div class="ai-msg-time">${m.time||''}</div>
+    </div>`).join('');
+  el.scrollTop = el.scrollHeight;
+}
+
+function buildContext(){
+  // Last 3 months of entries
+  const now = new Date();
+  const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth()-2, 1);
+  const recentEntries = entries.filter(e => new Date(e.date+'T12:00:00') >= threeMonthsAgo);
+  
+  const catMap = {};
+  [...(cats.despesa||[]),...(cats.receita||[])].forEach(c=>catMap[c.id]=c.label);
+
+  const entriesSummary = recentEntries.map(e=>{
+    const d = new Date(e.date+'T12:00:00');
+    return `[${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()}] ${e.tipo.toUpperCase()} | ${catMap[e.catId]||e.catId} > ${e.subcategoria} | "${e.descricao||''}" | R$${Number(e.valor||0).toFixed(2)} | por: ${e.por||'?'}`;
+  }).join('\n');
+
+  const goalsSummary = goals.map(g=>`Meta: "${g.name}" — R$${Number(g.current||0).toFixed(2)} / R$${Number(g.target||0).toFixed(2)} (${g.target>0?Math.round((g.current/g.target)*100):0}%)`).join('\n');
+
+  const invSummary = investments.map(inv=>{
+    const r = calcInvSaldoNow(inv);
+    return `Investimento: "${inv.nome}" | Tipo: ${inv.tipo} | Saldo: R$${r.saldo.toFixed(2)} | Taxa: ${inv.taxa||0}%a.m.`;
+  }).join('\n');
+
+  const parcSummary = parcelamentos.map(p=>{
+    const mens = getParcMensalidade(p);
+    const pagas = Number(p.parcPagas||0);
+    const total = Number(p.numParcelas||0);
+    return `Parcelamento: "${p.descricao}" | ${pagas}/${total} parcelas pagas | R$${mens.toFixed(2)}/mês | Início: ${p.inicio}`;
+  }).join('\n');
+
+  const previstosSummary = Object.entries(previstos).map(([k,v])=>`Previsto ${catMap[k]||k}: R$${Number(v).toFixed(2)}/mês`).join('\n');
+
+  return `Você é o assistente financeiro do sistema Greco. Responda em português brasileiro de forma direta, amigável e útil. Use os dados abaixo para responder perguntas sobre finanças pessoais do casal.
+
+DATA ATUAL: ${new Date().toLocaleDateString('pt-BR')} | Mês visualizado: ${MESES[viewMonth]}/${viewYear}
+
+=== LANÇAMENTOS (últimos 3 meses) ===
+${entriesSummary || 'Nenhum lançamento encontrado.'}
+
+=== METAS ===
+${goalsSummary || 'Nenhuma meta cadastrada.'}
+
+=== INVESTIMENTOS ===
+${invSummary || 'Nenhum investimento cadastrado.'}
+
+=== PARCELAMENTOS ===
+${parcSummary || 'Nenhum parcelamento ativo.'}
+
+=== LIMITES PREVISTOS POR CATEGORIA ===
+${previstosSummary || 'Nenhum previsto definido.'}
+
+Responda de forma concisa. Se não encontrar a informação nos dados, diga que não foi lançado ainda.`;
+}
+
+window.aiKeydown = e => { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendAiMessage();} };
+
+window.sendAiMessage = async () => {
+  const input = document.getElementById('ai-input');
+  const msg = input.value.trim();
+  if(!msg || aiTyping) return;
+  if(!ANTHROPIC_KEY){
+    if(!aiCurrentConv) startNewConv();
+    const t = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    aiCurrentConv.messages.push({role:'assistant',content:'⚠️ Chave da API não configurada. Acesse Configurações → Dados para adicionar a chave da Anthropic.',time:t});
+    renderAiMessages();
+    return;
+  }
+  if(!aiCurrentConv) startNewConv();
+
+  const time = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  aiCurrentConv.messages.push({role:'user', content:msg, time});
+  input.value='';
+  renderAiMessages();
+
+  aiTyping = true;
+  document.getElementById('ai-send-btn').disabled = true;
+  document.getElementById('ai-status').textContent = 'Pensando...';
+
+  // Add thinking indicator
+  const thinkId = 'think-'+Date.now();
+  const el = document.getElementById('ai-messages');
+  const thinkEl = document.createElement('div');
+  thinkEl.className = 'ai-msg thinking';
+  thinkEl.id = thinkId;
+  thinkEl.textContent = '...';
+  el.appendChild(thinkEl);
+  el.scrollTop = el.scrollHeight;
+
+  try {
+    const systemPrompt = buildContext();
+    const apiMessages = aiCurrentConv.messages
+      .filter(m=>m.role!=='assistant'||aiCurrentConv.messages.indexOf(m)>0)
+      .slice(-10) // keep last 10 messages for context
+      .map(m=>({role:m.role, content:m.content}));
+
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':ANTHROPIC_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-haiku-4-5-20251001',
+        max_tokens:600,
+        system: systemPrompt,
+        messages: apiMessages
+      })
+    });
+
+    const data = await res.json();
+    thinkEl.remove();
+
+    if(data.content&&data.content[0]){
+      const reply = data.content[0].text;
+      const replyTime = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+      aiCurrentConv.messages.push({role:'assistant', content:reply, time:replyTime});
+      saveAiConversation();
+      renderAiMessages();
+    } else {
+      throw new Error(data.error?.message||'Resposta inválida');
+    }
+  } catch(err) {
+    document.getElementById(thinkId)?.remove();
+    const errTime = new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+    aiCurrentConv.messages.push({role:'assistant', content:'Ops, ocorreu um erro: '+err.message, time:errTime});
+    renderAiMessages();
+  }
+
+  aiTyping = false;
+  document.getElementById('ai-send-btn').disabled = false;
+  document.getElementById('ai-status').textContent = 'Online';
+};
+
+// ── PERSIST CONVERSATIONS IN FIRESTORE ───────────────────
+async function saveAiConversation(){
+  if(!aiCurrentConv||!currentUser) return;
+  try {
+    await setDoc(doc(db,'aiConversations',aiCurrentConv.id),{
+      ...aiCurrentConv,
+      updatedAt: new Date().toISOString(),
+      userId: currentUser.uid
+    });
+  } catch(e){ console.warn('Could not save AI conversation',e); }
+}
+
+window.openAiHistory = async () => {
+  document.getElementById('ai-hist-overlay').classList.add('open');
+  const body = document.getElementById('ai-hist-body');
+  body.innerHTML = '<div style="color:var(--text2);font-size:13px;text-align:center;padding:20px">Carregando...</div>';
+  try {
+    const {getDocs, query, collection, orderBy, limit, where} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const snap = await getDocs(query(collection(db,'aiConversations'), orderBy('updatedAt','desc'), limit(50)));
+    const convs = snap.docs.map(d=>d.data());
+    if(!convs.length){ body.innerHTML='<div class="empty">Nenhuma conversa ainda.</div>'; return; }
+    body.innerHTML = convs.map(c=>{
+      const firstUserMsg = c.messages?.find(m=>m.role==='user');
+      const d = new Date(c.updatedAt||c.date);
+      const dateStr = d.toLocaleDateString('pt-BR')+' '+d.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+      return `<div class="ai-conv-item" onclick="loadConversation('${c.id}')">
+        <div class="ai-conv-date">${dateStr} · ${(c.messages?.length||0)} mensagens</div>
+        <div class="ai-conv-preview">${firstUserMsg?.content?.slice(0,80)||'Conversa'}${(firstUserMsg?.content?.length||0)>80?'...':''}</div>
+      </div>`;
+    }).join('');
+  } catch(e){ body.innerHTML='<div style="color:var(--red);font-size:13px">Erro ao carregar: '+e.message+'</div>'; }
+};
+
+window.closeAiHistory = () => document.getElementById('ai-hist-overlay').classList.remove('open');
+
+window.loadConversation = async id => {
+  try {
+    const {getDoc, doc: firestoreDoc} = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const snap = await getDoc(firestoreDoc(db,'aiConversations',id));
+    if(snap.exists()){
+      aiCurrentConv = snap.data();
+      renderAiMessages();
+      closeAiHistory();
+      if(!aiOpen) toggleAI();
+    }
+  } catch(e){ alert('Erro ao carregar conversa: '+e.message); }
+};
+
 </script>
+
+<!-- AI ASSISTANT -->
+<button class="ai-btn" id="ai-toggle-btn" onclick="toggleAI()" title="Pergunte ao Greco">
+  <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Clippy-inspired: paperclip body with eyes -->
+    <path d="M19 4C19 4 22 4 22 8V20C22 24 18 26 14 26C10 26 6 24 6 20V10C6 6 9 4 12 4C15 4 17 6 17 9V19C17 21 15.5 22 14 22C12.5 22 11 21 11 19V10" 
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+    <!-- Eyes -->
+    <circle cx="11.5" cy="12" r="1.2" fill="currentColor"/>
+    <circle cx="16.5" cy="12" r="1.2" fill="currentColor"/>
+    <!-- Shine dots -->
+    <circle cx="12" cy="11.5" r="0.4" fill="white"/>
+    <circle cx="17" cy="11.5" r="0.4" fill="white"/>
+  </svg>
+</button>
+
+<div class="ai-panel" id="ai-panel">
+  <div class="ai-header">
+    <div class="ai-avatar">
+      <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
+        <path d="M19 4C19 4 22 4 22 8V20C22 24 18 26 14 26C10 26 6 24 6 20V10C6 6 9 4 12 4C15 4 17 6 17 9V19C17 21 15.5 22 14 22C12.5 22 11 21 11 19V10" 
+              stroke="var(--text)" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <circle cx="11.5" cy="12" r="1.2" fill="var(--text)"/>
+        <circle cx="16.5" cy="12" r="1.2" fill="var(--text)"/>
+      </svg>
+    </div>
+    <div class="ai-header-info">
+      <div class="ai-header-name">Greco AI</div>
+      <div class="ai-header-status" id="ai-status">Online</div>
+    </div>
+    <button class="ai-history-btn" onclick="openAiHistory()">Histórico</button>
+  </div>
+  <div class="ai-messages" id="ai-messages">
+    <div class="ai-msg assistant">Olá! Sou o assistente do Greco. Pergunte sobre seus lançamentos, gastos, metas ou investimentos.</div>
+  </div>
+  <div class="ai-footer">
+    <input class="ai-input" id="ai-input" placeholder="Pergunte algo..." onkeydown="aiKeydown(event)">
+    <button class="ai-send" id="ai-send-btn" onclick="sendAiMessage()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+      </svg>
+    </button>
+  </div>
+</div>
+
+<!-- AI HISTORY MODAL -->
+<div class="ai-hist-overlay" id="ai-hist-overlay" onclick="if(event.target===this)closeAiHistory()">
+  <div class="ai-hist-modal">
+    <div class="ai-hist-header">
+      <span style="font-size:15px;font-weight:600">Histórico de conversas</span>
+      <button class="modal-close" onclick="closeAiHistory()">×</button>
+    </div>
+    <div class="ai-hist-body" id="ai-hist-body"></div>
+  </div>
+</div>
+
 </body>
 </html>
