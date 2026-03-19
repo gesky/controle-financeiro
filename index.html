@@ -1755,22 +1755,26 @@ function renderCatPage(tipo,metricsId,catsId){
       <div class="cat-header" onclick="toggleCatBody('${bodyId}')">
         <span class="cat-icon">${cat.icon}</span>
         <span class="cat-name" style="flex:1">${cat.label}</span>
-        <div style="width:140px;flex-shrink:0;text-align:right;border-left:1px solid var(--border);padding:0 12px">
+        ${catPrev>0?`<div style="width:90px;flex-shrink:0;text-align:right;padding:0 12px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center">
+          <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em">%</div>
+          <div style="font-size:14px;font-weight:700;font-family:'DM Mono',monospace;color:${barColor}">${pct}%</div>
+        </div>`:`<div style="width:90px;flex-shrink:0"></div>`}
+        <div style="width:140px;flex-shrink:0;text-align:right;border-left:1px solid var(--border);padding:0 12px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center">
           <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em">Previsto</div>
           <div style="font-size:13px;font-weight:600;font-family:'DM Mono',monospace;color:var(--text2)">${catPrev>0?fmt(catPrev):'—'}</div>
         </div>
-        <div style="width:140px;flex-shrink:0;text-align:right;border-left:1px solid var(--border);padding:0 12px">
+        <div style="width:140px;flex-shrink:0;text-align:right;border-left:1px solid var(--border);padding:0 12px;display:flex;flex-direction:column;align-items:flex-end;justify-content:center">
           <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em">Realizado</div>
           <div style="font-size:13px;font-weight:600;font-family:'DM Mono',monospace" class="${tipo==='receita'?'pos':'neg'}">${fmt(catReal)}</div>
         </div>
-        <div style="width:90px;flex-shrink:0;border-left:1px solid var(--border);padding:0 12px;display:flex;align-items:center;gap:6px">
-          ${catPrev>0?`<div class="cat-pct-bar" style="flex:1;height:4px"><div class="cat-pct-fill" style="width:${Math.min(100,pct)}%;background:${barColor}"></div></div><span style="font-size:11px;font-family:'DM Mono',monospace;color:${barColor};min-width:32px">${pct}%</span>`:''}
+        <div style="width:40px;flex-shrink:0;border-left:1px solid var(--border);display:flex;align-items:center;justify-content:center">
           <span class="cat-chevron open" id="chev-${bodyId}">▼</span>
         </div>
       </div>
       <div class="cat-body open" id="${bodyId}">
-        <div style="display:flex;align-items:center;padding:4px 12px 4px 28px;border-bottom:1px solid var(--border);background:var(--bg2)">
+        <div style="display:flex;align-items:center;padding:4px 0 4px 28px;border-bottom:1px solid var(--border);background:var(--bg2)">
           <div style="flex:1;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Subcategoria</div>
+          <div style="width:90px;flex-shrink:0;border-left:1px solid var(--border)"></div>
           <div style="width:140px;flex-shrink:0;text-align:right;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-left:1px solid var(--border);padding:0 12px">Previsto</div>
           <div style="width:140px;flex-shrink:0;text-align:right;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-left:1px solid var(--border);padding:0 12px">Realizado</div>
           <div style="width:90px;flex-shrink:0;border-left:1px solid var(--border)"></div>
@@ -1783,6 +1787,7 @@ function renderCatPage(tipo,metricsId,catsId){
           const txHtml=subE.map(e=>{const d=new Date(e.date+'T12:00:00');return`<div class="tx-item"><span class="tx-date">${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}</span><span class="tx-desc">${e.descricao||'—'}</span><span class="tx-val ${tipo==='receita'?'pos':'neg'}">${tipo==='receita'?'+':'-'}${fmt(e.valor)}</span><button class="tx-edit" onclick="editEntry('${e.id}')">✎</button><button class="tx-del" onclick="deleteEntry('${e.id}')">×</button></div>`;}).join('');
           return`<div class="subcat-row">
             <div class="subcat-name-col"><button class="subcat-name-btn" onclick="toggleTxList('${txId}')">▸ ${sub}</button></div>
+            <div style="width:90px;flex-shrink:0;border-left:1px solid var(--border)"></div>
             <div class="subcat-col" style="width:140px;flex-shrink:0"><input class="subcat-prev-input" type="number" value="${subP>0?subP.toFixed(2):''}" placeholder="—" step="0.01" min="0" onclick="event.stopPropagation()" data-catid="${cat.id}" data-sub="${encodeURIComponent(sub)}" data-tipo="${tipo}" onblur="onSubPrevBlurData(this)" onkeydown="onSubPrevKeydown(event,this)"></div>
             <div class="subcat-col" style="width:140px;flex-shrink:0"><span class="${tipo==='receita'?'pos':subR>0?'neg':''}" style="font-size:13px;font-family:'DM Mono',monospace">${subR>0?(tipo==='receita'?'+':'-')+fmt(subR):'—'}</span></div>
             <div style="width:90px;flex-shrink:0;border-left:1px solid var(--border);padding:0 8px;display:flex;align-items:center;justify-content:center">
