@@ -1923,7 +1923,13 @@ window.saveEntry=async()=>{
   const desc=(document.getElementById('me-desc').value||'').trim();
   if(!date){alert('Selecione uma data.');return;}
   if(!val&&!prev){alert('Informe ao menos um valor.');return;}
-  const data={tipo,catId,subcategoria:subcat,descricao:desc,date,valor:val,previsto:prev,por:currentUser.displayName||currentUser.email};
+
+  // If parcelamento, use mensalidade as the entry valor
+  const isParcChecked = document.getElementById('me-is-parc')?.checked;
+  const numParcelasCheck = isParcChecked ? (parseInt(document.getElementById('me-parc-num').value)||0) : 0;
+  const valorParaSalvar = (isParcChecked && numParcelasCheck>=2) ? val/numParcelasCheck : val;
+
+  const data={tipo,catId,subcategoria:subcat,descricao:desc,date,valor:valorParaSalvar,previsto:prev,por:currentUser.displayName||currentUser.email};
   if(editingEntryId){
     const idx=entries.findIndex(e=>e.id===editingEntryId);
     if(idx>=0) entries[idx]={...entries[idx],...data};
