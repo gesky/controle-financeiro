@@ -1870,7 +1870,7 @@ window.openEntryModal=(tipo='despesa',catId,subcat)=>{
   editingEntryId=null;
   document.getElementById('me-title').textContent='Novo lançamento';
   document.getElementById('me-date').value=new Date().toISOString().split('T')[0];
-  document.getElementById('me-val').value='';document.getElementById('me-prev').value='';document.getElementById('me-desc').value='';
+  document.getElementById('me-val').value='';document.getElementById('me-desc').value='';
   document.getElementById('me-tipo').value=tipo;
   document.getElementById('parc-check-row').style.display=tipo==='despesa'?'block':'none';
   document.getElementById('me-is-parc').checked=false;
