@@ -472,6 +472,21 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 .sidebar .sidebar-user-role.is-admin{color:#a0aaff !important}
 .sidebar .logout-btn,
 .sidebar .logout-btn svg{color:rgba(255,255,255,0.8) !important;stroke:rgba(255,255,255,0.8) !important}
+
+/* ── PREVISTO INLINE ──────────────────────────────────── */
+.subcat-row{display:flex;align-items:center;gap:0;padding:0;border-bottom:1px solid var(--border)}
+.subcat-name-col{flex:1;padding:7px 16px 7px 28px;display:flex;align-items:center;gap:6px;min-width:0}
+.subcat-name-btn{background:none;border:none;cursor:pointer;font-size:13px;color:var(--text);text-align:left;padding:0;font-family:'Sora',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.subcat-col{min-width:110px;padding:6px 12px;text-align:right;border-left:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end}
+.subcat-prev-input{width:90px;text-align:right;border:none;background:transparent;font-size:13px;font-family:'DM Mono',monospace;color:var(--text2);padding:2px 4px;border-radius:4px;outline:none;cursor:pointer}
+.subcat-prev-input:hover{background:var(--bg3)}
+.subcat-prev-input:focus{background:var(--accent-bg);color:var(--accent);cursor:text}
+.subcat-real-val{font-size:13px;font-family:'DM Mono',monospace;color:var(--text)}
+.subcat-add-btn{padding:4px 8px;border-left:1px solid var(--border);display:flex;align-items:center}
+.cat-totals{display:flex;align-items:center}
+.cat-total-col{min-width:110px;padding:4px 12px;text-align:right;border-left:1px solid var(--border)}
+.cat-total-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
+.cat-total-val{font-size:13px;font-weight:600;font-family:'DM Mono',monospace}
 </style>
 </head>
 <body>
@@ -692,8 +707,8 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
         <div class="fg"><label>Subcategoria</label><select id="me-subcat"></select></div>
       </div>
       <div class="form-row">
-        <div class="fg"><label>Valor previsto (R$)</label><input type="number" id="me-prev" placeholder="0,00" step="0.01" min="0"></div>
         <div class="fg"><label>Valor realizado (R$)</label><input type="number" id="me-val" placeholder="0,00" step="0.01" min="0"></div>
+        <div class="fg"></div>
       </div>
       <div class="form-row single"><div class="fg"><label>Descrição</label><input id="me-desc" placeholder="Ex: Supermercado Extra, Salário março..."></div></div>
 
@@ -710,9 +725,8 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
           <div class="fg"><label>Nº de parcelas</label><input type="number" id="me-parc-num" placeholder="Ex: 12" min="2" max="360" oninput="calcParcPreviewInline()"></div>
           <div class="fg"><label>Parcela atual</label><input type="number" id="me-parc-atual" placeholder="Ex: 1" min="1" value="1" oninput="calcParcPreviewInline()"></div>
         </div>
-        <div class="form-row">
+        <div class="form-row single">
           <div class="fg"><label>Cartão</label><select id="me-parc-cartao"><option value="">Nenhum / Débito</option></select></div>
-          <div class="fg"><label>Banco / Instituição</label><input id="me-parc-banco" placeholder="Ex: Itaú, Nubank..."></div>
         </div>
         <div class="form-row single"><div class="fg"><label>Observações</label><input id="me-parc-obs" placeholder="Ex: IPVA parcelado, geladeira..."></div></div>
         <div id="parc-inline-preview" style="font-size:12px;color:var(--text2);margin-top:4px"></div>
@@ -1695,29 +1709,38 @@ function renderDashboard(){
 }
 
 // ── CAT PAGE ──────────────────────────────────────────────
+function getSubPrev(catId,sub){return Number(previstos[catId+'__'+sub]||0);}
+async function saveSubPrev(catId,sub,val){previstos[catId+'__'+sub]=val;await savePrevistos();}
+window.onSubPrevBlur=async(el,catId,sub)=>{
+  const v=parseFloat(el.value.replace(',','.'))||0;
+  el.value=v>0?v.toFixed(2):'';
+  await saveSubPrev(catId,sub,v);
+  refreshActivePage();
+};
+window.onSubPrevKeydown=(e,el,catId,sub)=>{if(e.key==='Enter')el.blur();if(e.key==='Escape'){el.value='';el.blur();}};
+
 function renderCatPage(tipo,metricsId,catsId){
-  // Capture currently open categories before re-render
-  const openCats = new Set();
+  const openCats=new Set();
   document.querySelectorAll('.cat-body.open').forEach(el=>openCats.add(el.id));
   const mx=getMonthEntries();
   const typeE=mx.filter(e=>e.tipo===tipo);
   const totalR=sumR(typeE);
-  const totalP=allCats(tipo).reduce((s,c)=>s+(Number(previstos[c.id])||0),0);
+  let totalP=0;
+  allCats(tipo).forEach(cat=>cat.subcats.forEach(sub=>totalP+=getSubPrev(cat.id,sub)));
   const totalParcMes=tipo==='despesa'?getParcTotalMonth():0;
   const totalRComParc=totalR+totalParcMes;
 
   document.getElementById(metricsId).innerHTML=`
     <div class="metric-card"><div class="metric-label">Previsto</div><div class="metric-value">${fmt(totalP)}</div></div>
-    <div class="metric-card"><div class="metric-label">Realizado</div><div class="metric-value ${tipo==='receita'?'pos':'neg'}">${fmt(totalR)}</div>${tipo==='despesa'&&totalParcMes>0?`<div class="metric-badge">+${fmt(totalParcMes)} parcelas</div>`:''}
-    </div>
+    <div class="metric-card"><div class="metric-label">Realizado</div><div class="metric-value ${tipo==='receita'?'pos':'neg'}">${fmt(totalR)}</div>${tipo==='despesa'&&totalParcMes>0?`<div class="metric-badge">+${fmt(totalParcMes)} parcelas</div>`:''}</div>
     <div class="metric-card"><div class="metric-label">${tipo==='despesa'?'Total c/ parcelas':'Diferença'}</div><div class="metric-value ${tipo==='receita'?(totalR>=totalP?'pos':'neg'):'neg'}">${tipo==='despesa'?fmt(totalRComParc):fmt(totalR-totalP)}</div></div>
-    <div class="metric-card"><div class="metric-label">% uso</div><div class="metric-value">${totalP>0?Math.round((totalR/totalP)*100):0}%</div></div>`;
+    <div class="metric-card"><div class="metric-label">% uso</div><div class="metric-value">${totalP>0?Math.round((totalRComParc/totalP)*100):0}%</div></div>`;
 
   let html='';
   allCats(tipo).forEach(cat=>{
     const catE=typeE.filter(e=>e.catId===cat.id);
     const catReal=sumR(catE);
-    const catPrev=Number(previstos[cat.id]||0);
+    const catPrev=cat.subcats.reduce((s,sub)=>s+getSubPrev(cat.id,sub),0);
     const pct=catPrev>0?Math.round((catReal/catPrev)*100):0;
     const barColor=pctColor(pct);
     const bodyId='catbody-'+cat.id;
@@ -1725,38 +1748,49 @@ function renderCatPage(tipo,metricsId,catsId){
       <div class="cat-header" onclick="toggleCatBody('${bodyId}')">
         <span class="cat-icon">${cat.icon}</span>
         <span class="cat-name">${cat.label}</span>
-        <div class="cat-amounts">
-          <div class="cat-amount-group"><div class="cat-amount-label">Previsto</div><div class="cat-amount-val" style="color:var(--text2)">${catPrev>0?fmt(catPrev):'—'}</div></div>
-          <div class="cat-amount-group"><div class="cat-amount-label">Realizado</div><div class="cat-amount-val">${fmt(catReal)}</div></div>
+        <div class="cat-totals">
+          <div class="cat-total-col"><div class="cat-total-label">Previsto</div><div class="cat-total-val" style="color:var(--text2)">${catPrev>0?fmt(catPrev):'—'}</div></div>
+          <div class="cat-total-col"><div class="cat-total-label">Realizado</div><div class="cat-total-val ${tipo==='receita'?'pos':'neg'}">${fmt(catReal)}</div></div>
         </div>
         ${catPrev>0?`<div class="cat-pct-wrap"><div class="cat-pct-bar"><div class="cat-pct-fill" style="width:${Math.min(100,pct)}%;background:${barColor}"></div></div><span class="cat-pct-label" style="color:${barColor}">${pct}%</span></div>`:'<div style="min-width:110px"></div>'}
-        <button class="btn-ghost" style="font-size:11px" onclick="event.stopPropagation();openPrevistoModal('${cat.id}',${catPrev},'${cat.label.replace(/'/g,"\\'")}')">✎ previsto</button>
         <span class="cat-chevron open" id="chev-${bodyId}">▼</span>
       </div>
       <div class="cat-body open" id="${bodyId}">
-        <div class="cat-actions">
-          <button class="btn-outline" style="font-size:12px;padding:5px 10px" onclick="openEntryModal('${tipo}','${cat.id}')">+ Lançamento</button>
+        <div style="display:flex;align-items:center;padding:4px 12px 4px 28px;border-bottom:1px solid var(--border);background:var(--bg2)">
+          <div style="flex:1;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Subcategoria</div>
+          <div style="min-width:110px;text-align:right;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-left:1px solid var(--border);padding:0 12px">Previsto</div>
+          <div style="min-width:110px;text-align:right;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-left:1px solid var(--border);padding:0 12px">Realizado</div>
+          <div style="min-width:80px;border-left:1px solid var(--border);padding:0 8px;display:flex;align-items:center">
+            <button class="btn-outline" style="font-size:11px;padding:2px 8px;white-space:nowrap" onclick="event.stopPropagation();openEntryModal('${tipo}','${cat.id}')">+ Lançar</button>
+          </div>
         </div>
         ${cat.subcats.map(sub=>{
           const subE=catE.filter(e=>e.subcategoria===sub);
           const subR=sumR(subE);
-          const txId='txlist-'+cat.id+'-'+sub.replace(/[\s\/\(\)\-\&\.\']/g,'_');
-          const txHtml=subE.map(e=>{const d=new Date(e.date+'T12:00:00');return`<div class="tx-item"><span class="tx-date">${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}</span><span class="tx-desc">${e.descricao||'—'}</span><span class="tx-val ${tipo==='receita'?'pos':'neg'}">${tipo==='receita'?'+':'-'}${fmt(e.valor)}</span><button class="tx-edit" onclick="editEntry('${e.id}')">✎ editar</button><button class="tx-del" onclick="deleteEntry('${e.id}')">×</button></div>`;}).join('');
-          return`<div class="subcat-row"><button class="subcat-name-btn" onclick="toggleTxList('${txId}')">▸ ${sub}</button><span class="subcat-real" style="color:${subR>0?'var(--text)':'var(--text3)'}">${subR>0?fmt(subR):'—'}</span><button class="add-tx-inline" onclick="openEntryModal('${tipo}','${cat.id}','${sub.replace(/'/g,"\\'")}')">+ lançar</button></div><div class="tx-list" id="${txId}">${txHtml||'<div style="padding:4px 8px;font-size:12px;color:var(--text3)">Sem lançamentos</div>'}</div>`;
+          const subP=getSubPrev(cat.id,sub);
+          const txId='txlist-'+cat.id+'-'+sub.replace(/[\s\/\(\)\-\&\.']/g,'_');
+          const txHtml=subE.map(e=>{const d=new Date(e.date+'T12:00:00');return`<div class="tx-item"><span class="tx-date">${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}</span><span class="tx-desc">${e.descricao||'—'}</span><span class="tx-val ${tipo==='receita'?'pos':'neg'}">${tipo==='receita'?'+':'-'}${fmt(e.valor)}</span><button class="tx-edit" onclick="editEntry('${e.id}')">✎</button><button class="tx-del" onclick="deleteEntry('${e.id}')">×</button></div>`;}).join('');
+          return`<div class="subcat-row">
+            <div class="subcat-name-col"><button class="subcat-name-btn" onclick="toggleTxList('${txId}')">▸ ${sub}</button><button class="add-tx-inline" onclick="openEntryModal('${tipo}','${cat.id}','${sub.replace(/'/g,"\'")}')">+ lançar</button></div>
+            <div class="subcat-col"><input class="subcat-prev-input" type="number" value="${subP>0?subP.toFixed(2):''}" placeholder="—" step="0.01" min="0" title="Clique para editar o previsto" onclick="event.stopPropagation()" onblur="onSubPrevBlur(this,'${cat.id}','${sub.replace(/'/g,"\'")}','${tipo}')" onkeydown="onSubPrevKeydown(event,this,'${cat.id}','${sub.replace(/'/g,"\'")}')"></div>
+            <div class="subcat-col"><span class="${tipo==='receita'?'pos':subR>0?'neg':''}" style="font-size:13px;font-family:'DM Mono',monospace">${subR>0?(tipo==='receita'?'+':'-')+fmt(subR):'—'}</span></div>
+            <div style="min-width:80px;border-left:1px solid var(--border)"></div>
+          </div>
+          <div class="tx-list" id="${txId}">${txHtml||'<div style="padding:4px 8px;font-size:12px;color:var(--text3)">Sem lançamentos</div>'}</div>`;
         }).join('')}
       </div>
     </div>`;
   });
   document.getElementById(catsId).innerHTML=html||'<div class="empty">Nenhuma categoria.</div>';
-  // Restore open state — if first render (nothing was open), open all by default
-  const allBodies = document.querySelectorAll(`#${catsId} .cat-body`);
+  const allBodies=document.querySelectorAll(`#${catsId} .cat-body`);
   allBodies.forEach(el=>{
-    const shouldOpen = openCats.size===0 || openCats.has(el.id);
-    el.classList.toggle('open', shouldOpen);
-    const chev = document.getElementById('chev-'+el.id);
-    if(chev) chev.textContent = shouldOpen ? '▼' : '▶';
+    const shouldOpen=openCats.size===0||openCats.has(el.id);
+    el.classList.toggle('open',shouldOpen);
+    const chev=document.getElementById('chev-'+el.id);
+    if(chev)chev.textContent=shouldOpen?'▼':'▶';
   });
 }
+
 
 window.toggleCatBody=id=>{const el=document.getElementById(id);const ch=document.getElementById('chev-'+id);el.classList.toggle('open');if(ch)ch.textContent=el.classList.contains('open')?'▼':'▶';};
 window.toggleTxList=id=>{const el=document.getElementById(id);if(el)el.classList.toggle('open');};
@@ -1829,7 +1863,7 @@ window.editEntry=id=>{
   document.getElementById('parc-extra-fields').style.display='none';
   document.getElementById('me-date').value=e.date||'';
   document.getElementById('me-val').value=e.valor||'';
-  document.getElementById('me-prev').value=e.previsto||'';
+
   document.getElementById('me-desc').value=e.descricao||'';
   // populate categories
   populateCatSelect(e.tipo,e.catId);
@@ -1857,7 +1891,7 @@ window.saveEntry=async()=>{
   const subcat=document.getElementById('me-subcat').value;
   const date=document.getElementById('me-date').value;
   const val=parseFloat(document.getElementById('me-val').value)||0;
-  const prev=parseFloat(document.getElementById('me-prev').value)||0;
+  const prev=0;
   const desc=(document.getElementById('me-desc').value||'').trim();
   if(!date){alert('Selecione uma data.');return;}
   if(!val&&!prev){alert('Informe ao menos um valor.');return;}
@@ -1876,7 +1910,7 @@ window.saveEntry=async()=>{
     const numParcelas=parseInt(document.getElementById('me-parc-num').value)||0;
     const parcAtual=parseInt(document.getElementById('me-parc-atual').value)||1;
     const cartaoId=document.getElementById('me-parc-cartao').value;
-    const banco=document.getElementById('me-parc-banco').value.trim();
+    const banco='';
     const obs=document.getElementById('me-parc-obs').value.trim();
     if(numParcelas>=2&&val>0){
       const mensalidade=val/numParcelas;
