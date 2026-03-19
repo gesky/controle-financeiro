@@ -598,17 +598,16 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
     <!-- PARCELAMENTOS -->
     <div id="page-parcelamentos" class="page">
       <div class="page-header">
-        <div><div class="page-title">Parcelamentos</div><div class="page-sub">Compras parceladas e cartão de crédito</div></div>
-
+        <div><div class="page-title">Parcelamentos</div><div class="page-sub">Compras parceladas em aberto</div></div>
       </div>
       <div class="metrics-grid" id="parc-metrics"></div>
-      <div class="card">
-        <div class="card-header"><span class="card-title">Parcelamentos ativos</span></div>
-        <div class="card-body" id="parc-list"></div>
-      </div>
-      <div class="card">
-        <div class="card-header"><span class="card-title">Concluídos / encerrados</span></div>
-        <div class="card-body" id="parc-done-list"></div>
+      <div id="parc-active"></div>
+      <div id="parc-history-section" style="display:none">
+        <div style="display:flex;align-items:center;gap:10px;margin:20px 0 12px;cursor:pointer" onclick="toggleParcHistory()">
+          <span style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Histórico de concluídos</span>
+          <span id="parc-history-chevron" style="font-size:11px;color:var(--text3)">▶</span>
+        </div>
+        <div id="parc-history" style="display:none"></div>
       </div>
     </div>
 
@@ -642,33 +641,6 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
         <button class="btn-add" onclick="openGoalModal()">+ Nova meta</button>
       </div>
       <div class="goals-grid" id="goals-container"></div>
-    </div>
-
-    <!-- PARCELAMENTOS -->
-    <div id="page-parcelamentos" class="page">
-      <div class="page-header">
-        <div><div class="page-title">Parcelamentos</div><div class="page-sub">Compras parceladas e cartão de crédito</div></div>
-
-      </div>
-      <div class="metrics-grid" id="parc-metrics"></div>
-      <div id="parc-list"></div>
-    </div>
-
-    <!-- PARCELAMENTOS -->
-    <div id="page-parcelamentos" class="page">
-      <div class="page-header">
-        <div><div class="page-title">Parcelamentos</div><div class="page-sub">Compras parceladas em aberto</div></div>
-
-      </div>
-      <div class="metrics-grid" id="parc-metrics"></div>
-      <div id="parc-active"></div>
-      <div id="parc-history-section" style="display:none">
-        <div style="display:flex;align-items:center;gap:10px;margin:20px 0 12px;cursor:pointer" onclick="toggleParcHistory()">
-          <span style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Histórico de concluídos</span>
-          <span id="parc-history-chevron" style="font-size:11px;color:var(--text3)">▶</span>
-        </div>
-        <div id="parc-history" style="display:none"></div>
-      </div>
     </div>
 
     <!-- RELATÓRIOS -->
