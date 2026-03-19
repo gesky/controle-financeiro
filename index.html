@@ -912,17 +912,27 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
     <div class="modal-body">
       <div class="form-row single"><div class="fg"><label>Nome</label><input id="g-name" placeholder="Ex: Reserva de emergência"></div></div>
       <div class="form-row">
-        <div class="fg"><label>Valor alvo (R$)</label><input type="number" id="g-target" placeholder="30000" min="0"></div>
+        <div class="fg"><label>Valor alvo (R$)</label><input type="number" id="g-target" placeholder="30000" min="0" oninput="simularMeta()"></div>
         <div class="fg"><label>Valor atual (R$)</label><input type="number" id="g-current" placeholder="0" min="0"></div>
       </div>
       <div class="form-row">
-        <div class="fg"><label>Data de conclusão</label><input type="date" id="g-deadline"></div>
+        <div class="fg"><label>Data de conclusão</label><input type="date" id="g-deadline" onchange="simularMeta()"></div>
         <div class="fg"><label>Observações</label><input id="g-notes" placeholder="Estratégia, detalhes..."></div>
       </div>
       <div class="form-row single">
         <div class="fg"><label>Vincular a investimento <span style="font-size:11px;color:var(--text3);font-weight:400">(opcional)</span></label>
-          <select id="g-inv"><option value="">— Nenhum —</option></select>
+          <select id="g-inv" onchange="simularMeta();autoFillInvSaldo()"><option value="">— Nenhum —</option></select>
         </div>
+      </div>
+      <div id="goal-simulator" style="display:none;background:var(--bg2);border-radius:var(--radius);padding:14px;margin-top:4px;border:1px solid var(--border)">
+        <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em">📈 Simulador de aportes</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <label style="font-size:12px;color:var(--text2);white-space:nowrap">Aporte mensal (R$)</label>
+          <input type="number" id="g-aporte" placeholder="0,00" min="0" step="50"
+            style="flex:1;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg);color:var(--text);font-size:13px;font-family:'DM Mono',monospace"
+            oninput="simularMeta()">
+        </div>
+        <div id="goal-sim-result" style="font-size:12px;color:var(--text2)"></div>
       </div>
       <div class="btn-row"><button class="btn-cancel" onclick="closeModal('modal-goal')">Cancelar</button><button class="btn-save" onclick="saveGoal()">Salvar</button></div>
     </div>
@@ -1660,7 +1670,7 @@ function renderGoals(){
       <div class="goal-sub">${fmt(g.current)} de ${fmt(g.target)}${g.notes?' · '+g.notes:''}</div>
       ${deadlineStr?`<div style="font-size:11px;color:var(--text3);margin:4px 0">🗓 Prazo: ${deadlineStr}</div>`:''}
       ${linkedInv?`<div style="font-size:11px;color:var(--accent);margin:4px 0;display:flex;align-items:center;gap:4px">
-        📈 ${linkedInv.name}: <strong>${fmt(invSaldo)}</strong>
+        📈 ${linkedInv.nome}: <strong>${fmt(invSaldo)}</strong>
         <span style="color:var(--text3)">(${invPct}% da meta)</span>
       </div>`:''}
       <div class="goal-pct" style="color:${col}">${pct}%</div>
@@ -1674,6 +1684,88 @@ function renderGoals(){
   }).join('');
 }
 
+
+window.autoFillInvSaldo=()=>{
+  const invId=document.getElementById('g-inv').value;
+  if(!invId) return;
+  const inv=investments.find(i=>i.id===invId);
+  if(!inv) return;
+  const saldo=calcInvSaldoNow(inv).saldo;
+  document.getElementById('g-current').value=saldo.toFixed(2);
+};
+window.simularMeta=()=>{
+  const simDiv=document.getElementById('goal-simulator');
+  const invId=document.getElementById('g-inv').value;
+  const target=parseFloat(document.getElementById('g-target').value)||0;
+  if(!invId||!target){simDiv.style.display='none';return;}
+  const inv=investments.find(i=>i.id===invId);
+  if(!inv){simDiv.style.display='none';return;}
+  simDiv.style.display='block';
+  const r=calcInvSaldoNow(inv);
+  const saldoAtual=r.saldo;
+  const taxaMensal=Number(inv.taxa||0)/100;
+  const aporteMensal=parseFloat(document.getElementById('g-aporte').value)||0;
+  const resultado=document.getElementById('goal-sim-result');
+  if(saldoAtual>=target){
+    resultado.innerHTML=`<span style="color:var(--green);font-weight:600">✓ Meta já atingida! Saldo atual: ${fmt(saldoAtual)}</span>`;
+    return;
+  }
+  // Simulate month by month
+  let saldo=saldoAtual;
+  let meses=0;
+  const MAX_MESES=600; // 50 anos
+  while(saldo<target&&meses<MAX_MESES){
+    saldo=saldo*(1+taxaMensal)+aporteMensal;
+    meses++;
+  }
+  if(meses>=MAX_MESES){
+    resultado.innerHTML=`<span style="color:var(--red)">Com aporte de ${fmt(aporteMensal)}/mês, a meta não será atingida em 50 anos. Aumente o aporte.</span>`;
+    return;
+  }
+  const anos=Math.floor(meses/12);
+  const mesesRest=meses%12;
+  const periodoStr=(anos>0?anos+' ano'+(anos>1?'s':''):'')+(anos>0&&mesesRest>0?' e ':'')+
+    (mesesRest>0?mesesRest+' mês'+(mesesRest>1?'es':''):'');
+  // Calculate how much to achieve by deadline
+  let aporteIdeal=null;
+  const deadline=document.getElementById('g-deadline').value;
+  if(deadline){
+    const now=new Date();
+    const end=new Date(deadline+'T12:00:00');
+    const mesesAteDeadline=Math.max(1,Math.round((end-now)/(1000*60*60*24*30.44)));
+    // Solve: target = saldoAtual*(1+r)^n + aporte * ((1+r)^n - 1)/r
+    if(taxaMensal>0){
+      const fator=Math.pow(1+taxaMensal,mesesAteDeadline);
+      aporteIdeal=(target - saldoAtual*fator) / ((fator-1)/taxaMensal);
+    } else {
+      aporteIdeal=(target-saldoAtual)/mesesAteDeadline;
+    }
+    aporteIdeal=Math.max(0,aporteIdeal);
+  }
+  resultado.innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div style="background:var(--bg);border-radius:var(--radius);padding:8px">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-bottom:2px">Saldo atual</div>
+        <div style="font-size:14px;font-weight:700;font-family:'DM Mono',monospace;color:var(--accent)">${fmt(saldoAtual)}</div>
+      </div>
+      <div style="background:var(--bg);border-radius:var(--radius);padding:8px">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-bottom:2px">Taxa mensal</div>
+        <div style="font-size:14px;font-weight:700;font-family:'DM Mono',monospace;color:var(--accent)">${Number(inv.taxa||0).toFixed(2)}%</div>
+      </div>
+    </div>
+    ${aporteMensal>0?`
+    <div style="background:var(--bg);border-radius:var(--radius);padding:8px;margin-bottom:8px">
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-bottom:2px">Com ${fmt(aporteMensal)}/mês você atinge ${fmt(target)} em</div>
+      <div style="font-size:16px;font-weight:700;color:${meses<=36?'var(--green)':meses<=84?'var(--amber)':'var(--red)'}">${periodoStr}</div>
+    </div>`:''}
+    ${aporteIdeal!==null?`
+    <div style="background:var(--bg);border-radius:var(--radius);padding:8px;border-left:3px solid var(--accent)">
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;margin-bottom:2px">Aporte necessário para bater a meta no prazo</div>
+      <div style="font-size:18px;font-weight:700;font-family:'DM Mono',monospace;color:var(--accent)">${fmt(aporteIdeal)}/mês</div>
+    </div>`:'<div style="font-size:11px;color:var(--text3)">💡 Defina uma data de conclusão para calcular o aporte ideal.</div>'}
+  `;
+};
+
 window.openGoalModal=(goalId)=>{
   editingGoalId=goalId||null;
   const g=goalId?goals.find(x=>x.id===goalId):null;
@@ -1684,10 +1776,14 @@ window.openGoalModal=(goalId)=>{
   document.getElementById('g-deadline').value=g?.deadline||'';
   // Populate investments
   const sel=document.getElementById('g-inv');
-  sel.innerHTML='<option value="">— Nenhum —</option>'+investments.map(inv=>`<option value="${inv.id}">${inv.name}</option>`).join('');
+  sel.innerHTML='<option value="">— Nenhum —</option>'+investments.map(inv=>`<option value="${inv.id}">${inv.nome}</option>`).join('');
   sel.value=g?.investmentId||'';
   document.querySelector('#modal-goal .modal-title').textContent=goalId?'Editar meta':'Nova meta';
+  document.getElementById('g-aporte').value='';
+  document.getElementById('goal-sim-result').innerHTML='';
+  document.getElementById('goal-simulator').style.display='none';
   openModal('modal-goal');
+  setTimeout(simularMeta,100);
 };
 window.saveGoal=async()=>{
   const name=document.getElementById('g-name').value.trim();
