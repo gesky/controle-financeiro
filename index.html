@@ -679,7 +679,14 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
     <div class="modal-body">
       <div class="form-row">
         <div class="fg"><label>Tipo</label><select id="me-tipo" onchange="onEntryTipoChange()"><option value="receita">Receita</option><option value="despesa">Despesa</option></select></div>
-        <div class="fg"><label>Data</label><input type="date" id="me-date"></div>
+        <div class="fg"><label>Data <span style="font-size:11px;color:var(--text3);font-weight:400">(opcional)</span></label>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="date" id="me-date" style="flex:1">
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text2);cursor:pointer;white-space:nowrap">
+              <input type="checkbox" id="me-no-date" onchange="toggleNoDate(this)" style="cursor:pointer"> Sem data
+            </label>
+          </div>
+        </div>
       </div>
       <div class="form-row">
         <div class="fg"><label>Categoria</label><select id="me-cat" onchange="onEntryCatChange()"></select></div>
@@ -912,7 +919,33 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
         <div class="fg"><label>Data de conclusão</label><input type="date" id="g-deadline"></div>
         <div class="fg"><label>Observações</label><input id="g-notes" placeholder="Estratégia, detalhes..."></div>
       </div>
+      <div class="form-row single">
+        <div class="fg"><label>Vincular a investimento <span style="font-size:11px;color:var(--text3);font-weight:400">(opcional)</span></label>
+          <select id="g-inv"><option value="">— Nenhum —</option></select>
+        </div>
+      </div>
       <div class="btn-row"><button class="btn-cancel" onclick="closeModal('modal-goal')">Cancelar</button><button class="btn-save" onclick="saveGoal()">Salvar</button></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- MODAL MOVER SUBCATEGORIA -->
+<div class="modal-overlay" id="modal-move-subcat">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header"><span class="modal-title">Mover subcategoria</span><button class="modal-close" onclick="closeModal('modal-move-subcat')">×</button></div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Mover <strong id="move-sub-name"></strong> para outra categoria:</p>
+      <div class="form-row single">
+        <div class="fg"><label>Categoria de destino</label>
+          <select id="move-sub-target"></select>
+        </div>
+      </div>
+      <p style="font-size:11px;color:var(--text3);margin-top:8px">⚠️ Todos os lançamentos e previstos desta subcategoria serão migrados automaticamente.</p>
+      <div class="btn-row">
+        <button class="btn-cancel" onclick="closeModal('modal-move-subcat')">Cancelar</button>
+        <button class="btn-save" onclick="confirmMoveSubcat()">Mover</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1613,15 +1646,47 @@ function renderGoals(){
     const pct=g.target>0?Math.min(100,Math.round((g.current/g.target)*100)):0;
     const col=pct>=100?'var(--green)':pct>=60?'var(--accent)':'var(--amber)';
     const deadlineStr=g.deadline?new Date(g.deadline+'T12:00:00').toLocaleDateString('pt-BR',{day:'2-digit',month:'short',year:'numeric'}):'';
-    return`<div class="goal-card"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div class="goal-name">${g.name}</div><button class="btn-danger-ghost" onclick="deleteGoal('${g.id}')">×</button></div><div class="goal-sub">${fmt(g.current)} de ${fmt(g.target)}${g.notes?' · '+g.notes:''}</div>${deadlineStr?`<div style="font-size:11px;color:var(--text3);margin:4px 0">🗓 Prazo: ${deadlineStr}</div>`:''}<div class="goal-pct" style="color:${col}">${pct}%</div><div class="pbar"><div class="pbar-fill" style="width:${pct}%;background:${col}"></div></div><button class="btn-sm" onclick="updateGoalProgress('${g.id}',${g.current},${g.target})">Atualizar valor</button></div>`;
+    const linkedInv=g.investmentId?investments.find(i=>i.id===g.investmentId):null;
+    const invSaldo=linkedInv?calcInvSaldoNow(linkedInv).saldo:null;
+    const invPct=linkedInv&&g.target>0?Math.min(100,Math.round(invSaldo/g.target*100)):null;
+    return`<div class="goal-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div class="goal-name">${g.name}</div>
+        <div style="display:flex;gap:4px">
+          <button class="btn-sm" onclick="openGoalModal('${g.id}')">✎</button>
+          <button class="btn-danger-ghost" onclick="deleteGoal('${g.id}')">×</button>
+        </div>
+      </div>
+      <div class="goal-sub">${fmt(g.current)} de ${fmt(g.target)}${g.notes?' · '+g.notes:''}</div>
+      ${deadlineStr?`<div style="font-size:11px;color:var(--text3);margin:4px 0">🗓 Prazo: ${deadlineStr}</div>`:''}
+      ${linkedInv?`<div style="font-size:11px;color:var(--accent);margin:4px 0;display:flex;align-items:center;gap:4px">
+        📈 ${linkedInv.name}: <strong>${fmt(invSaldo)}</strong>
+        <span style="color:var(--text3)">(${invPct}% da meta)</span>
+      </div>`:''}
+      <div class="goal-pct" style="color:${col}">${pct}%</div>
+      <div class="pbar"><div class="pbar-fill" style="width:${pct}%;background:${col}"></div></div>
+      ${linkedInv?`<div class="pbar" style="margin-top:4px;opacity:.6"><div class="pbar-fill" style="width:${invPct}%;background:var(--accent)"></div></div>
+      <div style="font-size:10px;color:var(--text3);margin-top:2px">▲ Barra azul = saldo do investimento vinculado</div>`:''}
+      <div style="display:flex;gap:6px;margin-top:10px">
+        <button class="btn-sm" onclick="updateGoalProgress('${g.id}',${g.current},${g.target})">Atualizar valor</button>
+      </div>
+    </div>`;
   }).join('');
 }
 
-window.openGoalModal=()=>{
-  editingGoalId=null;
-  ['g-name','g-notes'].forEach(id=>document.getElementById(id).value='');
-  ['g-target','g-current'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('g-deadline').value='';
+window.openGoalModal=(goalId)=>{
+  editingGoalId=goalId||null;
+  const g=goalId?goals.find(x=>x.id===goalId):null;
+  document.getElementById('g-name').value=g?.name||'';
+  document.getElementById('g-notes').value=g?.notes||'';
+  document.getElementById('g-target').value=g?.target||'';
+  document.getElementById('g-current').value=g?.current||'';
+  document.getElementById('g-deadline').value=g?.deadline||'';
+  // Populate investments
+  const sel=document.getElementById('g-inv');
+  sel.innerHTML='<option value="">— Nenhum —</option>'+investments.map(inv=>`<option value="${inv.id}">${inv.name}</option>`).join('');
+  sel.value=g?.investmentId||'';
+  document.querySelector('#modal-goal .modal-title').textContent=goalId?'Editar meta':'Nova meta';
   openModal('modal-goal');
 };
 window.saveGoal=async()=>{
@@ -1632,7 +1697,8 @@ window.saveGoal=async()=>{
   const deadline=document.getElementById('g-deadline').value||'';
   if(!name){alert('Informe o nome da meta.');return;}
   if(!target||target<=0){alert('Informe um valor alvo maior que zero.');return;}
-  const data={name,target,current,notes,deadline};
+  const investmentId=document.getElementById('g-inv').value||'';
+  const data={name,target,current,notes,deadline,investmentId};
   if(editingGoalId){
     const idx=goals.findIndex(g=>g.id===editingGoalId);
     if(idx>=0) goals[idx]={...goals[idx],...data};
@@ -1641,7 +1707,7 @@ window.saveGoal=async()=>{
   closeModal('modal-goal');
   if(activePage()==='metas') renderGoals();
 };
-window.deleteGoal=async id=>{if(!confirm('Excluir?'))return;await deleteDoc(doc(db,'goals',id));};
+window.deleteGoal=async id=>{if(!confirm('Excluir esta meta?'))return;await deleteDoc(doc(db,'goals',id));};;
 window.updateGoalProgress=(id,cur)=>{
   const v=prompt('Valor atual (R$):',cur);
   if(v===null)return;
@@ -1677,7 +1743,7 @@ function renderDashboard(){
   });
   if(barChartMonthInst)barChartMonthInst.destroy();
   if(catLabels.length){
-    barChartMonthInst=new Chart(document.getElementById('barChartMonth'),{type:'bar',data:{labels:catLabels,datasets:[{label:'Previsto',data:catRecData,backgroundColor:'#2383e233',borderRadius:3},{label:'Realizado',data:catDespData,backgroundColor:'#d44c4755',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.y??ctx.parsed;return' '+ctx.dataset.label+': '+fmt(typeof v==='number'?v:ctx.raw);}}},legend:{labels:{font:{size:10},boxWidth:8,padding:8}}},scales:{x:{grid:{display:false},ticks:{color:document.documentElement.getAttribute('data-theme')==='dark'?'#8888aa':'#787774',font:{size:9},maxRotation:35}},y:{grid:{color:'rgba(120,119,116,0.12)'},ticks:{color:document.documentElement.getAttribute('data-theme')==='dark'?'#8888aa':'#787774',font:{size:10},callback:v=>'R$'+Math.round(v/1000)+'k'}}}}});
+    barChartMonthInst=new Chart(document.getElementById('barChartMonth'),{type:'bar',data:{labels:catLabels,datasets:[{label:'Previsto',data:catRecData,backgroundColor:'#2383e233',borderRadius:3},{label:'Realizado',data:catDespData,backgroundColor:'#d44c4755',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.y??ctx.parsed;return' '+ctx.dataset.label+': '+fmt(typeof v==='number'?v:ctx.raw);}}},legend:{labels:{font:{size:10},boxWidth:8,padding:8}}},scales:{x:{grid:{display:false},ticks:{color:document.documentElement.getAttribute('data-theme')==='dark'?'#8888aa':'#787774',font:{size:9},maxRotation:0,minRotation:0,callback:function(val){const l=this.getLabelForValue(val);return l.replace(/^\S+\s/,'').slice(0,8);}}},y:{grid:{color:'rgba(120,119,116,0.12)'},ticks:{color:document.documentElement.getAttribute('data-theme')==='dark'?'#8888aa':'#787774',font:{size:10},callback:v=>'R$'+Math.round(v/1000)+'k'}}}}});
   }
 
   const labels=[],recData=[],despData=[],parcData=[];
@@ -1769,7 +1835,7 @@ function renderCatPage(tipo,metricsId,catsId){
         <span class="cat-icon">${cat.icon}</span>
         <span class="cat-name" style="flex:1">${cat.label}</span>
         <div style="width:90px;flex-shrink:0;padding:0 12px;display:flex;align-items:center;gap:5px">
-          ${catPrev>0?`<div style="flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;border-radius:3px;background:${barColor};width:${Math.min(100,pct)}%"></div></div><span style="font-size:11px;font-family:'DM Mono',monospace;color:${barColor};min-width:30px;text-align:right">${pct}%</span>`:''}
+          ${catPrev>0?`<div style="flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;border-radius:3px;background:${barColor};width:${Math.min(100,pct)}%"></div></div><span style="font-size:11px;font-family:'DM Mono',monospace;color:${barColor};min-width:30px;text-align:right">${Math.min(100,pct)}%</span>`:''}
         </div>
         <div class="subcat-col" style="width:140px;flex-shrink:0;flex-direction:column;align-items:flex-end;justify-content:center;gap:0">
           <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;line-height:1.2">Previsto</div>
@@ -1830,6 +1896,69 @@ window.onSubPrevBlurData=async el=>{
   refreshActivePage();
 };
 window.onSubPrevKeydown=(e,el)=>{if(e.key==='Enter')el.blur();if(e.key==='Escape'){el.value='';el.blur();}};
+window.toggleNoDate=cb=>{
+  const inp=document.getElementById('me-date');
+  if(cb.checked){inp.dataset.prev=inp.value;inp.value='';inp.disabled=true;inp.style.opacity='.4';}
+  else{inp.disabled=false;inp.style.opacity='1';inp.value=inp.dataset.prev||'';}
+};
+
+let _moveSubcatTipo='', _moveSubcatFromId='', _moveSubcatName='';
+
+window.openMoveSubcatModal=(tipo,fromCatId,subName)=>{
+  _moveSubcatTipo=tipo;
+  _moveSubcatFromId=fromCatId;
+  _moveSubcatName=subName;
+  document.getElementById('move-sub-name').textContent=subName;
+  // Populate target categories (all except source)
+  const sel=document.getElementById('move-sub-target');
+  sel.innerHTML=allCats(tipo)
+    .filter(c=>c.id!==fromCatId)
+    .map(c=>`<option value="${c.id}">${c.icon} ${c.label}</option>`)
+    .join('');
+  openModal('modal-move-subcat');
+};
+
+window.confirmMoveSubcat=async()=>{
+  const toCatId=document.getElementById('move-sub-target').value;
+  if(!toCatId){alert('Selecione uma categoria de destino.');return;}
+  const tipo=_moveSubcatTipo;
+  const fromCatId=_moveSubcatFromId;
+  const subName=_moveSubcatName;
+  const toCat=allCats(tipo).find(c=>c.id===toCatId);
+  const fromCat=allCats(tipo).find(c=>c.id===fromCatId);
+  if(!toCat||!fromCat){alert('Categoria não encontrada.');return;}
+
+  // 1. Update categories config — remove from source, add to target
+  fromCat.subcats=fromCat.subcats.filter(s=>s!==subName);
+  if(!toCat.subcats.includes(subName)) toCat.subcats.push(subName);
+  await saveCategories();
+
+  // 2. Migrate all entries: catId fromCatId + subcategoria subName → catId toCatId
+  const {query,collection:col,where,getDocs,writeBatch}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+  const batch=writeBatch(db);
+  const q=query(col(db,'entries'),where('catId','==',fromCatId),where('subcategoria','==',subName));
+  const snap=await getDocs(q);
+  snap.forEach(d=>batch.update(d.ref,{catId:toCatId}));
+  await batch.commit();
+
+  // 3. Migrate previstos keys: fromCatId__subName__YYYY-MM → toCatId__subName__YYYY-MM
+  const newPrevistos={...previstos};
+  Object.keys(previstos).forEach(k=>{
+    if(k.startsWith(fromCatId+'__'+subName+'__')||k===fromCatId+'__'+subName){
+      const suffix=k.slice((fromCatId+'__'+subName).length);
+      const newKey=toCatId+'__'+subName+suffix;
+      newPrevistos[newKey]=previstos[k];
+      delete newPrevistos[k];
+    }
+  });
+  previstos=newPrevistos;
+  await savePrevistos();
+
+  closeModal('modal-move-subcat');
+  alert(`"${subName}" movida para "${toCat.label}" com sucesso! ${snap.size} lançamento(s) migrado(s).`);
+  renderCfgCats(tipo);
+};
+
 window.toggleCatBody=id=>{const el=document.getElementById(id);const ch=document.getElementById('chev-'+id);el.classList.toggle('open');if(ch)ch.textContent=el.classList.contains('open')?'▼':'▶';};
 window.toggleTxList=id=>{const el=document.getElementById(id);if(el)el.classList.toggle('open');};
 
@@ -1881,6 +2010,8 @@ window.openEntryModal=(tipo='despesa',catId,subcat)=>{
   document.getElementById('me-title').textContent='Novo lançamento';
   document.getElementById('me-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('me-val').value='';document.getElementById('me-desc').value='';
+  const noDateCb=document.getElementById('me-no-date');
+  if(noDateCb){noDateCb.checked=false;const di=document.getElementById('me-date');di.disabled=false;di.style.opacity='1';}
   document.getElementById('me-tipo').value=tipo;
   document.getElementById('parc-check-row').style.display=tipo==='despesa'?'block':'none';
   document.getElementById('me-is-parc').checked=false;
@@ -1931,7 +2062,7 @@ window.saveEntry=async()=>{
   const val=parseFloat(document.getElementById('me-val').value)||0;
   const prev=0;
   const desc=(document.getElementById('me-desc').value||'').trim();
-  if(!date){alert('Selecione uma data.');return;}
+  // date is optional
   if(!val&&!prev){alert('Informe ao menos um valor.');return;}
 
   // If parcelamento, use mensalidade as the entry valor
@@ -2343,6 +2474,33 @@ window.startSubcatNameEdit = function(spanEl, tipo, catId, idx){
     if(newName && newName !== currentName){
       const cat = cats[tipo].find(c=>c.id===catId);
       if(cat && cat.subcats[idx]!==undefined){
+        // Check for duplicate name in same category
+        if(cat.subcats.includes(newName)){
+          alert(`Já existe uma subcategoria chamada "${newName}" nesta categoria.`);
+          renderCfgCats(tipo);
+          return;
+        }
+        // Migrate all entries with old subcategoria name
+        const {query,collection:col,where,getDocs,writeBatch}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+        const batch=writeBatch(db);
+        const q=query(col(db,'entries'),where('catId','==',catId),where('subcategoria','==',currentName));
+        const snap=await getDocs(q);
+        snap.forEach(d=>batch.update(d.ref,{subcategoria:newName}));
+        await batch.commit();
+        // Migrate previstos keys
+        const newPrevistos={...previstos};
+        Object.keys(previstos).forEach(k=>{
+          if(k.startsWith(catId+'__'+currentName+'__')||k===catId+'__'+currentName){
+            const suffix=k.slice((catId+'__'+currentName).length);
+            newPrevistos[catId+'__'+newName+suffix]=previstos[k];
+            delete newPrevistos[k];
+          }
+        });
+        previstos=newPrevistos;
+        await savePrevistos();
+        // Update local entries array
+        entries.forEach(e=>{if(e.catId===catId&&e.subcategoria===currentName)e.subcategoria=newName;});
+        // Update category config
         cat.subcats[idx] = newName;
         await saveCategories();
       }
@@ -2389,6 +2547,7 @@ function renderCfgCats(tipo){
             style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid var(--border)">
           <span class="drag-handle" style="font-size:13px">⠿</span>
           <span onclick="startSubcatNameEdit(this,'${tipo}','${safeId}',${si})" title="Clique para editar" style="flex:1;font-size:13px;cursor:text;padding:2px 4px;border-radius:4px;border:1px dashed transparent;transition:border-color .15s" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='transparent'">${sub}</span>
+          <button class="btn-ghost" style="font-size:11px;color:var(--accent)" onclick="openMoveSubcatModal('${tipo}','${safeId}','${sub}')">↗ mover</button>
           <button class="btn-ghost" style="font-size:11px;color:var(--red)" onclick="deleteSubcat('${tipo}','${safeId}','${sub.replace(/'/g,"\'").replace(/"/g,'&quot;')}')">×</button>
         </div>`).join('')}
         <button class="add-tx-inline" style="margin-top:8px" onclick="openSubcatModal('${tipo}','${safeId}')">+ subcategoria</button>
@@ -2566,6 +2725,79 @@ function renderCfgAparencia(){
       <p style="font-size:12px;color:var(--text3)">A preferência é salva automaticamente no navegador.</p>
     </div>`;
 }
+
+window.diagnosticarEntries=async()=>{
+  const el=document.getElementById('diag-result');
+  el.innerHTML='<div style="color:var(--text2);font-size:13px">Verificando...</div>';
+
+  // Build valid catId+subcat combos
+  const validCombos=new Set();
+  ['receita','despesa'].forEach(tipo=>{
+    allCats(tipo).forEach(cat=>{
+      cat.subcats.forEach(sub=>validCombos.add(cat.id+'|'+sub));
+      // Also allow entries with just catId (no subcat)
+      validCombos.add(cat.id+'|');
+    });
+  });
+  const validCatIds=new Set([...allCats('receita'),...allCats('despesa')].map(c=>c.id));
+
+  const orphans=entries.filter(e=>{
+    const catOk=validCatIds.has(e.catId);
+    const combo=e.catId+'|'+(e.subcategoria||'');
+    const subOk=validCombos.has(combo)||validCombos.has(e.catId+'|');
+    return !catOk||!subOk;
+  });
+
+  if(!orphans.length){
+    el.innerHTML='<div style="color:var(--green);font-size:13px;padding:10px;background:var(--green-bg,#f0fdf4);border-radius:var(--radius);border:1px solid var(--green)">✓ Nenhum lançamento fantasma encontrado. Tudo certo!</div>';
+    return;
+  }
+
+  let html=`<div style="color:var(--red);font-size:13px;margin-bottom:8px;font-weight:600">⚠ ${orphans.length} lançamento(s) fantasma encontrado(s):</div>`;
+  html+=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:12px">
+    <thead><tr style="background:var(--bg2)">
+      <th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)">Data</th>
+      <th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)">Descrição</th>
+      <th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)">catId</th>
+      <th style="padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)">Subcategoria</th>
+      <th style="padding:6px 8px;text-align:right;border-bottom:1px solid var(--border)">Valor</th>
+      <th style="padding:6px 8px;border-bottom:1px solid var(--border)">Ação</th>
+    </tr></thead><tbody>`;
+  orphans.forEach(e=>{
+    html+=`<tr>
+      <td style="padding:5px 8px;border-bottom:1px solid var(--border);color:var(--text2)">${e.date||'—'}</td>
+      <td style="padding:5px 8px;border-bottom:1px solid var(--border)">${e.descricao||'—'}</td>
+      <td style="padding:5px 8px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:11px;color:var(--red)">${e.catId||'—'}</td>
+      <td style="padding:5px 8px;border-bottom:1px solid var(--border);color:var(--red)">${e.subcategoria||'—'}</td>
+      <td style="padding:5px 8px;border-bottom:1px solid var(--border);text-align:right;font-family:'DM Mono',monospace">${fmt(e.valor)}</td>
+      <td style="padding:5px 8px;border-bottom:1px solid var(--border)">
+        <button class="btn-sm" onclick="editEntry('${e.id}');closeModal&&closeModal()">✎ Editar</button>
+        <button class="btn-sm" style="color:var(--red)" onclick="deleteOrphanEntry('${e.id}')">× Excluir</button>
+      </td>
+    </tr>`;
+  });
+  const totalOrphan=orphans.reduce((s,e)=>s+(Number(e.valor)||0),0);
+  html+=`</tbody><tfoot><tr style="font-weight:600;background:var(--bg2)">
+    <td colspan="4" style="padding:6px 8px">Total afetado</td>
+    <td style="padding:6px 8px;text-align:right;font-family:'DM Mono',monospace;color:var(--red)">${fmt(totalOrphan)}</td>
+    <td style="padding:6px 8px"><button class="btn-danger" style="font-size:11px" onclick="deleteAllOrphans(${JSON.stringify(orphans.map(e=>e.id))})">× Excluir todos</button></td>
+  </tr></tfoot></table></div>`;
+  el.innerHTML=html;
+};
+
+window.deleteOrphanEntry=async(id)=>{
+  if(!confirm('Excluir este lançamento fantasma?'))return;
+  await deleteDoc(doc(db,'entries',id));
+  diagnosticarEntries();
+};
+
+window.deleteAllOrphans=async(ids)=>{
+  if(!confirm(`Excluir ${ids.length} lançamento(s) fantasma? Esta ação não pode ser desfeita.`))return;
+  for(const id of ids) await deleteDoc(doc(db,'entries',id));
+  alert('Lançamentos fantasma removidos!');
+  diagnosticarEntries();
+};
+
 function renderCfgDados(){
   const keyStatus = ANTHROPIC_KEY ? '✓ Chave configurada' : '✗ Não configurada';
   const isDark = document.documentElement.getAttribute('data-theme')==='dark';
@@ -2591,6 +2823,12 @@ function renderCfgDados(){
         <input type="file" id="restore-input" accept=".json" style="display:none" onchange="restaurarBackup(event)">
       </div>
       <p style="font-size:11px;color:var(--text3);margin-top:10px">O backup inclui: lançamentos, metas, investimentos, movimentações e parcelamentos. Categorias e configurações são mantidas separadamente.</p>
+    </div>
+    <div class="cfg-section">
+      <div class="cfg-section-title">Diagnóstico de lançamentos</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Detecta lançamentos "fantasma" — vinculados a categorias ou subcategorias que não existem mais — que podem causar somatórias incorretas.</p>
+      <button class="btn-outline" style="margin-bottom:12px" onclick="diagnosticarEntries()">🔍 Verificar lançamentos</button>
+      <div id="diag-result"></div>
     </div>
     <div class="cfg-section">
       <div class="cfg-section-title">Zona de perigo</div>
@@ -2734,7 +2972,20 @@ window.saveCat=async()=>{
   renderCfgCats(tipo);
 };
 window.deleteCat=async(tipo,catId)=>{
-  if(!confirm('Excluir esta categoria?'))return;
+  const cat=cats[tipo].find(c=>c.id===catId);
+  const linked=entries.filter(e=>e.catId===catId);
+  const msg=linked.length>0
+    ?`Excluir categoria "${cat?.label||catId}" e seus ${linked.length} lançamento(s) vinculado(s)?\n\nTodas as subcategorias e lançamentos serão removidos. Esta ação não pode ser desfeita.`
+    :`Excluir categoria "${cat?.label||catId}" e todas as suas subcategorias?`;
+  if(!confirm(msg))return;
+  // Delete all linked entries
+  for(const e of linked) await deleteDoc(doc(db,'entries',e.id));
+  // Delete all previstos for this category
+  const newPrevistos={...previstos};
+  Object.keys(previstos).forEach(k=>{if(k.startsWith(catId+'__')) delete newPrevistos[k];});
+  previstos=newPrevistos;
+  await savePrevistos();
+  // Remove category
   cats[tipo]=cats[tipo].filter(c=>c.id!==catId);
   await saveCategories();
   renderCfgCats(tipo);
@@ -2760,9 +3011,24 @@ window.saveSubcat=async()=>{
   renderCfgCats(_subcatTipo);
 };
 window.deleteSubcat=async(tipo,catId,sub)=>{
-  if(!confirm(`Excluir subcategoria "${sub}"?`))return;
+  const linked=entries.filter(e=>e.catId===catId&&e.subcategoria===sub);
+  const msg=linked.length>0
+    ?`Excluir subcategoria "${sub}" e seus ${linked.length} lançamento(s) vinculado(s)?\n\nEsta ação não pode ser desfeita.`
+    :`Excluir subcategoria "${sub}"?`;
+  if(!confirm(msg))return;
+  // Delete linked entries
+  for(const e of linked) await deleteDoc(doc(db,'entries',e.id));
+  // Delete previstos keys for this subcat
+  const newPrevistos={...previstos};
+  Object.keys(previstos).forEach(k=>{
+    if(k.startsWith(catId+'__'+sub+'__')||k===catId+'__'+sub) delete newPrevistos[k];
+  });
+  previstos=newPrevistos;
+  await savePrevistos();
+  // Remove subcat from category
   const cat=cats[tipo].find(c=>c.id===catId);
-  if(cat){cat.subcats=cat.subcats.filter(s=>s!==sub);await saveCategories();renderCfgCats(tipo);}
+  if(cat){cat.subcats=cat.subcats.filter(s=>s!==sub);await saveCategories();}
+  renderCfgCats(tipo);
 };
 
 // ── INV TIPO ──────────────────────────────────────────────
