@@ -1328,8 +1328,13 @@ window.pagarParcela=async(id,pagas,total)=>{
 };
 
 window.deleteParc=async id=>{
-  if(!confirm('Excluir este parcelamento?'))return;
+  if(!confirm('Excluir este parcelamento e o lançamento vinculado?'))return;
+  const parc=parcelamentos.find(p=>p.id===id);
   await deleteDoc(doc(db,'parcelamentos',id));
+  // Also delete linked entry if exists
+  if(parc?.entryId){
+    try{ await deleteDoc(doc(db,'entries',parc.entryId)); }catch(e){}
+  }
 };
 
 
@@ -1931,11 +1936,12 @@ window.saveEntry=async()=>{
   const valorParaSalvar = (isParcChecked && numParcelasCheck>=2) ? val/numParcelasCheck : val;
 
   const data={tipo,catId,subcategoria:subcat,descricao:desc,date,valor:valorParaSalvar,previsto:prev,por:currentUser.displayName||currentUser.email};
+  let _parcEntryAlreadySaved=false;
   if(editingEntryId){
     const idx=entries.findIndex(e=>e.id===editingEntryId);
     if(idx>=0) entries[idx]={...entries[idx],...data};
     await updateDoc(doc(db,'entries',editingEntryId),data);
-  } else {
+  } else if(!isParcChecked){
     await addDoc(collection(db,'entries'),data);
   }
 
@@ -1953,6 +1959,8 @@ window.saveEntry=async()=>{
       const inicioDate=new Date(date+'T12:00:00');
       inicioDate.setMonth(inicioDate.getMonth()-(parcAtual-1));
       const inicio=inicioDate.getFullYear()+'-'+String(inicioDate.getMonth()+1).padStart(2,'0');
+      // Save entry first to get its ID, then link it to parcelamento
+      const entryRef = await addDoc(collection(db,'entries'),data);
       await addDoc(collection(db,'parcelamentos'),{
         descricao:desc||subcat,
         valorTotal:val,
@@ -1964,8 +1972,11 @@ window.saveEntry=async()=>{
         cartaoNome:cartao?cartao.nome:'',
         banco,
         obs,
+        entryId:entryRef.id,
         createdAt:new Date().toISOString()
       });
+      // Skip the normal addDoc below since we already saved the entry
+      _parcEntryAlreadySaved=true;
     }
   }
 
@@ -1973,7 +1984,15 @@ window.saveEntry=async()=>{
   closeModal('modal-entry');
   refreshActivePage();
 };
-window.deleteEntry=async id=>{if(!confirm('Excluir este lançamento?'))return;await deleteDoc(doc(db,'entries',id));};
+window.deleteEntry=async id=>{
+  if(!confirm('Excluir este lançamento?'))return;
+  await deleteDoc(doc(db,'entries',id));
+  // Also delete linked parcelamento if exists
+  const linkedParc=parcelamentos.find(p=>p.entryId===id);
+  if(linkedParc){
+    try{ await deleteDoc(doc(db,'parcelamentos',linkedParc.id)); }catch(e){}
+  }
+};
 
 // ── INVESTIMENTOS ─────────────────────────────────────────
 function renderInvestimentos(){
