@@ -1734,37 +1734,30 @@ function renderDashboard(){
   const dashChartMonthEl=document.getElementById('dash-chart-month');
   if(dashChartMonthEl) dashChartMonthEl.textContent=MESES[viewMonth]+' '+viewYear;
 
-  // Month bar chart — Receitas, Despesas e Parcelas by category, sorted by total desc
+  // Month bar chart — Previsto vs Realizado per despesa category, sorted by realizado desc
   const tickColor=document.documentElement.getAttribute('data-theme')==='dark'?'#8888aa':'#787774';
-  // Build per-category data
-  const catData=[];
-  allCats('despesa').forEach(cat=>{
-    const desp=sumR(mx.filter(e=>e.tipo==='despesa'&&e.catId===cat.id));
-    const parc=getParcTotalMonth(); // parcelas já estão em despesas, não adicionar
-    if(desp>0) catData.push({label:cat.label.slice(0,9),desp:Math.round(desp)});
-  });
-  // Sort by despesa desc
-  catData.sort((a,b)=>b.desp-a.desp);
-  // Add receitas as one bar
-  const totalRec=Math.round(sumR(mx.filter(e=>e.tipo==='receita')));
-  const totalDesp=Math.round(sumR(mx.filter(e=>e.tipo==='despesa')));
-  const totalParc=Math.round(getParcTotalMonth());
-  // Chart: grouped bars per category + one "Receitas" group
-  const chartLabels=['Receitas',...catData.map(c=>c.label)];
-  const recDataset=[totalRec,...catData.map(()=>0)];
-  const despDataset=[0,...catData.map(c=>c.desp)];
-  const parcDataset=[0,...catData.map(()=>0)]; // parcelas shown separately
+  const catChartData=allCats('despesa').map(cat=>{
+    const prev=cat.subcats.reduce((s,sub)=>s+getSubPrev(cat.id,sub),0);
+    const real=sumR(mx.filter(e=>e.tipo==='despesa'&&e.catId===cat.id));
+    return{label:cat.label.slice(0,9),prev:Math.round(prev),real:Math.round(real)};
+  }).filter(c=>c.prev>0||c.real>0).sort((a,b)=>b.real-a.real);
+
   if(barChartMonthInst)barChartMonthInst.destroy();
-  if(chartLabels.length){
+  if(catChartData.length){
     barChartMonthInst=new Chart(document.getElementById('barChartMonth'),{
       type:'bar',
-      data:{labels:chartLabels,datasets:[
-        {label:'Receitas',data:recDataset,backgroundColor:'#0f9d5866',borderRadius:4,borderSkipped:false},
-        {label:'Despesas',data:despDataset,backgroundColor:'#d44c4766',borderRadius:4,borderSkipped:false}
-      ]},
+      data:{
+        labels:catChartData.map(c=>c.label),
+        datasets:[
+          {label:'Previsto',data:catChartData.map(c=>c.prev),backgroundColor:'#2383e255',borderRadius:3,borderSkipped:false},
+          {label:'Realizado',data:catChartData.map(c=>c.real),backgroundColor:'#d44c4766',borderRadius:3,borderSkipped:false}
+        ]
+      },
       options:{responsive:true,maintainAspectRatio:false,
-        plugins:{tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.y;return v>0?' '+ctx.dataset.label+': '+fmt(v):null;}}},
-        legend:{labels:{font:{size:10},boxWidth:8,padding:8}}},
+        plugins:{
+          tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.y;return v>0?' '+ctx.dataset.label+': '+fmt(v):null;}}},
+          legend:{labels:{font:{size:10},boxWidth:8,padding:8}}
+        },
         scales:{
           x:{grid:{display:false},ticks:{color:tickColor,font:{size:9},maxRotation:0,minRotation:0}},
           y:{grid:{color:'rgba(120,119,116,0.12)'},ticks:{color:tickColor,font:{size:10},callback:v=>'R$'+Math.round(v/1000)+'k'}}
