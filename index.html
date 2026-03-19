@@ -1736,12 +1736,18 @@ function renderCatPage(tipo,metricsId,catsId){
   allCats(tipo).forEach(cat=>cat.subcats.forEach(sub=>totalP+=getSubPrev(cat.id,sub)));
   const totalParcMes=tipo==='despesa'?getParcTotalMonth():0;
   const totalRComParc=totalR+totalParcMes;
+  const saldo=tipo==='receita'?totalR-totalP:totalP-totalRComParc;
+  const isSuperavit=tipo==='receita'?totalR>=totalP:false;
 
   document.getElementById(metricsId).innerHTML=`
     <div class="metric-card"><div class="metric-label">Previsto</div><div class="metric-value">${fmt(totalP)}</div></div>
-    <div class="metric-card"><div class="metric-label">Realizado</div><div class="metric-value ${tipo==='receita'?'pos':'neg'}">${fmt(totalR)}</div>${tipo==='despesa'&&totalParcMes>0?`<div class="metric-badge">+${fmt(totalParcMes)} parcelas</div>`:''}</div>
-    <div class="metric-card"><div class="metric-label">${tipo==='despesa'?'Total c/ parcelas':'Diferença'}</div><div class="metric-value ${tipo==='receita'?(totalR>=totalP?'pos':'neg'):'neg'}">${tipo==='despesa'?fmt(totalRComParc):fmt(totalR-totalP)}</div></div>
-    <div class="metric-card"><div class="metric-label">% uso</div><div class="metric-value">${totalP>0?Math.round((totalRComParc/totalP)*100):0}%</div></div>`;
+    <div class="metric-card"><div class="metric-label">Realizado</div><div class="metric-value ${tipo==='receita'?'pos':'neg'}">${fmt(totalR)}</div></div>
+    ${tipo==='despesa'?`
+    <div class="metric-card"><div class="metric-label">Total c/ parcelas</div><div class="metric-value neg">${fmt(totalRComParc)}</div></div>
+    `:`
+    <div class="metric-card"><div class="metric-label" style="color:${isSuperavit?'var(--green)':'var(--red)'}">${isSuperavit?'Superávit':'Déficit'}</div><div class="metric-value ${isSuperavit?'pos':'neg'}">${fmt(Math.abs(saldo))}</div></div>
+    `}
+    <div class="metric-card"><div class="metric-label">% ${tipo==='receita'?'recebido':'uso'}</div><div class="metric-value">${totalP>0?Math.round((tipo==='receita'?totalR:totalRComParc)/totalP*100):0}%</div></div>`;
 
   let html='';
   allCats(tipo).forEach(cat=>{
@@ -1749,13 +1755,16 @@ function renderCatPage(tipo,metricsId,catsId){
     const catReal=sumR(catE);
     const catPrev=cat.subcats.reduce((s,sub)=>s+getSubPrev(cat.id,sub),0);
     const pct=catPrev>0?Math.round((catReal/catPrev)*100):0;
-    const barColor=pctColor(pct);
+    // For receita: green when above 100% (good), amber/red when below. For despesa: opposite.
+    const barColor=tipo==='receita'
+      ?(pct>=100?'var(--green)':pct>=60?'var(--amber)':'var(--red)')
+      :pctColor(pct);
     const bodyId='catbody-'+cat.id;
     html+=`<div class="cat-section">
       <div class="cat-header" onclick="toggleCatBody('${bodyId}')">
         <span class="cat-icon">${cat.icon}</span>
         <span class="cat-name" style="flex:1">${cat.label}</span>
-        <div style="width:90px;flex-shrink:0;border-left:1px solid var(--border);padding:0 12px;display:flex;align-items:center;gap:5px">
+        <div style="width:90px;flex-shrink:0;padding:0 12px;display:flex;align-items:center;gap:5px">
           ${catPrev>0?`<div style="flex:1;height:5px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;border-radius:3px;background:${barColor};width:${Math.min(100,pct)}%"></div></div><span style="font-size:11px;font-family:'DM Mono',monospace;color:${barColor};min-width:30px;text-align:right">${pct}%</span>`:''}
         </div>
         <div class="subcat-col" style="width:140px;flex-shrink:0;flex-direction:column;align-items:flex-end;justify-content:center;gap:0">
@@ -1766,19 +1775,12 @@ function renderCatPage(tipo,metricsId,catsId){
           <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;line-height:1.2">Realizado</div>
           <div style="font-size:13px;font-weight:600;font-family:'DM Mono',monospace" class="${tipo==='receita'?'pos':'neg'}">${fmt(catReal)}</div>
         </div>
-        <div style="width:90px;flex-shrink:0;border-left:1px solid var(--border);display:flex;align-items:center;justify-content:center">
+        <div style="width:90px;flex-shrink:0;display:flex;align-items:center;justify-content:center">
           <span class="cat-chevron open" id="chev-${bodyId}">▼</span>
         </div>
       </div>
       <div class="cat-body open" id="${bodyId}">
-        <div style="display:flex;align-items:center;padding:4px 0 4px 28px;border-bottom:1px solid var(--border);background:var(--bg2)">
-          <div style="flex:1;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Subcategoria</div>
-          <div style="width:90px;flex-shrink:0;border-left:1px solid var(--border)"></div>
-          <div class="subcat-col" style="width:140px;flex-shrink:0;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Previsto</div>
-          <div class="subcat-col" style="width:140px;flex-shrink:0;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Realizado</div>
-          <div style="width:90px;flex-shrink:0;border-left:1px solid var(--border)"></div>
-        </div>
-         ${cat.subcats.map((sub,si)=>{
+        ${cat.subcats.map((sub,si)=>{
           const subE=catE.filter(e=>e.subcategoria===sub);
           const subR=sumR(subE);
           const subP=getSubPrev(cat.id,sub);
@@ -1786,10 +1788,10 @@ function renderCatPage(tipo,metricsId,catsId){
           const txHtml=subE.map(e=>{const d=new Date(e.date+'T12:00:00');return`<div class="tx-item"><span class="tx-date">${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}</span><span class="tx-desc">${e.descricao||'—'}</span><span class="tx-val ${tipo==='receita'?'pos':'neg'}">${tipo==='receita'?'+':'-'}${fmt(e.valor)}</span><button class="tx-edit" onclick="editEntry('${e.id}')">✎</button><button class="tx-del" onclick="deleteEntry('${e.id}')">×</button></div>`;}).join('');
           return`<div class="subcat-row">
             <div class="subcat-name-col"><button class="subcat-name-btn" onclick="toggleTxList('${txId}')">▸ ${sub}</button></div>
-            <div style="width:90px;flex-shrink:0;border-left:1px solid var(--border)"></div>
+            <div style="width:90px;flex-shrink:0"></div>
             <div class="subcat-col" style="width:140px;flex-shrink:0"><input class="subcat-prev-input" type="number" value="${subP>0?subP.toFixed(2):''}" placeholder="—" step="0.01" min="0" onclick="event.stopPropagation()" data-catid="${cat.id}" data-sub="${encodeURIComponent(sub)}" data-tipo="${tipo}" onblur="onSubPrevBlurData(this)" onkeydown="onSubPrevKeydown(event,this)"></div>
             <div class="subcat-col" style="width:140px;flex-shrink:0"><span class="${tipo==='receita'?'pos':subR>0?'neg':''}" style="font-size:13px;font-family:'DM Mono',monospace">${subR>0?(tipo==='receita'?'+':'-')+fmt(subR):'—'}</span></div>
-            <div style="width:90px;flex-shrink:0;border-left:1px solid var(--border);padding:0 8px;display:flex;align-items:center;justify-content:center">
+            <div style="width:90px;flex-shrink:0;padding:0 8px;display:flex;align-items:center;justify-content:center">
               <button class="add-tx-inline" style="border:none;padding:2px 6px;font-size:11px" data-tipo="${tipo}" data-catid="${cat.id}" data-sub="${encodeURIComponent(sub)}" onclick="launchSubEntry(this)">+ lançar</button>
             </div>
           </div>
