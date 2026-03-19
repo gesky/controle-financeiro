@@ -474,11 +474,11 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 .sidebar .logout-btn svg{color:rgba(255,255,255,0.8) !important;stroke:rgba(255,255,255,0.8) !important}
 
 /* ── PREVISTO INLINE ──────────────────────────────────── */
-.subcat-row{display:flex;align-items:center;gap:0;padding:0;border-bottom:1px solid var(--border)}
-.subcat-name-col{flex:1;padding:7px 16px 7px 28px;display:flex;align-items:center;gap:6px;min-width:0}
-.subcat-name-btn{background:none;border:none;cursor:pointer;font-size:13px;color:var(--text);text-align:left;padding:0;font-family:'Sora',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.subcat-col{min-width:110px;padding:6px 12px;text-align:right;border-left:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end}
-.subcat-prev-input{width:90px;text-align:right;border:none;background:transparent;font-size:13px;font-family:'DM Mono',monospace;color:var(--text2);padding:2px 4px;border-radius:4px;outline:none;cursor:pointer}
+.subcat-row{display:flex;align-items:center;gap:0;border-bottom:1px solid var(--border)}
+.subcat-name-col{flex:1;padding:7px 16px 7px 28px;display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden}
+.subcat-name-btn{background:none;border:none;cursor:pointer;font-size:13px;color:var(--text);text-align:left;padding:0;font-family:'Sora',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.subcat-col{width:140px;flex-shrink:0;padding:6px 12px;text-align:right;border-left:1px solid var(--border);display:flex;align-items:center;justify-content:flex-end}
+.subcat-prev-input{width:110px;text-align:right;border:none;background:transparent;font-size:13px;font-family:'DM Mono',monospace;color:var(--text2);padding:2px 4px;border-radius:4px;outline:none;cursor:pointer}
 .subcat-prev-input:hover{background:var(--bg3)}
 .subcat-prev-input:focus{background:var(--accent-bg);color:var(--accent);cursor:text}
 .subcat-real-val{font-size:13px;font-family:'DM Mono',monospace;color:var(--text)}
@@ -1758,9 +1758,9 @@ function renderCatPage(tipo,metricsId,catsId){
       <div class="cat-body open" id="${bodyId}">
         <div style="display:flex;align-items:center;padding:4px 12px 4px 28px;border-bottom:1px solid var(--border);background:var(--bg2)">
           <div style="flex:1;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Subcategoria</div>
-          <div style="min-width:110px;text-align:right;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-left:1px solid var(--border);padding:0 12px">Previsto</div>
-          <div style="min-width:110px;text-align:right;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-left:1px solid var(--border);padding:0 12px">Realizado</div>
-          <div style="min-width:80px;border-left:1px solid var(--border);padding:0 8px;display:flex;align-items:center">
+          <div style="width:140px;flex-shrink:0;text-align:right;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-left:1px solid var(--border);padding:0 12px">Previsto</div>
+          <div style="width:140px;flex-shrink:0;text-align:right;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-left:1px solid var(--border);padding:0 12px">Realizado</div>
+          <div style="width:90px;flex-shrink:0;border-left:1px solid var(--border);padding:0 8px;display:flex;align-items:center">
             <button class="btn-outline" style="font-size:11px;padding:2px 8px;white-space:nowrap" onclick="event.stopPropagation();openEntryModal('${tipo}','${cat.id}')">+ Lançar</button>
           </div>
         </div>
@@ -1771,10 +1771,12 @@ function renderCatPage(tipo,metricsId,catsId){
           const txId='txlist-'+cat.id+'-'+sub.replace(/[\s\/\(\)\-\&\.']/g,'_');
           const txHtml=subE.map(e=>{const d=new Date(e.date+'T12:00:00');return`<div class="tx-item"><span class="tx-date">${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}</span><span class="tx-desc">${e.descricao||'—'}</span><span class="tx-val ${tipo==='receita'?'pos':'neg'}">${tipo==='receita'?'+':'-'}${fmt(e.valor)}</span><button class="tx-edit" onclick="editEntry('${e.id}')">✎</button><button class="tx-del" onclick="deleteEntry('${e.id}')">×</button></div>`;}).join('');
           return`<div class="subcat-row">
-            <div class="subcat-name-col"><button class="subcat-name-btn" onclick="toggleTxList('${txId}')">▸ ${sub}</button><button class="add-tx-inline" onclick="openEntryModal('${tipo}','${cat.id}','${sub.replace(/'/g,"\'")}')">+ lançar</button></div>
-            <div class="subcat-col"><input class="subcat-prev-input" type="number" value="${subP>0?subP.toFixed(2):''}" placeholder="—" step="0.01" min="0" title="Clique para editar o previsto" onclick="event.stopPropagation()" onblur="onSubPrevBlur(this,'${cat.id}','${sub.replace(/'/g,"\'")}','${tipo}')" onkeydown="onSubPrevKeydown(event,this,'${cat.id}','${sub.replace(/'/g,"\'")}')"></div>
-            <div class="subcat-col"><span class="${tipo==='receita'?'pos':subR>0?'neg':''}" style="font-size:13px;font-family:'DM Mono',monospace">${subR>0?(tipo==='receita'?'+':'-')+fmt(subR):'—'}</span></div>
-            <div style="min-width:80px;border-left:1px solid var(--border)"></div>
+            <div class="subcat-name-col"><button class="subcat-name-btn" onclick="toggleTxList('${txId}')">▸ ${sub}</button></div>
+            <div class="subcat-col" style="width:140px;flex-shrink:0"><input class="subcat-prev-input" type="number" value="${subP>0?subP.toFixed(2):''}" placeholder="—" step="0.01" min="0" title="Clique para editar o previsto" onclick="event.stopPropagation()" onblur="onSubPrevBlur(this,'${cat.id}','${sub.replace(/'/g,"\\'")}','${tipo}')" onkeydown="onSubPrevKeydown(event,this,'${cat.id}','${sub.replace(/'/g,"\\'")}')"></div>
+            <div class="subcat-col" style="width:140px;flex-shrink:0"><span class="${tipo==='receita'?'pos':subR>0?'neg':''}" style="font-size:13px;font-family:'DM Mono',monospace">${subR>0?(tipo==='receita'?'+':'-')+fmt(subR):'—'}</span></div>
+            <div style="width:90px;flex-shrink:0;border-left:1px solid var(--border);padding:0 8px;display:flex;align-items:center;justify-content:center">
+              <button class="add-tx-inline" style="border:none;padding:2px 6px;font-size:11px" onclick="openEntryModal('${tipo}','${cat.id}','${sub.replace(/'/g,"\\'")}')">+ lançar</button>
+            </div>
           </div>
           <div class="tx-list" id="${txId}">${txHtml||'<div style="padding:4px 8px;font-size:12px;color:var(--text3)">Sem lançamentos</div>'}</div>`;
         }).join('')}
