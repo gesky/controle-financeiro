@@ -1734,16 +1734,43 @@ function renderDashboard(){
   const dashChartMonthEl=document.getElementById('dash-chart-month');
   if(dashChartMonthEl) dashChartMonthEl.textContent=MESES[viewMonth]+' '+viewYear;
 
-  // Month bar chart — current month by category
-  const catLabels=[],catRecData=[],catDespData=[];
+  // Month bar chart — Receitas, Despesas e Parcelas by category, sorted by total desc
+  const tickColor=document.documentElement.getAttribute('data-theme')==='dark'?'#8888aa':'#787774';
+  // Build per-category data
+  const catData=[];
   allCats('despesa').forEach(cat=>{
-    const catR=sumR(mx.filter(e=>e.tipo==='despesa'&&e.catId===cat.id));
-    const catPrev=Number(previstos[cat.id]||0);
-    if(catR>0||catPrev>0){catLabels.push(cat.icon+' '+cat.label.slice(0,10));catRecData.push(Math.round(catPrev));catDespData.push(Math.round(catR));}
+    const desp=sumR(mx.filter(e=>e.tipo==='despesa'&&e.catId===cat.id));
+    const parc=getParcTotalMonth(); // parcelas já estão em despesas, não adicionar
+    if(desp>0) catData.push({label:cat.label.slice(0,9),desp:Math.round(desp)});
   });
+  // Sort by despesa desc
+  catData.sort((a,b)=>b.desp-a.desp);
+  // Add receitas as one bar
+  const totalRec=Math.round(sumR(mx.filter(e=>e.tipo==='receita')));
+  const totalDesp=Math.round(sumR(mx.filter(e=>e.tipo==='despesa')));
+  const totalParc=Math.round(getParcTotalMonth());
+  // Chart: grouped bars per category + one "Receitas" group
+  const chartLabels=['Receitas',...catData.map(c=>c.label)];
+  const recDataset=[totalRec,...catData.map(()=>0)];
+  const despDataset=[0,...catData.map(c=>c.desp)];
+  const parcDataset=[0,...catData.map(()=>0)]; // parcelas shown separately
   if(barChartMonthInst)barChartMonthInst.destroy();
-  if(catLabels.length){
-    barChartMonthInst=new Chart(document.getElementById('barChartMonth'),{type:'bar',data:{labels:catLabels,datasets:[{label:'Previsto',data:catRecData,backgroundColor:'#2383e233',borderRadius:3},{label:'Realizado',data:catDespData,backgroundColor:'#d44c4755',borderRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.y??ctx.parsed;return' '+ctx.dataset.label+': '+fmt(typeof v==='number'?v:ctx.raw);}}},legend:{labels:{font:{size:10},boxWidth:8,padding:8}}},scales:{x:{grid:{display:false},ticks:{color:document.documentElement.getAttribute('data-theme')==='dark'?'#8888aa':'#787774',font:{size:9},maxRotation:0,minRotation:0,callback:function(val){const l=this.getLabelForValue(val);return l.replace(/^\S+\s/,'').slice(0,8);}}},y:{grid:{color:'rgba(120,119,116,0.12)'},ticks:{color:document.documentElement.getAttribute('data-theme')==='dark'?'#8888aa':'#787774',font:{size:10},callback:v=>'R$'+Math.round(v/1000)+'k'}}}}});
+  if(chartLabels.length){
+    barChartMonthInst=new Chart(document.getElementById('barChartMonth'),{
+      type:'bar',
+      data:{labels:chartLabels,datasets:[
+        {label:'Receitas',data:recDataset,backgroundColor:'#0f9d5866',borderRadius:4,borderSkipped:false},
+        {label:'Despesas',data:despDataset,backgroundColor:'#d44c4766',borderRadius:4,borderSkipped:false}
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,
+        plugins:{tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.y;return v>0?' '+ctx.dataset.label+': '+fmt(v):null;}}},
+        legend:{labels:{font:{size:10},boxWidth:8,padding:8}}},
+        scales:{
+          x:{grid:{display:false},ticks:{color:tickColor,font:{size:9},maxRotation:0,minRotation:0}},
+          y:{grid:{color:'rgba(120,119,116,0.12)'},ticks:{color:tickColor,font:{size:10},callback:v=>'R$'+Math.round(v/1000)+'k'}}
+        }
+      }
+    });
   }
 
   const labels=[],recData=[],despData=[],parcData=[];
