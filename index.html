@@ -1739,8 +1739,8 @@ function renderCatPage(tipo,metricsId,catsId){
   const saldo=tipo==='receita'?totalR-totalP:totalP-totalR;
   const isSuperavit=tipo==='receita'?totalR>=totalP:false;
   // For despesa: real balance = all receitas realized - all despesas realized this month
-  const mx=getMonthEntries();
-  const totalReceitasRealizadas=sumR(mx.filter(e=>e.tipo==='receita'));
+  const mxAll=getMonthEntries();
+  const totalReceitasRealizadas=sumR(mxAll.filter(e=>e.tipo==='receita'));
   const saldoReal=totalReceitasRealizadas-totalR;
 
   document.getElementById(metricsId).innerHTML=`
