@@ -1939,7 +1939,6 @@ window.saveEntry=async()=>{
   }
 
   // If parcelamento checkbox is checked, create parcelamento record
-  const isParcChecked = document.getElementById('me-is-parc')?.checked;
   if(isParcChecked && tipo==='despesa' && !editingEntryId){
     const numParcelas=parseInt(document.getElementById('me-parc-num').value)||0;
     const parcAtual=parseInt(document.getElementById('me-parc-atual').value)||1;
