@@ -646,7 +646,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
     <!-- RELATÓRIOS -->
     <div id="page-relatorios" class="page">
       <div class="page-header"><div><div class="page-title">Relatórios</div><div class="page-sub" id="rel-sub"></div></div></div>
-      <div class="card"><div class="card-header"><span class="card-title">Evolução mensal — Receitas vs Despesas</span></div><div class="card-body"><div class="chart-wrap" style="height:260px"><canvas id="lineChart"></canvas></div></div></div>
+      <div class="card"><div class="card-header"><span class="card-title">Evolução mensal — Previsto vs Realizado</span></div><div class="card-body"><div class="chart-wrap" style="height:260px"><canvas id="lineChart"></canvas></div></div></div>
       <div class="card"><div class="card-header"><span class="card-title">Resumo anual por categoria de despesa</span></div><div class="card-body" id="rel-table" style="overflow-x:auto"></div></div>
     </div>
 
@@ -1660,7 +1660,7 @@ function renderDashboard(){
   const saldoLiquido = rR - dR - parcMes;
   document.getElementById('dash-metrics').innerHTML=`
     <div class="metric-card"><div class="metric-label">Receita realizada</div><div class="metric-value pos">${fmtK(rR)}</div></div>
-    <div class="metric-card"><div class="metric-label">Despesa realizada</div><div class="metric-value neg">${fmtK(dR)}</div><div class="metric-badge">+ Parcelas: ${fmtK(parcMes)}</div></div>
+    <div class="metric-card"><div class="metric-label">Despesa realizada</div><div class="metric-value neg">${fmtK(dR)}</div></div>
     <div class="metric-card"><div class="metric-label">Saldo líquido</div><div class="metric-value ${saldoLiquido>=0?'pos':'neg'}">${fmtK(saldoLiquido)}</div></div>
     <div class="metric-card"><div class="metric-label">Patrimônio investido</div><div class="metric-value acc">${fmtK(totalInv)}</div></div>`;
 
@@ -1742,12 +1742,12 @@ function renderCatPage(tipo,metricsId,catsId){
   document.getElementById(metricsId).innerHTML=`
     <div class="metric-card"><div class="metric-label">Previsto</div><div class="metric-value">${fmt(totalP)}</div></div>
     <div class="metric-card"><div class="metric-label">Realizado</div><div class="metric-value ${tipo==='receita'?'pos':'neg'}">${fmt(totalR)}</div></div>
-    ${tipo==='despesa'?`
-    <div class="metric-card"><div class="metric-label">Total c/ parcelas</div><div class="metric-value neg">${fmt(totalRComParc)}</div></div>
-    `:`
+    ${tipo==='receita'?`
     <div class="metric-card"><div class="metric-label" style="color:${isSuperavit?'var(--green)':'var(--red)'}">${isSuperavit?'Superávit':'Déficit'}</div><div class="metric-value ${isSuperavit?'pos':'neg'}">${fmt(Math.abs(saldo))}</div></div>
+    `:`
+    <div class="metric-card"><div class="metric-label" style="color:${totalR<=totalP?'var(--green)':'var(--red)'}">Saldo</div><div class="metric-value ${totalR<=totalP?'pos':'neg'}">${fmt(Math.abs(totalP-totalR))}</div></div>
     `}
-    <div class="metric-card"><div class="metric-label">% ${tipo==='receita'?'recebido':'uso'}</div><div class="metric-value">${totalP>0?Math.round((tipo==='receita'?totalR:totalRComParc)/totalP*100):0}%</div></div>`;
+    <div class="metric-card"><div class="metric-label">% ${tipo==='receita'?'recebido':'uso'}</div><div class="metric-value">${totalP>0?Math.round((tipo==='receita'?totalR:totalR)/totalP*100):0}%</div></div>`;
 
   let html='';
   allCats(tipo).forEach(cat=>{
@@ -1965,7 +1965,7 @@ window.saveEntry=async()=>{
         descricao:desc||subcat,
         valorTotal:val,
         numParcelas,
-        parcPagas:parcAtual-1,
+        parcPagas:parcAtual,
         inicio,
         catId,
         cartaoId:cartaoId||null,
@@ -2126,25 +2126,63 @@ window.deleteInvMov=async id=>{if(!confirm('Excluir?'))return;await deleteDoc(do
 // ── METAS ─────────────────────────────────────────────────
 // ── RELATÓRIOS ────────────────────────────────────────────
 function renderRelatorios(){
-  const labels=[],recData=[],despData=[];
-  for(let m=0;m<12;m++){const mt=getMonthEntries(m,viewYear);labels.push(MESES[m].slice(0,3));recData.push(Math.round(sumR(mt.filter(e=>e.tipo==='receita'))));despData.push(Math.round(sumR(mt.filter(e=>e.tipo==='despesa'))));}
+  const tickColor=document.documentElement.getAttribute('data-theme')==='dark'?'#8888aa':'#787774';
+  // Build previsto and realizado per month (despesas only for now, but show both)
+  const labels=[],prevData=[],realData=[];
+  for(let m=0;m<12;m++){
+    labels.push(MESES[m].slice(0,3));
+    // Previsto: sum all subcategory previstos for that month
+    let p=0;
+    allCats('despesa').forEach(cat=>cat.subcats.forEach(sub=>p+=getSubPrev(cat.id,sub,m,viewYear)));
+    prevData.push(Math.round(p));
+    // Realizado: sum entries for that month
+    const mt=getMonthEntries(m,viewYear);
+    realData.push(Math.round(sumR(mt.filter(e=>e.tipo==='despesa'))));
+  }
   if(lineChartInst)lineChartInst.destroy();
-  lineChartInst=new Chart(document.getElementById('lineChart'),{type:'line',data:{labels,datasets:[{label:'Receitas',data:recData,borderColor:'#0f9d58',backgroundColor:'#0f9d5818',tension:.3,fill:true,borderWidth:2,pointRadius:3},{label:'Despesas',data:despData,borderColor:'#d44c47',backgroundColor:'#d44c4718',tension:.3,fill:true,borderWidth:2,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.y??ctx.parsed;return' '+ctx.dataset.label+': '+fmt(typeof v==='number'?v:ctx.raw);}}},legend:{labels:{font:{size:11},boxWidth:10}}},scales:{x:{grid:{display:false},ticks:{color:document.documentElement.getAttribute('data-theme')==='dark'?'#8888aa':'#787774',font:{size:11}}},y:{grid:{color:'rgba(120,119,116,0.12)'},ticks:{color:document.documentElement.getAttribute('data-theme')==='dark'?'#8888aa':'#787774',font:{size:11},callback:v=>'R$'+Math.round(v/1000)+'k'}}}}});
-  let html='<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr><th style="text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text3);white-space:nowrap">Categoria</th>';
-  for(let m=0;m<12;m++)html+=`<th style="padding:6px 4px;border-bottom:1px solid var(--border);color:var(--text3)">${MESES[m].slice(0,3)}</th>`;
-  html+='<th style="padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text3)">Total</th></tr></thead><tbody>';
-  // Add parcelas row
-  let parcTotal2=0;
-  html+=`<tr><td style="padding:6px 8px;border-bottom:1px solid var(--border);white-space:nowrap">💳 Parcelamentos</td>`;
-  for(let m=0;m<12;m++){const v=Math.round(getParcTotalMonth(m,viewYear));parcTotal2+=v;html+=`<td style="padding:6px 4px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;text-align:right;color:${v>0?'var(--red)':'var(--text3)'}">${v>0?fmtK(v):'—'}</td>`;}
-  html+=`<td style="padding:6px 8px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-weight:600;text-align:right;color:var(--red)">${fmt(parcTotal2)}</td></tr>`;
-  allCats('despesa').forEach(cat=>{
-    let total=0;
-    html+=`<tr><td style="padding:6px 8px;border-bottom:1px solid var(--border);white-space:nowrap">${cat.icon} ${cat.label}</td>`;
-    for(let m=0;m<12;m++){const v=sumR(getMonthEntries(m,viewYear).filter(e=>e.tipo==='despesa'&&e.catId===cat.id));total+=v;html+=`<td style="padding:6px 4px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;text-align:right;color:${v>0?'var(--text)':'var(--text3)'}">${v>0?fmtK(v):'—'}</td>`;}
-    html+=`<td style="padding:6px 8px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-weight:600;text-align:right">${fmt(total)}</td></tr>`;
+  lineChartInst=new Chart(document.getElementById('lineChart'),{
+    type:'line',
+    data:{labels,datasets:[
+      {label:'Previsto',data:prevData,borderColor:'#2383e2',backgroundColor:'#2383e218',tension:.3,fill:false,borderWidth:2,pointRadius:3,borderDash:[5,3]},
+      {label:'Realizado',data:realData,borderColor:'#d44c47',backgroundColor:'#d44c4718',tension:.3,fill:true,borderWidth:2,pointRadius:3}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.y??ctx.parsed;return' '+ctx.dataset.label+': '+fmt(typeof v==='number'?v:ctx.raw);}}},legend:{labels:{font:{size:11},boxWidth:10}}},scales:{x:{grid:{display:false},ticks:{color:tickColor,font:{size:11}}},y:{grid:{color:'rgba(120,119,116,0.12)'},ticks:{color:tickColor,font:{size:11},callback:v=>'R$'+Math.round(v/1000)+'k'}}}}
   });
-  html+='</tbody></table>';
+
+  // Table: Previsto vs Realizado by category, no parcelamentos row
+  let html=`<div style="overflow-x:auto"><table style="width:100%;min-width:700px;border-collapse:collapse;font-size:12px">
+    <thead><tr>
+      <th style="text-align:left;padding:6px 8px;border-bottom:2px solid var(--border);color:var(--text3);white-space:nowrap;position:sticky;left:0;background:var(--bg)">Categoria</th>`;
+  for(let m=0;m<12;m++)html+=`<th style="padding:4px 6px;border-bottom:2px solid var(--border);color:var(--text3);min-width:65px;text-align:center">${MESES[m].slice(0,3)}</th>`;
+  html+=`<th style="padding:6px 8px;border-bottom:2px solid var(--border);color:var(--text3);white-space:nowrap">Total</th></tr></thead><tbody>`;
+
+  allCats('despesa').forEach(cat=>{
+    let totalP=0,totalR=0;
+    html+=`<tr><td style="padding:6px 8px;border-bottom:1px solid var(--border);white-space:nowrap;font-weight:500;position:sticky;left:0;background:var(--bg)">${cat.icon} ${cat.label}</td>`;
+    for(let m=0;m<12;m++){
+      const p=Math.round(cat.subcats.reduce((s,sub)=>s+getSubPrev(cat.id,sub,m,viewYear),0));
+      const r=Math.round(sumR(getMonthEntries(m,viewYear).filter(e=>e.tipo==='despesa'&&e.catId===cat.id)));
+      totalP+=p; totalR+=r;
+      const hasData=p>0||r>0;
+      html+=`<td style="padding:4px 6px;border-bottom:1px solid var(--border);text-align:center">`;
+      if(hasData){
+        html+=`<div style="font-family:'DM Mono',monospace;font-size:11px;color:var(--text2)">${p>0?fmtK(p):'—'}</div>`;
+        html+=`<div style="font-family:'DM Mono',monospace;font-size:11px;color:${r>0?(r>p?'var(--red)':'var(--green)'):'var(--text3)'}">${r>0?fmtK(r):'—'}</div>`;
+      } else {
+        html+=`<div style="color:var(--text3)">—</div>`;
+      }
+      html+=`</td>`;
+    }
+    html+=`<td style="padding:6px 8px;border-bottom:1px solid var(--border);text-align:right">
+      <div style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace">${fmtK(totalP)}</div>
+      <div style="font-size:11px;font-weight:600;font-family:'DM Mono',monospace;color:${totalR>totalP?'var(--red)':'var(--green)'}">${fmtK(totalR)}</div>
+    </td></tr>`;
+  });
+  html+=`</tbody></table></div>`;
+  html+=`<div style="display:flex;gap:16px;margin-top:8px;font-size:11px;color:var(--text3)">
+    <span>Linha superior: <span style="font-family:'DM Mono',monospace">Previsto</span></span>
+    <span>Linha inferior: <span style="font-family:'DM Mono',monospace;color:var(--green)">Realizado (abaixo do previsto)</span> / <span style="font-family:'DM Mono',monospace;color:var(--red)">Realizado (acima do previsto)</span></span>
+  </div>`;
   document.getElementById('rel-table').innerHTML=html;
 }
 
