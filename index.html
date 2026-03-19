@@ -1221,8 +1221,8 @@ function renderParcelamentos(){
       return`<div class="parc-card">
         <div class="parc-header">
           <div>
-            <div class="parc-name">${p.descricao}${estesMes?'<span style="margin-left:8px;padding:2px 7px;background:var(--red-bg);color:var(--red);border-radius:20px;font-size:11px;font-weight:500">Vence este mês</span>':''}</div>
-            <div class="parc-cat" style="display:flex;align-items:center;gap:6px">${catName}${cartao?`<span style="display:inline-block;padding:1px 8px;border-radius:20px;font-size:11px;font-weight:500;background:${cartao.cor};color:white">${cartao.nome}${cartao.digitos?' ···'+cartao.digitos:''}</span>`:''}${p.banco?`<span style="font-size:11px;color:var(--text3)">${p.banco}</span>`:''}</div>
+            <div class="parc-name">${p.descricao}</div>
+            <div class="parc-cat" style="display:flex;align-items:center;gap:6px">${catName}${cartao?`<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px 2px 6px;border-radius:5px;font-size:11px;font-weight:600;background:${cartao.cor};color:white;letter-spacing:.3px"><span style="width:14px;height:10px;border-radius:2px;background:rgba(255,255,255,0.35);flex-shrink:0"></span>${cartao.banco||cartao.nome}</span>`:''}</div>
           </div>
           <div style="display:flex;gap:6px">
             <button class="btn-sm" onclick="editParc('${p.id}')">✎ Editar</button>
