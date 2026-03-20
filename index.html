@@ -1265,7 +1265,7 @@ function getParcSaldoMes(p, m, y){
   if(parts.length<2)return 0;
   const [startY,startM]=parts; // startM is 1-indexed (January=1)
   // idx: 1 = first month of parcelamento, 2 = second, etc.
-  const idx=(y-startY)*12+(m+1-startM);
+  const idx=(y-startY)*12+(m-startM+2);
   if(idx<1||idx>Number(p.numParcelas))return 0;
   // Only exclude if truly all done (parcPagas covers this month's idx too)
   if(Number(p.parcPagas||0)>=Number(p.numParcelas||0))return 0;
@@ -1282,22 +1282,14 @@ function renderParcelamentos(){
   const active=parcelamentos.filter(p=>Number(p.parcPagas||0)<Number(p.numParcelas||0));
   const done=parcelamentos.filter(p=>Number(p.parcPagas||0)>=Number(p.numParcelas||0));
   const totalMes=getParcTotalMonth();
-  // Debug: show per-parcelamento calculation for current month
-  const debugInfo=active.map(p=>{
-    const mens=getParcMensalidade(p);
-    const parts=(p.inicio||'').split('-').map(Number);
-    const idx=parts.length>=2?(viewYear-parts[0])*12+(viewMonth+1-parts[1]):0;
-    const showing=getParcSaldoMes(p,viewMonth,viewYear)>0;
-    return `${p.descricao}: inicio=${p.inicio} idx=${idx}/${p.numParcelas} pagas=${p.parcPagas} mens=${fmt(mens)} ✓=${showing}`;
-  }).join('\n');
+
   const totalRest=active.reduce((s,p)=>{const mens=getParcMensalidade(p);return s+mens*(Number(p.numParcelas||0)-Number(p.parcPagas||0));},0);
 
   document.getElementById('parc-metrics').innerHTML=`
     <div class="metric-card"><div class="metric-label">Parcelas este mês</div><div class="metric-value neg">${fmt(totalMes)}</div></div>
     <div class="metric-card"><div class="metric-label">Em aberto</div><div class="metric-value">${active.length}</div></div>
     <div class="metric-card"><div class="metric-label">Valor restante</div><div class="metric-value neg">${fmt(totalRest)}</div></div>
-    <div class="metric-card"><div class="metric-label">Concluídos</div><div class="metric-value pos">${done.length}</div></div>
-    <div style="grid-column:1/-1;background:var(--bg2);border-radius:var(--radius);padding:10px;font-size:11px;font-family:'DM Mono',monospace;color:var(--text2);white-space:pre-wrap;margin-top:4px">${debugInfo}</div>`;
+    <div class="metric-card"><div class="metric-label">Concluídos</div><div class="metric-value pos">${done.length}</div></div>`;
 
   const activeEl=document.getElementById('parc-active');
   if(!active.length){activeEl.innerHTML='<div class="empty">Nenhum parcelamento em aberto.</div>';}
