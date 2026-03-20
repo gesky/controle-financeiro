@@ -1264,11 +1264,13 @@ function getParcSaldoMes(p, m, y){
   const parts=(p.inicio||'').split('-').map(Number);
   if(parts.length<2)return 0;
   const [startY,startM]=parts; // startM is 1-indexed (January=1)
-  // idx: 0 = month before start, 1 = first month, etc.
+  // idx: 1 = first month of parcelamento, 2 = second, etc.
   const idx=(y-startY)*12+(m+1-startM);
   if(idx<1||idx>Number(p.numParcelas))return 0;
-  // Also check parcPagas: if all paid, don't show
+  // Only exclude if truly all done (parcPagas covers this month's idx too)
   if(Number(p.parcPagas||0)>=Number(p.numParcelas||0))return 0;
+  // idx <= parcPagas means this month was already paid (past month shown)
+  // but we still want to count it for historical months display
   return getParcMensalidade(p);
 }
 
@@ -1280,13 +1282,22 @@ function renderParcelamentos(){
   const active=parcelamentos.filter(p=>Number(p.parcPagas||0)<Number(p.numParcelas||0));
   const done=parcelamentos.filter(p=>Number(p.parcPagas||0)>=Number(p.numParcelas||0));
   const totalMes=getParcTotalMonth();
+  // Debug: show per-parcelamento calculation for current month
+  const debugInfo=active.map(p=>{
+    const mens=getParcMensalidade(p);
+    const parts=(p.inicio||'').split('-').map(Number);
+    const idx=parts.length>=2?(viewYear-parts[0])*12+(viewMonth+1-parts[1]):0;
+    const showing=getParcSaldoMes(p,viewMonth,viewYear)>0;
+    return `${p.descricao}: inicio=${p.inicio} idx=${idx}/${p.numParcelas} pagas=${p.parcPagas} mens=${fmt(mens)} ✓=${showing}`;
+  }).join('\n');
   const totalRest=active.reduce((s,p)=>{const mens=getParcMensalidade(p);return s+mens*(Number(p.numParcelas||0)-Number(p.parcPagas||0));},0);
 
   document.getElementById('parc-metrics').innerHTML=`
     <div class="metric-card"><div class="metric-label">Parcelas este mês</div><div class="metric-value neg">${fmt(totalMes)}</div></div>
     <div class="metric-card"><div class="metric-label">Em aberto</div><div class="metric-value">${active.length}</div></div>
     <div class="metric-card"><div class="metric-label">Valor restante</div><div class="metric-value neg">${fmt(totalRest)}</div></div>
-    <div class="metric-card"><div class="metric-label">Concluídos</div><div class="metric-value pos">${done.length}</div></div>`;
+    <div class="metric-card"><div class="metric-label">Concluídos</div><div class="metric-value pos">${done.length}</div></div>
+    <div style="grid-column:1/-1;background:var(--bg2);border-radius:var(--radius);padding:10px;font-size:11px;font-family:'DM Mono',monospace;color:var(--text2);white-space:pre-wrap;margin-top:4px">${debugInfo}</div>`;
 
   const activeEl=document.getElementById('parc-active');
   if(!active.length){activeEl.innerHTML='<div class="empty">Nenhum parcelamento em aberto.</div>';}
@@ -2652,7 +2663,7 @@ function renderRelatorios(){
   // Only show months with any data
   const activeMths=monthData.filter(d=>d.totalP>0||d.totalR>0);
 
-  const TH='padding:5px 8px;border:1px solid var(--border);text-align:center;font-size:11px;font-weight:700;background:var(--accent);color:#fff;white-space:nowrap';
+  const TH='padding:5px 8px;border:1px solid var(--border);text-align:center;font-size:11px;font-weight:700;background:var(--bg3);color:var(--text);white-space:nowrap';
   const TH2='padding:4px 6px;border:1px solid var(--border);text-align:right;font-size:10px;font-weight:600;background:var(--bg2);color:var(--text3);white-space:nowrap';
   const TD='padding:4px 8px;border:1px solid var(--border);text-align:right;font-size:11px;font-family:"DM Mono",monospace;white-space:nowrap';
   const TDL='padding:4px 8px;border:1px solid var(--border);text-align:left;font-size:11px;font-weight:600;white-space:nowrap;position:sticky;left:0;background:var(--bg)';
@@ -3473,12 +3484,23 @@ function startNewConv(){
   renderAiMessages();
 }
 
+function mdToHtml(text){
+  return text
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') // escape HTML first
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')   // **bold**
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')               // *italic*
+    .replace(/`(.+?)`/g,'<code style="background:var(--bg3);padding:1px 4px;border-radius:3px;font-size:12px">$1</code>') // `code`
+    .replace(/^#{1,3}\s+(.+)$/gm,'<strong>$1</strong>') // # headings → bold
+    .replace(/^[-•]\s+(.+)$/gm,'&nbsp;&nbsp;• $1')      // - list items
+    .replace(/\n/g,'<br>');                              // line breaks
+}
+
 function renderAiMessages(){
   if(!aiCurrentConv) return;
   const el = document.getElementById('ai-messages');
   el.innerHTML = aiCurrentConv.messages.map(m=>`
     <div class="ai-msg ${m.role}">
-      ${m.content.replace(/\n/g,'<br>')}
+      ${mdToHtml(m.content)}
       <div class="ai-msg-time">${m.time||''}</div>
     </div>`).join('');
   el.scrollTop = el.scrollHeight;
@@ -3514,7 +3536,7 @@ function buildContext(){
 
   const previstosSummary = Object.entries(previstos).map(([k,v])=>`Previsto ${catMap[k]||k}: R$${Number(v).toFixed(2)}/mês`).join('\n');
 
-  return `Você é o Finn AI, assistente financeiro do casal. Responda em português, de forma MUITO direta e curta — máximo 2 linhas. Sem introduções, sem perguntas de volta, sem "é isso que você queria?". Só o essencial. Use os dados abaixo.
+  return `Você é o Finn, assistente financeiro pessoal do casal Pedro e Amanda. Sua personalidade é amigável e descontraída, mas sempre objetivo — como um amigo entendido de finanças. Responda em português, de forma direta e concisa (máximo 3-4 linhas). Pode usar uma palavrinha de encorajamento quando fizer sentido, mas sem exagerar. Sem perguntas de volta desnecessárias. Use os dados abaixo para respostas precisas.
 
 DATA ATUAL: ${new Date().toLocaleDateString('pt-BR')} | Mês visualizado: ${MESES[viewMonth]}/${viewYear}
 
