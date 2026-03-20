@@ -1111,6 +1111,7 @@ let _cartaoCorSelecionada='#1a1a2e';
 let _editingCartaoId=null;
 let viewMonth=new Date().getMonth(), viewYear=new Date().getFullYear();
 let entries=[], goals=[], investments=[], invMovimentos=[];
+let ANTHROPIC_KEY = null;
 let cats={receita:[],despesa:[]}, previstos={}, invTipos=[...DEFAULT_INV_TIPOS];
 let editingEntryId=null, editingGoalId=null, editingInvId=null, editingParcId=null;
 let parcelamentos=[];
@@ -1878,8 +1879,27 @@ window.updateGoalProgress=async(id,cur)=>{
   if(!isNaN(n))updateDoc(doc(db,'goals',id),{current:n});
 };
 
-checkPrivacyConsent();
+
+// ── LGPD Privacy consent ─────────────────────────────────
+function checkPrivacyConsent(){
+  if(!localStorage.getItem('finn-privacy-consent')){
+    const existing=document.getElementById('privacy-banner');
+    if(existing)return;
+    const banner=document.createElement('div');
+    banner.id='privacy-banner';
+    banner.style.cssText='position:fixed;bottom:0;left:0;right:0;background:#000032;color:rgba(255,255,255,0.9);padding:14px 20px;z-index:9999;display:flex;align-items:center;gap:16px;font-size:12px;box-shadow:0 -2px 12px rgba(0,0,0,0.3)';
+    banner.innerHTML=`<span style="flex:1">🔒 <strong>Finn</strong> utiliza o Firebase para armazenar seus dados financeiros de forma segura. Em conformidade com a <strong>LGPD (Lei 13.709/2018)</strong>, seus dados são usados exclusivamente para o funcionamento do sistema e nunca compartilhados com terceiros.</span><button onclick="acceptPrivacy()" style="background:#3437ff;color:white;border:none;border-radius:6px;padding:8px 16px;cursor:pointer;font-size:12px;white-space:nowrap;font-family:'Sora',sans-serif">Entendi e aceito</button>`;
+    document.body.appendChild(banner);
+  }
+}
+window.acceptPrivacy=()=>{
+  localStorage.setItem('finn-privacy-consent',new Date().toISOString());
+  const b=document.getElementById('privacy-banner');
+  if(b)b.remove();
+};
+
 function renderDashboard(){
+  checkPrivacyConsent();
   const mx=getMonthEntries();
   const rR=sumR(mx.filter(e=>e.tipo==='receita'));
   const dR=sumR(mx.filter(e=>e.tipo==='despesa'));
@@ -3261,7 +3281,7 @@ document.querySelectorAll('.modal-overlay').forEach(o=>{
 updateMonthLabel();
 
 // ── AI ASSISTANT ──────────────────────────────────────────
-let ANTHROPIC_KEY = null; // loaded from Firestore after login
+// ANTHROPIC_KEY declared at top
 let aiOpen = false;
 let aiConversations = []; // {id, date, messages:[{role,content,time}]}
 let aiCurrentConv = null;
