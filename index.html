@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.googleapis.com https://*.gstatic.com https://*.firebaseapp.com https://*.firebaseio.com https://api.anthropic.com https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline' https://*.googleapis.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://api.anthropic.com wss://*.firebaseio.com;">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.googleapis.com https://*.gstatic.com https://*.firebaseapp.com https://*.firebaseio.com https://api.anthropic.com https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline' https://*.googleapis.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://api.anthropic.com wss://*.firebaseio.com https://cdnjs.cloudflare.com;">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Finn</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCI+PHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iOS40IiByeT0iOS40IiBmaWxsPSIjMDAwMDMyIi8+PGc+PGc+PHBvbHlnb24gZmlsbD0id2hpdGUiIHBvaW50cz0iMzIuNyAxMiAxNS4zIDE0LjEgMTUuMyA5LjQgMzIuNyA5LjQgMzIuNyAxMiIvPjxwb2x5Z29uIGZpbGw9IndoaXRlIiBwb2ludHM9IjE1LjMgMzYgMzIuNyAzMy45IDMyLjcgMzguNiAxNS4zIDM4LjYgMTUuMyAzNiIvPjwvZz48Zz48cG9seWdvbiBmaWxsPSJ3aGl0ZSIgcG9pbnRzPSIyMC44IDM0LjIgMTcuMSAzNC42IDE3LjEgMTUgMjAuNyAxNC42IDIwLjggMzQuMiIvPjxwb2x5Z29uIGZpbGw9IndoaXRlIiBwb2ludHM9IjI1LjggMzMuNiAyMi4yIDM0IDIyLjIgMTQuNCAyNS44IDE0IDI1LjggMzMuNiIvPjxwb2x5Z29uIGZpbGw9IndoaXRlIiBwb2ludHM9IjMwLjkgMzMgMjcuMyAzMy41IDI3LjIgMTMuOCAzMC45IDEzLjQgMzAuOSAzMyIvPjwvZz48L2c+PC9zdmc+">
@@ -52,7 +52,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 .field{margin-bottom:13px}
 .field label{display:block;font-size:11px;font-weight:600;color:var(--text2);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.04em}
 .field input{width:100%;padding:9px 11px;border:1px solid rgba(255,255,255,0.18);border-radius:var(--radius);font-size:14px;font-family:'Sora',sans-serif;color:white;background:rgba(255,255,255,0.08)}
-.field input:focus{outline:none;border-color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.12)}
+.field input:focus{outline:none;border-color:#b0b0cc;background:rgba(255,255,255,0.12)}
 .btn-primary{width:100%;padding:10px;background:white;color:#000032;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif;transition:opacity .15s}
 .btn-primary:hover{opacity:.9}
 .auth-err{font-size:13px;color:var(--red);margin-top:10px;text-align:center;min-height:18px}
@@ -69,7 +69,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 .sidebar-user-avatar{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:white;flex-shrink:0;text-transform:uppercase}
 .sidebar-user-info{flex:1;min-width:0}
 .sidebar-user-name{font-size:13px;font-weight:500;color:rgba(255,255,255,0.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sidebar-user-role{font-size:11px;color:rgba(255,255,255,0.6);margin-top:1px}
+.sidebar-user-role{font-size:11px;color:#b0b0cc;margin-top:1px}
 .sidebar-user-role.is-admin{color:#a0aaff}
 .btn-logout{background:none;border:1px solid var(--border);border-radius:5px;width:26px;height:26px;cursor:pointer;color:var(--text2);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .1s}
 .btn-logout:hover{background:var(--red-bg);border-color:var(--red);color:var(--red)}
@@ -334,7 +334,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 .cartao-banco-label{font-size:13px;font-weight:600;color:rgba(255,255,255,0.9);letter-spacing:.3px}
 .cartao-numero{font-size:16px;font-weight:400;letter-spacing:3px;color:white;font-family:'DM Mono',monospace;margin:8px 0}
 .cartao-nome-titular{font-size:12px;font-weight:500;color:rgba(255,255,255,0.85);letter-spacing:.5px;text-transform:uppercase}
-.cartao-venc-label{font-size:11px;color:rgba(255,255,255,0.6)}
+.cartao-venc-label{font-size:11px;color:#b0b0cc}
 .cartao-venc-val{font-size:13px;color:rgba(255,255,255,0.85);font-family:'DM Mono',monospace}
 
 /* ── DRAG AND DROP ────────────────────────────────────── */
@@ -467,9 +467,9 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 .sidebar .nav-item.active .nav-item-icon svg{stroke:white !important}
 .sidebar .month-label{color:white !important}
 .sidebar .month-btn{color:white !important;border-color:rgba(255,255,255,0.25) !important}
-.sidebar .sidebar-section{color:rgba(255,255,255,0.5) !important}
+.sidebar .sidebar-section{color:#b0b0cc !important}
 .sidebar .sidebar-user-name{color:white !important}
-.sidebar .sidebar-user-role{color:rgba(255,255,255,0.6) !important}
+.sidebar .sidebar-user-role{color:#b0b0cc !important}
 .sidebar .sidebar-user-role.is-admin{color:#a0aaff !important}
 .sidebar .logout-btn,
 .sidebar .logout-btn svg{color:rgba(255,255,255,0.8) !important;stroke:rgba(255,255,255,0.8) !important}
@@ -514,7 +514,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
     <button class="btn-primary" id="auth-btn" onclick="doAuth()">Entrar</button>
     <div class="auth-err" id="auth-err"></div>
     <div style="text-align:center;margin-top:10px">
-      <button onclick="sendPasswordReset()" style="background:none;border:none;font-size:12px;color:rgba(255,255,255,0.5);cursor:pointer;font-family:'Sora',sans-serif;text-decoration:underline">Esqueci minha senha</button>
+      <button onclick="sendPasswordReset()" style="background:none;border:none;font-size:12px;color:#b0b0cc;cursor:pointer;font-family:'Sora',sans-serif;text-decoration:underline">Esqueci minha senha</button>
     </div>
   </div>
 </div>
@@ -1871,7 +1871,7 @@ window.saveGoal=async()=>{
   if(activePage()==='metas') renderGoals();
 };
 window.deleteGoal=async id=>{if(!await finnConfirm('Excluir esta meta e todo o seu progresso?','Excluir meta',true))return;await deleteDoc(doc(db,'goals',id));};;
-window.updateGoalProgress=(id,cur)=>{
+window.updateGoalProgress=async(id,cur)=>{
   const v=await finnPrompt('Informe o novo valor atual (R$):','Ex: 1500,00',String(cur),'Atualizar meta');
   if(v===null)return;
   const n=parseFloat(v.replace(',','.'));
@@ -2235,8 +2235,8 @@ function populateSubcatSelect(catId,tipo){
   const cat=allCats(tipo||document.getElementById('me-tipo').value).find(c=>c.id===catId);
   document.getElementById('me-subcat').innerHTML=(cat?.subcats||[]).map(s=>`<option value="${s}">${s}</option>`).join('');
 }
-window.onEntryTipoChange=()=>populateCatSelect(document.getElementById('me-tipo').value);
-window.onEntryCatChange=()=>populateSubcatSelect(document.getElementById('me-cat').value);
+window.onEntryTipoChange=async()=>populateCatSelect(document.getElementById('me-tipo').value);
+window.onEntryCatChange=async()=>populateSubcatSelect(document.getElementById('me-cat').value);
 
 window.saveEntry=async()=>{
   const tipo=document.getElementById('me-tipo').value;
@@ -2597,7 +2597,7 @@ const EMOJI_LIST = [
   '🌍','🗺️','🧭','🏔️','🌊','🏕️','🗽','🗼','🎠','🎪'
 ];
 
-window.openEmojiPicker = function(catId, tipo, btnEl){
+window.openEmojiPicker = async function(catId, tipo, btnEl){
   // close any existing picker
   document.querySelectorAll('.emoji-picker-popup').forEach(p=>p.remove());
   const picker = document.createElement('div');
@@ -2627,7 +2627,7 @@ window.openEmojiPicker = function(catId, tipo, btnEl){
   setTimeout(()=>document.addEventListener('click',function h(e){if(!picker.contains(e.target)&&e.target!==btnEl){picker.remove();document.removeEventListener('click',h);}},),0);
 };
 
-window.startCatNameEdit = function(catId, tipo, spanEl){
+window.startCatNameEdit = async function(catId, tipo, spanEl){
   const currentName=spanEl.textContent;
   const input=document.createElement('input');
   input.value=currentName;
@@ -2646,7 +2646,7 @@ window.startCatNameEdit = function(catId, tipo, spanEl){
   input.addEventListener('keydown',e=>{if(e.key==='Enter')input.blur();if(e.key==='Escape'){input.value=currentName;input.blur();}});
 };
 
-window.startSubcatNameEdit = function(spanEl, tipo, catId, idx){
+window.startSubcatNameEdit = async function(spanEl, tipo, catId, idx){
   const currentName = spanEl.textContent.trim();
   const input = document.createElement('input');
   input.value = currentName;
@@ -3249,8 +3249,8 @@ window.deleteSubcat=async(tipo,catId,sub)=>{
 
 // ── INV TIPO ──────────────────────────────────────────────
 window.openInvTipoModal=()=>{document.getElementById('mit-name').value='';openModal('modal-inv-tipo');};
-window.saveInvTipo=async()=>{const n=document.getElementById('mit-name').value.trim();if(!n){await finnAlert('Informe o nome.');return;}if(invTipos.includes(n)){alert('Já existe.');return;}invTipos.push(n);await saveInvTipos();closeModal('modal-inv-tipo');renderCfgInv();};
-window.deleteInvTipo=async tipo=>{if(!confirm(`Excluir tipo "${tipo}"?`))return;invTipos=invTipos.filter(t=>t!==tipo);await saveInvTipos();renderCfgInv();};
+window.saveInvTipo=async()=>{const n=document.getElementById('mit-name').value.trim();if(!n){await finnAlert('Informe o nome.');return;}if(invTipos.includes(n)){await finnAlert('Já existe um tipo com este nome.','Nome duplicado');return;}invTipos.push(n);await saveInvTipos();closeModal('modal-inv-tipo');renderCfgInv();};
+window.deleteInvTipo=async tipo=>{if(!await finnConfirm(`Excluir tipo "${tipo}"?`,'Excluir tipo',true))return;invTipos=invTipos.filter(t=>t!==tipo);await saveInvTipos();renderCfgInv();};
 
 // ── UI ────────────────────────────────────────────────────
 window.openModal=id=>document.getElementById(id).classList.add('open');
