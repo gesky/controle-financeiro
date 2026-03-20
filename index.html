@@ -2,6 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://*.googleapis.com https://*.gstatic.com https://*.firebaseapp.com https://*.firebaseio.com https://api.anthropic.com https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline' https://*.googleapis.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://api.anthropic.com wss://*.firebaseio.com;">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Finn</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCI+PHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iOS40IiByeT0iOS40IiBmaWxsPSIjMDAwMDMyIi8+PGc+PGc+PHBvbHlnb24gZmlsbD0id2hpdGUiIHBvaW50cz0iMzIuNyAxMiAxNS4zIDE0LjEgMTUuMyA5LjQgMzIuNyA5LjQgMzIuNyAxMiIvPjxwb2x5Z29uIGZpbGw9IndoaXRlIiBwb2ludHM9IjE1LjMgMzYgMzIuNyAzMy45IDMyLjcgMzguNiAxNS4zIDM4LjYgMTUuMyAzNiIvPjwvZz48Zz48cG9seWdvbiBmaWxsPSJ3aGl0ZSIgcG9pbnRzPSIyMC44IDM0LjIgMTcuMSAzNC42IDE3LjEgMTUgMjAuNyAxNC42IDIwLjggMzQuMiIvPjxwb2x5Z29uIGZpbGw9IndoaXRlIiBwb2ludHM9IjI1LjggMzMuNiAyMi4yIDM0IDIyLjIgMTQuNCAyNS44IDE0IDI1LjggMzMuNiIvPjxwb2x5Z29uIGZpbGw9IndoaXRlIiBwb2ludHM9IjMwLjkgMzMgMjcuMyAzMy41IDI3LjIgMTMuOCAzMC45IDEzLjQgMzAuOSAzMyIvPjwvZz48L2c+PC9zdmc+">
@@ -24,7 +25,7 @@
 }
 [data-theme="dark"]{
   --bg:#0a0a0a;--bg2:#111111;--bg3:#1a1a1a;--bg-hover:#161616;
-  --text:#f0f0ff;--text2:#9999bb;--text3:#555577;
+  --text:#f0f0ff;--text2:#b0b0cc;--text3:#7777aa;
   --border:#222233;--border2:#2a2a44;
   --accent:#6b6eff;--accent-bg:#0a0a40;
   --green:#2db87a;--green-bg:#0a1e14;
@@ -940,6 +941,22 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 </div>
 
 
+<!-- MODAL DIÁLOGO CUSTOMIZADO -->
+<div class="modal-overlay" id="modal-finn-dialog" style="z-index:9998">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-header">
+      <span class="modal-title" id="finn-dialog-title">Aviso</span>
+    </div>
+    <div class="modal-body">
+      <p id="finn-dialog-msg" style="font-size:14px;color:var(--text2);margin-bottom:20px;line-height:1.6"></p>
+      <div id="finn-dialog-input-wrap" style="display:none;margin-bottom:16px">
+        <input id="finn-dialog-input" style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);box-sizing:border-box" placeholder="">
+      </div>
+      <div class="btn-row" id="finn-dialog-btns"></div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL MOVER SUBCATEGORIA -->
 <div class="modal-overlay" id="modal-move-subcat">
   <div class="modal" style="max-width:400px">
@@ -1264,7 +1281,7 @@ function renderParcelamentos(){
       return`<div class="parc-card">
         <div class="parc-header">
           <div>
-            <div class="parc-name">${p.descricao}</div>
+            <div class="parc-name">${esc(p.descricao)}</div>
             <div class="parc-cat" style="display:flex;align-items:center;gap:6px">${catName}${cartao?`<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px 2px 6px;border-radius:5px;font-size:11px;font-weight:600;background:${cartao.cor};color:white;letter-spacing:.3px"><span style="width:14px;height:10px;border-radius:2px;background:rgba(255,255,255,0.35);flex-shrink:0"></span>${cartao.banco||cartao.nome}</span>`:''}</div>
           </div>
           <div style="display:flex;gap:6px">
@@ -1292,7 +1309,7 @@ function renderParcelamentos(){
   const histEl=document.getElementById('parc-history');
   if(histEl) histEl.innerHTML=done.map(p=>{
     const catName=allCats('despesa').find(c=>c.id===p.catId)?.label||'—';
-    return`<div class="parc-hist-card"><div style="flex:1"><div style="font-size:13px;font-weight:500">${p.descricao}</div><div style="font-size:12px;color:var(--text3)">${catName} · ${p.numParcelas}x ${fmt(getParcMensalidade(p))}</div></div><span style="font-size:13px;font-weight:600;font-family:'DM Mono',monospace">${fmt(p.valorTotal)}</span><button class="btn-sm" style="color:var(--red)" onclick="deleteParc('${p.id}')">×</button></div>`;
+    return`<div class="parc-hist-card"><div style="flex:1"><div style="font-size:13px;font-weight:500">${esc(p.descricao)}</div><div style="font-size:12px;color:var(--text3)">${catName} · ${p.numParcelas}x ${fmt(getParcMensalidade(p))}</div></div><span style="font-size:13px;font-weight:600;font-family:'DM Mono',monospace">${fmt(p.valorTotal)}</span><button class="btn-sm" style="color:var(--red)" onclick="deleteParc('${p.id}')">×</button></div>`;
   }).join('');
 }
 
@@ -1347,10 +1364,10 @@ window.saveParc=async()=>{
   const inicio=document.getElementById('parc-inicio').value;
   const catId=document.getElementById('parc-cat').value;
   const parcPagas=Math.min(parseInt(document.getElementById('parc-pagas').value)||0,numParcelas);
-  if(!descricao){alert('Informe a descrição.');return;}
-  if(!valorTotal||valorTotal<=0){alert('Informe o valor total.');return;}
-  if(!numParcelas||numParcelas<1){alert('Informe o número de parcelas.');return;}
-  if(!inicio){alert('Informe o mês da 1ª parcela.');return;}
+  if(!descricao){await finnAlert('Por favor, informe a descrição.');return;}
+  if(!valorTotal||valorTotal<=0){await finnAlert('Por favor, informe o valor total.');return;}
+  if(!numParcelas||numParcelas<1){await finnAlert('Informe o número de parcelas.');return;}
+  if(!inicio){await finnAlert('Informe o mês da 1ª parcela.');return;}
   const data={descricao,valorTotal,numParcelas,inicio,catId,parcPagas,createdAt:new Date().toISOString()};
   if(editingParcId){
     const idx=parcelamentos.findIndex(p=>p.id===editingParcId);
@@ -1364,14 +1381,14 @@ window.saveParc=async()=>{
 
 window.pagarParcela=async(id,pagas,total)=>{
   const nova=pagas+1;
-  if(nova>total){alert('Todas as parcelas já foram pagas!');return;}
+  if(nova>total){await finnAlert('Todas as parcelas já foram pagas!','Parcelamento concluído');return;}
   const msg=nova>=total?'Marcar última parcela como paga? O parcelamento irá para o histórico.':'Marcar parcela '+nova+'/'+total+' como paga?';
-  if(!confirm(msg))return;
+  if(!await finnConfirm(msg,'Confirmar',false))return;
   await updateDoc(doc(db,'parcelamentos',id),{parcPagas:nova});
 };
 
 window.deleteParc=async id=>{
-  if(!confirm('Excluir este parcelamento e o lançamento vinculado?'))return;
+  if(!await finnConfirm('Excluir este parcelamento e o lançamento vinculado em despesas?','Excluir parcelamento',true))return;
   const parc=parcelamentos.find(p=>p.id===id);
   await deleteDoc(doc(db,'parcelamentos',id));
   // Also delete linked entry if exists
@@ -1448,6 +1465,56 @@ function updateMonthLabel(){
 // ── HELPERS ──────────────────────────────────────────────
 const fmt=v=>{const n=Number(v||0);return'R$ '+(isFinite(n)?n:0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});};
 const fmtK=v=>{v=Number(v||0);if(Math.abs(v)>=1000)return'R$'+(v/1000).toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1})+'k';return fmt(v);};
+// SECURITY: sanitize user content before innerHTML
+
+// ── CUSTOM DIALOGS (replace native alert/confirm/prompt) ─
+function finnDialog({title='Finn', msg, type='alert', inputPlaceholder='', inputDefault='', confirmText='OK', confirmDanger=false, cancelText='Cancelar'}){
+  return new Promise(resolve=>{
+    document.getElementById('finn-dialog-title').textContent=title;
+    document.getElementById('finn-dialog-msg').innerHTML=String(msg).replace(/\n/g,'<br>');
+    const inputWrap=document.getElementById('finn-dialog-input-wrap');
+    const inputEl=document.getElementById('finn-dialog-input');
+    const btns=document.getElementById('finn-dialog-btns');
+    if(type==='prompt'){
+      inputWrap.style.display='block';
+      inputEl.placeholder=inputPlaceholder||'';
+      inputEl.value=inputDefault||'';
+      setTimeout(()=>{inputEl.focus();inputEl.select();},150);
+    } else {
+      inputWrap.style.display='none';
+    }
+    btns.innerHTML='';
+    let cancelBtn;
+    if(type!=='alert'){
+      cancelBtn=document.createElement('button');
+      cancelBtn.className='btn-cancel';
+      cancelBtn.textContent=cancelText;
+      cancelBtn.onclick=()=>{document.getElementById('modal-finn-dialog').classList.remove('open');document.removeEventListener('keydown',onKey);resolve(null);};
+      btns.appendChild(cancelBtn);
+    }
+    const okBtn=document.createElement('button');
+    okBtn.className=confirmDanger?'btn-danger':'btn-save';
+    okBtn.textContent=confirmText;
+    okBtn.onclick=()=>{
+      document.getElementById('modal-finn-dialog').classList.remove('open');
+      document.removeEventListener('keydown',onKey);
+      if(type==='prompt') resolve(inputEl.value);
+      else resolve(true);
+    };
+    btns.appendChild(okBtn);
+    const onKey=e=>{
+      if(e.key==='Enter'&&type!=='prompt'){okBtn.click();}
+      if(e.key==='Escape'&&type!=='alert'){cancelBtn?.click();}
+    };
+    document.addEventListener('keydown',onKey);
+    document.getElementById('modal-finn-dialog').classList.add('open');
+  });
+}
+window.finnAlert=(msg,title='Finn')=>finnDialog({title,msg,type:'alert',confirmText:'OK'});
+window.finnConfirm=(msg,title='Confirmar',danger=false)=>finnDialog({title,msg,type:'confirm',confirmText:danger?'Excluir':'Confirmar',confirmDanger:danger,cancelText:'Cancelar'});
+window.finnPrompt=(msg,placeholder='',defaultVal='',title='Finn')=>finnDialog({title,msg,type:'prompt',inputPlaceholder:placeholder,inputDefault:String(defaultVal),confirmText:'OK'});
+
+const esc=str=>{if(str===null||str===undefined)return'';return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');};
 function getMonthEntries(m=viewMonth,y=viewYear){return entries.filter(e=>{const d=new Date(e.date+'T12:00:00');return d.getMonth()===m&&d.getFullYear()===y;});}
 const sumR=arr=>arr.reduce((s,e)=>s+(Number(e.valor)||0),0);
 const sumP=arr=>arr.reduce((s,e)=>s+(Number(e.previsto)||0),0);
@@ -1631,7 +1698,7 @@ window.saveCartao=async()=>{
   const numero=document.getElementById('ct-numero').value.trim();
   const venc=document.getElementById('ct-venc').value.trim();
   const bandeira=document.getElementById('ct-bandeira').value;
-  if(!banco&&!nome){alert('Informe ao menos o banco ou nome.');return;}
+  if(!banco&&!nome){await finnAlert('Informe ao menos o banco ou o nome do cartão.');return;}
   const data={nome,banco,numero,venc,bandeira,cor:_cartaoCorSelecionada,criadoEm:new Date().toISOString()};
   if(_editingCartaoId){await updateDoc(doc(db,'cartoes',_editingCartaoId),data);}
   else{await addDoc(collection(db,'cartoes'),data);}
@@ -1639,12 +1706,12 @@ window.saveCartao=async()=>{
 };
 
 window.deleteCartao=async id=>{
-  if(!confirm('Excluir este cartão?'))return;
+  if(!await finnConfirm('Excluir este cartão?','Excluir cartão',true))return;
   await deleteDoc(doc(db,'cartoes',id));
 };
 window.deleteCartaoFromModal=async()=>{
-  if(!_editingCartaoId){alert('Nenhum cartão selecionado.');return;}
-  if(!confirm('Excluir este cartão permanentemente?'))return;
+  if(!_editingCartaoId){await finnAlert('Nenhum cartão selecionado.');return;}
+  if(!await finnConfirm('Excluir este cartão permanentemente? Esta ação não pode ser desfeita.','Excluir cartão',true))return;
   await deleteDoc(doc(db,'cartoes',_editingCartaoId));
   closeModal('modal-cartao');
 };
@@ -1661,7 +1728,7 @@ function renderGoals(){
     const invPct=linkedInv&&g.target>0?Math.min(100,Math.round(invSaldo/g.target*100)):null;
     return`<div class="goal-card">
       <div style="display:flex;justify-content:space-between;align-items:flex-start">
-        <div class="goal-name">${g.name}</div>
+        <div class="goal-name">${esc(g.name)}</div>
         <div style="display:flex;gap:4px">
           <button class="btn-sm" onclick="openGoalModal('${g.id}')">✎</button>
           <button class="btn-danger-ghost" onclick="deleteGoal('${g.id}')">×</button>
@@ -1791,8 +1858,8 @@ window.saveGoal=async()=>{
   const current=parseFloat(document.getElementById('g-current').value)||0;
   const notes=document.getElementById('g-notes').value.trim();
   const deadline=document.getElementById('g-deadline').value||'';
-  if(!name){alert('Informe o nome da meta.');return;}
-  if(!target||target<=0){alert('Informe um valor alvo maior que zero.');return;}
+  if(!name){await finnAlert('Informe o nome da meta.');return;}
+  if(!target||target<=0){await finnAlert('Informe um valor alvo maior que zero.');return;}
   const investmentId=document.getElementById('g-inv').value||'';
   const data={name,target,current,notes,deadline,investmentId};
   if(editingGoalId){
@@ -1803,14 +1870,15 @@ window.saveGoal=async()=>{
   closeModal('modal-goal');
   if(activePage()==='metas') renderGoals();
 };
-window.deleteGoal=async id=>{if(!confirm('Excluir esta meta?'))return;await deleteDoc(doc(db,'goals',id));};;
+window.deleteGoal=async id=>{if(!await finnConfirm('Excluir esta meta e todo o seu progresso?','Excluir meta',true))return;await deleteDoc(doc(db,'goals',id));};;
 window.updateGoalProgress=(id,cur)=>{
-  const v=prompt('Valor atual (R$):',cur);
+  const v=await finnPrompt('Informe o novo valor atual (R$):','Ex: 1500,00',String(cur),'Atualizar meta');
   if(v===null)return;
   const n=parseFloat(v.replace(',','.'));
   if(!isNaN(n))updateDoc(doc(db,'goals',id),{current:n});
 };
 
+checkPrivacyConsent();
 function renderDashboard(){
   const mx=getMonthEntries();
   const rR=sumR(mx.filter(e=>e.tipo==='receita'));
@@ -1874,7 +1942,7 @@ function renderDashboard(){
   if(catArr.length){const COLS=['#0f9d58','#2383e2','#d9730d','#d44c47','#9065b0','#b8b5ad'];pieChartInst=new Chart(document.getElementById('pieChart'),{type:'doughnut',data:{labels:catArr.map(c=>c[0]),datasets:[{data:catArr.map(c=>Math.round(c[1])),backgroundColor:COLS,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{tooltip:{callbacks:{label:ctx=>{return' '+ctx.label+': '+fmt(ctx.raw);}}},legend:{position:'right',labels:{font:{size:11},boxWidth:10,padding:7}}},cutout:'60%'}});}
 
   const recent=[...mx].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,8);
-  document.getElementById('dash-recent').innerHTML=recent.length?recent.map(t=>{const d=new Date(t.date+'T12:00:00');return`<div class="tx-item"><span class="tx-date">${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}</span><span class="tx-desc">${t.descricao||t.subcategoria||'—'}</span><span class="tx-val ${t.tipo==='receita'?'pos':'neg'}">${t.tipo==='receita'?'+':'-'}${fmt(t.valor)}</span><button class="tx-edit" onclick="editEntry('${t.id}')">✎ editar</button></div>`;}).join(''):'<div class="empty">Sem lançamentos este mês.</div>';
+  document.getElementById('dash-recent').innerHTML=recent.length?recent.map(t=>{const d=new Date(t.date+'T12:00:00');return`<div class="tx-item"><span class="tx-date">${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}</span><span class="tx-desc">${esc(t.descricao)||t.subcategoria||'—'}</span><span class="tx-val ${t.tipo==='receita'?'pos':'neg'}">${t.tipo==='receita'?'+':'-'}${fmt(t.valor)}</span><button class="tx-edit" onclick="editEntry('${t.id}')">✎ editar</button></div>`;}).join(''):'<div class="empty">Sem lançamentos este mês.</div>';
 }
 
 // ── CAT PAGE ──────────────────────────────────────────────
@@ -1971,7 +2039,7 @@ function renderCatPage(tipo,metricsId,catsId){
           const subR=sumR(subE);
           const subP=getSubPrev(cat.id,sub);
           const txId='txlist-'+cat.id+'-'+si;
-          const txHtml=subE.map(e=>{const d=new Date(e.date+'T12:00:00');return`<div class="tx-item"><span class="tx-date">${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}</span><span class="tx-desc">${e.descricao||'—'}</span><span class="tx-val ${tipo==='receita'?'pos':'neg'}">${tipo==='receita'?'+':'-'}${fmt(e.valor)}</span><button class="tx-edit" onclick="editEntry('${e.id}')">✎</button><button class="tx-del" onclick="deleteEntry('${e.id}')">×</button></div>`;}).join('');
+          const txHtml=subE.map(e=>{const d=new Date(e.date+'T12:00:00');return`<div class="tx-item"><span class="tx-date">${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}</span><span class="tx-desc">${esc(e.descricao)||'—'}</span><span class="tx-val ${tipo==='receita'?'pos':'neg'}">${tipo==='receita'?'+':'-'}${fmt(e.valor)}</span><button class="tx-edit" onclick="editEntry('${e.id}')">✎</button><button class="tx-del" onclick="deleteEntry('${e.id}')">×</button></div>`;}).join('');
           return`<div class="subcat-row">
             <div class="subcat-name-col"><button class="subcat-name-btn" onclick="toggleTxList('${txId}')">▸ ${sub}</button></div>
             <div style="width:90px;flex-shrink:0"></div>
@@ -2036,13 +2104,13 @@ window.openMoveSubcatModal=(tipo,fromCatId,subName)=>{
 
 window.confirmMoveSubcat=async()=>{
   const toCatId=document.getElementById('move-sub-target').value;
-  if(!toCatId){alert('Selecione uma categoria de destino.');return;}
+  if(!toCatId){await finnAlert('Selecione uma categoria de destino.');return;}
   const tipo=_moveSubcatTipo;
   const fromCatId=_moveSubcatFromId;
   const subName=_moveSubcatName;
   const toCat=allCats(tipo).find(c=>c.id===toCatId);
   const fromCat=allCats(tipo).find(c=>c.id===fromCatId);
-  if(!toCat||!fromCat){alert('Categoria não encontrada.');return;}
+  if(!toCat||!fromCat){await finnAlert('Categoria não encontrada.');return;}
 
   // 1. Update categories config — remove from source, add to target
   fromCat.subcats=fromCat.subcats.filter(s=>s!==subName);
@@ -2071,7 +2139,7 @@ window.confirmMoveSubcat=async()=>{
   await savePrevistos();
 
   closeModal('modal-move-subcat');
-  alert(`"${subName}" movida para "${toCat.label}" com sucesso! ${snap.size} lançamento(s) migrado(s).`);
+  await finnAlert(`"${subName}" movida para "${toCat.label}" com sucesso!<br>${snap.size} lançamento(s) migrado(s).`,'✓ Subcategoria movida');
   renderCfgCats(tipo);
 };
 
@@ -2179,7 +2247,7 @@ window.saveEntry=async()=>{
   const prev=0;
   const desc=(document.getElementById('me-desc').value||'').trim();
   // date is optional
-  if(!val&&!prev){alert('Informe ao menos um valor.');return;}
+  if(!val&&!prev){await finnAlert('Informe ao menos um valor realizado.');return;}
 
   // If parcelamento, use mensalidade as the entry valor
   const isParcChecked = document.getElementById('me-is-parc')?.checked;
@@ -2236,7 +2304,7 @@ window.saveEntry=async()=>{
   refreshActivePage();
 };
 window.deleteEntry=async id=>{
-  if(!confirm('Excluir este lançamento?'))return;
+  if(!await finnConfirm('Excluir este lançamento?','Excluir lançamento',true))return;
   await deleteDoc(doc(db,'entries',id));
   // Also delete linked parcelamento if exists
   const linkedParc=parcelamentos.find(p=>p.entryId===id);
@@ -2346,7 +2414,7 @@ window.saveInv=async()=>{
   const taxa=isFinite(taxaRaw)&&taxaRaw>=0&&taxaRaw<=100?taxaRaw:0;
   const startDate=document.getElementById('mi-start').value;
   const notas=document.getElementById('mi-notes').value.trim();
-  if(!nome){alert('Informe o nome.');return;}
+  if(!nome){await finnAlert('Informe o nome.');return;}
   const data={nome,tipo,valorInicial,taxa,startDate,notas,criadoEm:new Date().toISOString()};
   if(editingInvId){
     const idx=investments.findIndex(i=>i.id===editingInvId);
@@ -2357,7 +2425,7 @@ window.saveInv=async()=>{
   if(activePage()==='investimentos') renderInvestimentos();
 };
 window.deleteInv=async id=>{
-  if(!confirm('Excluir este investimento e todas as movimentações?'))return;
+  if(!await finnConfirm('Excluir este investimento e todas as movimentações? Esta ação não pode ser desfeita.','Excluir investimento',true))return;
   await deleteDoc(doc(db,'investments',id));
   for(const m of invMovimentos.filter(m=>m.invId===id))await deleteDoc(doc(db,'invMovimentos',m.id));
 };
@@ -2367,12 +2435,12 @@ window.saveInvMov=async()=>{
   const date=document.getElementById('mim-date').value;
   const valor=parseFloat(document.getElementById('mim-val').value)||0;
   const descricao=document.getElementById('mim-desc').value.trim();
-  if(!date){alert('Informe a data.');return;}
-  if(!valor||valor<=0){alert('Informe um valor maior que zero.');return;}
+  if(!date){await finnAlert('Informe a data da movimentação.');return;}
+  if(!valor||valor<=0){await finnAlert('Informe um valor maior que zero.');return;}
   await addDoc(collection(db,'invMovimentos'),{invId:currentInvForMov,tipo,date,valor,descricao});
   closeModal('modal-inv-mov');
 };
-window.deleteInvMov=async id=>{if(!confirm('Excluir?'))return;await deleteDoc(doc(db,'invMovimentos',id));};
+window.deleteInvMov=async id=>{if(!await finnConfirm('Excluir esta movimentação?','Excluir movimentação',true))return;await deleteDoc(doc(db,'invMovimentos',id));};
 
 // ── METAS ─────────────────────────────────────────────────
 // ── RELATÓRIOS ────────────────────────────────────────────
@@ -2592,7 +2660,7 @@ window.startSubcatNameEdit = function(spanEl, tipo, catId, idx){
       if(cat && cat.subcats[idx]!==undefined){
         // Check for duplicate name in same category
         if(cat.subcats.includes(newName)){
-          alert(`Já existe uma subcategoria chamada "${newName}" nesta categoria.`);
+          await finnAlert(`Já existe uma subcategoria chamada "${newName}" nesta categoria.`);
           renderCfgCats(tipo);
           return;
         }
@@ -2745,7 +2813,7 @@ window.openEditUser = (uid, name, role) => {
 };
 
 window.saveEditUser = async () => {
-  if(!isAdmin){ alert('Apenas administradores podem editar usuários.'); return; }
+  if(!isAdmin){ await finnAlert('Apenas administradores podem editar usuários.','Acesso restrito'); return; }
   const name = document.getElementById('eu-name').value.trim();
   const role = document.getElementById('eu-role').value;
   const pw = document.getElementById('eu-pw').value;
@@ -2778,7 +2846,7 @@ window.saveEditUser = async () => {
 };
 
 window.criarUsuario=async()=>{
-  if(!isAdmin){alert('Apenas administradores podem criar usuários.');return;}
+  if(!isAdmin){await finnAlert('Apenas administradores podem criar usuários.','Acesso restrito');return;}
   const name=document.getElementById('nu-name').value.trim();
   const email=document.getElementById('nu-email').value.trim();
   const pw=document.getElementById('nu-pw').value;
@@ -2811,13 +2879,13 @@ window.criarUsuario=async()=>{
 };
 
 window.removeUser=async(uid,name)=>{
-  if(!isAdmin){alert('Apenas administradores podem excluir usuários.');return;}
-  if(uid===currentUser.uid){alert('Você não pode excluir sua própria conta aqui.');return;}
-  if(!confirm(`Excluir o usuário "${name}"? Esta ação remove apenas o registro. A conta de autenticação permanece ativa.`))return;
+  if(!isAdmin){await finnAlert('Apenas administradores podem excluir usuários.','Acesso restrito');return;}
+  if(uid===currentUser.uid){await finnAlert('Você não pode excluir sua própria conta por aqui.','Ação não permitida');return;}
+  if(!await finnConfirm(`Excluir o usuário "${name}"?<br><br>Esta ação remove apenas o registro no sistema. A conta de autenticação permanece ativa.`,"Excluir usuário",true))return;
   try{
     await deleteDoc(doc(db,'users',uid));
     await renderCfgUsuarios();
-  }catch(e){alert('Erro ao excluir: '+e.message);}
+  }catch(e){await finnAlert('Erro ao excluir: '+e.message,'Erro');}
 };
 
 
@@ -2882,7 +2950,7 @@ window.diagnosticarEntries=async()=>{
   orphans.forEach(e=>{
     html+=`<tr>
       <td style="padding:5px 8px;border-bottom:1px solid var(--border);color:var(--text2)">${e.date||'—'}</td>
-      <td style="padding:5px 8px;border-bottom:1px solid var(--border)">${e.descricao||'—'}</td>
+      <td style="padding:5px 8px;border-bottom:1px solid var(--border)">${esc(e.descricao)||'—'}</td>
       <td style="padding:5px 8px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:11px;color:var(--red)">${e.catId||'—'}</td>
       <td style="padding:5px 8px;border-bottom:1px solid var(--border);color:var(--red)">${e.subcategoria||'—'}</td>
       <td style="padding:5px 8px;border-bottom:1px solid var(--border);text-align:right;font-family:'DM Mono',monospace">${fmt(e.valor)}</td>
@@ -2902,15 +2970,15 @@ window.diagnosticarEntries=async()=>{
 };
 
 window.deleteOrphanEntry=async(id)=>{
-  if(!confirm('Excluir este lançamento fantasma?'))return;
+  if(!await finnConfirm('Excluir este lançamento fantasma?','Excluir lançamento',true))return;
   await deleteDoc(doc(db,'entries',id));
   diagnosticarEntries();
 };
 
 window.deleteAllOrphans=async(ids)=>{
-  if(!confirm(`Excluir ${ids.length} lançamento(s) fantasma? Esta ação não pode ser desfeita.`))return;
+  if(!await finnConfirm(`Excluir ${ids.length} lançamento(s) fantasma?<br>Esta ação não pode ser desfeita.`,'Excluir fantasmas',true))return;
   for(const id of ids) await deleteDoc(doc(db,'entries',id));
-  alert('Lançamentos fantasma removidos!');
+  await finnAlert('Lançamentos fantasma removidos com sucesso!','✓ Concluído');
   diagnosticarEntries();
 };
 
@@ -2947,6 +3015,15 @@ function renderCfgDados(){
       <div id="diag-result"></div>
     </div>
     <div class="cfg-section">
+      <div class="cfg-section-title">Privacidade e LGPD</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Em conformidade com a Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018), você tem o direito de acessar, corrigir e excluir seus dados pessoais a qualquer momento.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+        <button class="btn-outline" onclick="exportarBackup()" style="font-size:12px">📄 Exportar meus dados</button>
+        <button class="btn-outline" onclick="solicitarExclusaoConta()" style="font-size:12px;color:var(--red);border-color:var(--red)">🗑 Excluir minha conta e dados</button>
+      </div>
+      <p style="font-size:11px;color:var(--text3)">A exportação inclui todos os seus lançamentos, metas, investimentos e configurações em formato JSON. A exclusão é permanente e irreversível.</p>
+    </div>
+    <div class="cfg-section">
       <div class="cfg-section-title">Zona de perigo</div>
       <div style="border:1px solid var(--red);border-radius:var(--radius-lg);padding:20px;background:var(--red-bg)">
         <div style="font-size:15px;font-weight:600;color:var(--red);margin-bottom:6px">Zerar banco de dados</div>
@@ -2955,6 +3032,29 @@ function renderCfgDados(){
       </div>
     </div>`;
 }
+
+
+window.solicitarExclusaoConta=async()=>{
+  const confirm1=await finnConfirm('Tem certeza que deseja excluir sua conta e TODOS os seus dados?<br><br>Esta ação é permanente e não pode ser desfeita.','🗑 Excluir conta',true);
+  if(!confirm1)return;
+  const confirm2=await finnPrompt('Para confirmar a exclusão, digite exatamente:<br><strong>EXCLUIR MINHA CONTA</strong>','EXCLUIR MINHA CONTA','','Confirmação de exclusão');
+  if(confirm2!=='EXCLUIR MINHA CONTA'){if(confirm2!==null)await finnAlert('Confirmação incorreta. Operação cancelada.','Cancelado');return;}
+  try{
+    // Delete all user data from Firestore collections
+    const cols=['entries','goals','investments','invMovimentos','parcelamentos'];
+    for(const colName of cols){
+      const snap=await getDocs(collection(db,colName));
+      for(const d of snap.docs) await deleteDoc(doc(db,colName,d.id));
+    }
+    // Delete user from Firebase Auth
+    const {deleteUser}=await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
+    await deleteUser(auth.currentUser);
+    await finnAlert('Sua conta e todos os dados foram excluídos com sucesso.<br>Obrigado por usar o Finn. 💙','Conta excluída');
+    window.location.reload();
+  }catch(e){
+    await finnAlert('Erro ao excluir conta: '+e.message+'<br><br>Se o problema persistir, entre em contato com o administrador.','Erro');
+  }
+};
 
 window.exportarBackup = async () => {
   try {
@@ -2973,12 +3073,12 @@ window.exportarBackup = async () => {
     a.download = `greco-backup-${date}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    alert(`Backup exportado com sucesso!\n${Object.entries(backup.dados).map(([k,v])=>`${k}: ${v.length} registros`).join('\n')}`);
-  } catch(e) { alert('Erro ao exportar: ' + e.message); }
+    await finnAlert('Backup exportado com sucesso!<br><br>'+Object.entries(backup.dados).map(([k,v])=>`<strong>${k}:</strong> ${v.length} registros`).join('<br>'),'✓ Backup exportado');
+  } catch(e) { await finnAlert('Erro ao exportar: '+e.message,'Erro'); }
 };
 
 window.restaurarBackup = async (event) => {
-  if(!isAdmin){ alert('Apenas administradores podem restaurar backups.'); return; }
+  if(!isAdmin){ await finnAlert('Apenas administradores podem restaurar backups.','Acesso restrito'); return; }
   const file = event.target.files[0];
   if(!file) return;
   event.target.value = '';
@@ -2986,10 +3086,10 @@ window.restaurarBackup = async (event) => {
   reader.onload = async (e) => {
     try {
       const backup = JSON.parse(e.target.result);
-      if(!backup.dados){ alert('Arquivo de backup inválido.'); return; }
+      if(!backup.dados){ await finnAlert('Arquivo de backup inválido. Verifique o arquivo e tente novamente.','Arquivo inválido'); return; }
       const total = Object.values(backup.dados).reduce((s,v)=>s+v.length,0);
       const exportDate = backup.exportadoEm ? new Date(backup.exportadoEm).toLocaleString('pt-BR') : 'data desconhecida';
-      if(!confirm(`Restaurar backup de ${exportDate}?\n${Object.entries(backup.dados).map(([k,v])=>`${k}: ${v.length} registros`).join('\n')}\n\nTotal: ${total} registros.\n\n⚠️ Os dados atuais serão substituídos!`)) return;
+      if(!await finnConfirm(`Restaurar backup de <strong>${exportDate}</strong>?<br><br>${Object.entries(backup.dados).map(([k,v])=>`${k}: ${v.length} registros`).join('<br>')}<br><br>Total: ${total} registros.<br><br>⚠️ Os dados atuais serão substituídos!`,'Restaurar backup',true)) return;
       const colecoes = ['entries','goals','investments','invMovimentos','parcelamentos'];
       let restored = 0;
       for(const col of colecoes){
@@ -3011,22 +3111,22 @@ window.restaurarBackup = async (event) => {
           restored += Math.min(400, items.length - i);
         }
       }
-      alert(`Backup restaurado com sucesso! ${restored} registros recuperados.`);
-    } catch(e) { alert('Erro ao restaurar: ' + e.message); }
+      await finnAlert(`Backup restaurado com sucesso!<br>${restored} registros recuperados.`,'✓ Backup restaurado');
+    } catch(e) { await finnAlert('Erro ao restaurar: '+e.message,'Erro'); }
   };
   reader.readAsText(file);
 };
 
 window.saveApiKey=async()=>{
-  if(!isAdmin){alert('Apenas administradores podem alterar a chave.');return;}
+  if(!isAdmin){await finnAlert('Apenas administradores podem alterar a chave API.','Acesso restrito');return;}
   const key=document.getElementById('api-key-input')?.value.trim();
-  if(!key||!key.startsWith('sk-ant-')){alert('Chave inválida. Deve começar com sk-ant-');return;}
+  if(!key||!key.startsWith('sk-ant-')){await finnAlert('Chave inválida. Deve começar com sk-ant-','Chave inválida');return;}
   try{
     await setDoc(doc(db,'config','secrets'),{anthropicKey:key});
     ANTHROPIC_KEY=key;
-    alert('Chave salva com sucesso!');
+    await finnAlert('Chave API salva com sucesso!','✓ Salvo');
     renderCfgDados();
-  }catch(e){alert('Erro ao salvar: '+e.message);}
+  }catch(e){await finnAlert('Erro ao salvar: '+e.message,'Erro');}
 };
 
 window.toggleDarkMode=(dark)=>{
@@ -3056,10 +3156,10 @@ window.toggleDarkMode=(dark)=>{
 };
 
 window.zerarBanco=async()=>{
-  if(!isAdmin){alert('Apenas administradores podem zerar o banco.');return;}
-  if(!currentUser){alert('Não autenticado.');return;}
-  const conf=prompt('Digite CONFIRMAR para zerar todos os dados:');
-  if(conf!=='CONFIRMAR'){alert('Operação cancelada.');return;}
+  if(!isAdmin){await finnAlert('Apenas administradores podem zerar o banco.','Acesso restrito');return;}
+  if(!currentUser){await finnAlert('Você não está autenticado.','Não autenticado');return;}
+  const conf=await finnPrompt('Digite <strong>CONFIRMAR</strong> para zerar todos os dados:','CONFIRMAR','','⚠️ Zerar banco de dados');
+  if(conf!=='CONFIRMAR'){if(conf!==null)await finnAlert('Código incorreto. Operação cancelada.','Cancelado');return;}
   try{
     const cols=['entries','goals','investments','invMovimentos'];
     for(const col of cols){
@@ -3068,8 +3168,8 @@ window.zerarBanco=async()=>{
       snap.docs.forEach(d=>batch.delete(d.ref));
       await batch.commit();
     }
-    alert('Banco zerado com sucesso!');
-  }catch(e){alert('Erro: '+e.message);}
+    await finnAlert('Banco zerado com sucesso!','✓ Banco zerado');
+  }catch(e){await finnAlert('Erro: '+e.message,'Erro');}
 };
 
 // ── MODAL CATEGORIA ───────────────────────────────────────
@@ -3078,10 +3178,10 @@ window.saveCat=async()=>{
   const name=document.getElementById('mc-name').value.trim();
   const icon=document.getElementById('mc-icon').value.trim()||'📦';
   const tipo=document.getElementById('mc-tipo').value;
-  if(!name){alert('Informe o nome.');return;}
+  if(!name){await finnAlert('Informe o nome.');return;}
   const id=name.toLowerCase().replace(/[\s\/\(\)\-\&\.\'\"]/g,'_').replace(/__+/g,'_');
   if(!cats[tipo])cats[tipo]=[];
-  if(cats[tipo].find(c=>c.id===id)){alert('Já existe uma categoria com este nome.');return;}
+  if(cats[tipo].find(c=>c.id===id)){await finnAlert('Já existe uma categoria com este nome.','Nome duplicado');return;}
   cats[tipo].push({id,label:name,icon,tipo,subcats:[]});
   await saveCategories();
   closeModal('modal-cat');
@@ -3093,7 +3193,7 @@ window.deleteCat=async(tipo,catId)=>{
   const msg=linked.length>0
     ?`Excluir categoria "${cat?.label||catId}" e seus ${linked.length} lançamento(s) vinculado(s)?\n\nTodas as subcategorias e lançamentos serão removidos. Esta ação não pode ser desfeita.`
     :`Excluir categoria "${cat?.label||catId}" e todas as suas subcategorias?`;
-  if(!confirm(msg))return;
+  if(!await finnConfirm(msg,'Confirmar',false))return;
   // Delete all linked entries
   for(const e of linked) await deleteDoc(doc(db,'entries',e.id));
   // Delete all previstos for this category
@@ -3117,7 +3217,7 @@ window.openSubcatModal=(tipo,preSel)=>{
 window.saveSubcat=async()=>{
   const catId=document.getElementById('ms-cat').value;
   const name=document.getElementById('ms-name').value.trim();
-  if(!name){alert('Informe o nome.');return;}
+  if(!name){await finnAlert('Informe o nome.');return;}
   const cat=cats[_subcatTipo].find(c=>c.id===catId);
   if(!cat)return;
   if(cat.subcats.includes(name)){alert('Subcategoria já existe.');return;}
@@ -3131,7 +3231,7 @@ window.deleteSubcat=async(tipo,catId,sub)=>{
   const msg=linked.length>0
     ?`Excluir subcategoria "${sub}" e seus ${linked.length} lançamento(s) vinculado(s)?\n\nEsta ação não pode ser desfeita.`
     :`Excluir subcategoria "${sub}"?`;
-  if(!confirm(msg))return;
+  if(!await finnConfirm(msg,'Confirmar',false))return;
   // Delete linked entries
   for(const e of linked) await deleteDoc(doc(db,'entries',e.id));
   // Delete previstos keys for this subcat
@@ -3149,7 +3249,7 @@ window.deleteSubcat=async(tipo,catId,sub)=>{
 
 // ── INV TIPO ──────────────────────────────────────────────
 window.openInvTipoModal=()=>{document.getElementById('mit-name').value='';openModal('modal-inv-tipo');};
-window.saveInvTipo=async()=>{const n=document.getElementById('mit-name').value.trim();if(!n){alert('Informe o nome.');return;}if(invTipos.includes(n)){alert('Já existe.');return;}invTipos.push(n);await saveInvTipos();closeModal('modal-inv-tipo');renderCfgInv();};
+window.saveInvTipo=async()=>{const n=document.getElementById('mit-name').value.trim();if(!n){await finnAlert('Informe o nome.');return;}if(invTipos.includes(n)){alert('Já existe.');return;}invTipos.push(n);await saveInvTipos();closeModal('modal-inv-tipo');renderCfgInv();};
 window.deleteInvTipo=async tipo=>{if(!confirm(`Excluir tipo "${tipo}"?`))return;invTipos=invTipos.filter(t=>t!==tipo);await saveInvTipos();renderCfgInv();};
 
 // ── UI ────────────────────────────────────────────────────
@@ -3204,7 +3304,7 @@ function buildContext(){
 
   const entriesSummary = recentEntries.map(e=>{
     const d = new Date(e.date+'T12:00:00');
-    return `[${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()}] ${e.tipo.toUpperCase()} | ${catMap[e.catId]||e.catId} > ${e.subcategoria} | "${e.descricao||''}" | R$${Number(e.valor||0).toFixed(2)} | por: ${e.por||'?'}`;
+    return `[${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()}] ${e.tipo.toUpperCase()} | ${catMap[e.catId]||e.catId} > ${e.subcategoria} | "${esc(e.descricao)||''}" | R$${Number(e.valor||0).toFixed(2)} | por: ${e.por||'?'}`;
   }).join('\n');
 
   const goalsSummary = goals.map(g=>`Meta: "${g.name}" — R$${Number(g.current||0).toFixed(2)} / R$${Number(g.target||0).toFixed(2)} (${g.target>0?Math.round((g.current/g.target)*100):0}%)`).join('\n');
@@ -3218,7 +3318,7 @@ function buildContext(){
     const mens = getParcMensalidade(p);
     const pagas = Number(p.parcPagas||0);
     const total = Number(p.numParcelas||0);
-    return `Parcelamento: "${p.descricao}" | ${pagas}/${total} parcelas pagas | R$${mens.toFixed(2)}/mês | Início: ${p.inicio}`;
+    return `Parcelamento: "${esc(p.descricao)}" | ${pagas}/${total} parcelas pagas | R$${mens.toFixed(2)}/mês | Início: ${p.inicio}`;
   }).join('\n');
 
   const previstosSummary = Object.entries(previstos).map(([k,v])=>`Previsto ${catMap[k]||k}: R$${Number(v).toFixed(2)}/mês`).join('\n');
@@ -3366,7 +3466,7 @@ window.loadConversation = async id => {
       closeAiHistory();
       if(!aiOpen) toggleAI();
     }
-  } catch(e){ alert('Erro ao carregar conversa: '+e.message); }
+  } catch(e){ await finnAlert('Erro ao carregar conversa: '+e.message,'Erro'); }
 };
 
 
