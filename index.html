@@ -1482,12 +1482,13 @@ function updateMonthLabel(){
   const els={'rec-sub':'Previsto vs Realizado · '+full,'desp-sub':'Previsto vs Realizado · '+full,'rel-sub':'Análise anual · '+viewYear};
   Object.entries(els).forEach(([k,v])=>{const el=document.getElementById(k);if(el)el.textContent=v;});
   const titleEl=document.getElementById('dash-title');
-  if(titleEl&&_dashAnimated) titleEl.textContent=MESES[viewMonth]+' '+viewYear;
+  if(titleEl&&_dashAnimated&&!_dashAnimating) titleEl.textContent=MESES[viewMonth]+' '+viewYear;
 }
 
 
 // ── DASHBOARD WELCOME ANIMATION ──────────────────────────
 let _dashAnimated = false;
+let _dashAnimating = false;
 function typingEffect(el, text, speed=55, onDone){
   el.textContent='';
   el.classList.add('dash-title-cursor');
@@ -1501,16 +1502,16 @@ function runDashWelcome(){
   const titleEl=document.getElementById('dash-title');
   const metricsEl=document.getElementById('dash-metrics');
   if(!titleEl)return;
-  // Get first name from current user
+  _dashAnimating=true;
   const fullName=currentUser?.displayName||currentUser?.email?.split('@')[0]||'';
   const firstName=fullName.split(' ')[0];
   const monthTitle=MESES[viewMonth]+' '+viewYear;
-  // Fade in metrics
   if(metricsEl){metricsEl.parentElement.classList.add('dash-animate');}
-  // Typing: "Bem-vindo, Pedro!" → wait 1.2s → type month
   typingEffect(titleEl, 'Bem-vindo, '+firstName+'!', 60, ()=>{
     setTimeout(()=>{
-      typingEffect(titleEl, monthTitle, 70);
+      typingEffect(titleEl, monthTitle, 70, ()=>{
+        _dashAnimating=false;
+      });
     }, 1200);
   });
 }
@@ -1955,6 +1956,9 @@ function renderDashboard(){
   // Welcome animation on first visit
   if(!_dashAnimated){
     _dashAnimated=true;
+    // Clear title immediately so month text doesn't show before animation
+    const titleEl=document.getElementById('dash-title');
+    if(titleEl) titleEl.textContent='';
     setTimeout(runDashWelcome, 80);
   } else {
     // Just update title normally on subsequent renders
