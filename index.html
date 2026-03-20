@@ -495,6 +495,18 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 .main .cat-name, .page .cat-name{color:var(--text) !important}
 .main .tx-desc, .page .tx-desc{color:var(--text) !important}
 .main .tx-date, .page .tx-date{color:var(--text2) !important}
+
+/* ── DASHBOARD ANIMATIONS ────────────────────────────────── */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.dash-animate .metric-card{opacity:0;animation:fadeInUp .4s ease forwards}
+.dash-animate .metric-card:nth-child(1){animation-delay:.05s}
+.dash-animate .metric-card:nth-child(2){animation-delay:.12s}
+.dash-animate .metric-card:nth-child(3){animation-delay:.19s}
+.dash-animate .metric-card:nth-child(4){animation-delay:.26s}
+.dash-animate-cards{opacity:0;animation:fadeInUp .45s ease .3s forwards}
+.dash-title-cursor::after{content:'|';animation:blink .7s step-end infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 </style>
 </head>
 <body>
@@ -566,7 +578,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
     <div id="page-dashboard" class="page active">
       <div class="page-header"><div><div class="page-title" id="dash-title"></div><div class="page-sub" id="dash-sub">Visão geral</div></div></div>
       <div class="metrics-grid" id="dash-metrics"></div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:16px">
+      <div class="dash-animate-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:16px">
         <div class="card"><div class="card-header"><span class="card-title">Receitas vs Despesas — <span id="dash-chart-month"></span></span></div><div class="card-body"><div class="chart-wrap"><canvas id="barChartMonth"></canvas></div></div></div>
         <div class="card"><div class="card-header"><span class="card-title">Receitas vs Despesas — últimos 6 meses</span></div><div class="card-body"><div class="chart-wrap"><canvas id="barChart"></canvas></div></div></div>
       </div>
@@ -1136,7 +1148,7 @@ window._doAuth = window.doAuth = async ()=>{
     errEl.textContent=m[e.code]||'Erro: '+e.message;
   }
 };
-window.doLogout=()=>signOut(auth);
+window.doLogout=()=>{_dashAnimated=false;signOut(auth);};
 
 window.sendPasswordReset = async () => {
   const email = document.getElementById('auth-email').value.trim();
@@ -1460,7 +1472,37 @@ function updateMonthLabel(){
   const els={'rec-sub':'Previsto vs Realizado · '+full,'desp-sub':'Previsto vs Realizado · '+full,'rel-sub':'Análise anual · '+viewYear};
   Object.entries(els).forEach(([k,v])=>{const el=document.getElementById(k);if(el)el.textContent=v;});
   const titleEl=document.getElementById('dash-title');
-  if(titleEl) titleEl.textContent=MESES[viewMonth]+' '+viewYear;
+  if(titleEl&&_dashAnimated) titleEl.textContent=MESES[viewMonth]+' '+viewYear;
+}
+
+
+// ── DASHBOARD WELCOME ANIMATION ──────────────────────────
+let _dashAnimated = false;
+function typingEffect(el, text, speed=55, onDone){
+  el.textContent='';
+  el.classList.add('dash-title-cursor');
+  let i=0;
+  const t=setInterval(()=>{
+    el.textContent+=text[i++];
+    if(i>=text.length){clearInterval(t);el.classList.remove('dash-title-cursor');if(onDone)onDone();}
+  },speed);
+}
+function runDashWelcome(){
+  const titleEl=document.getElementById('dash-title');
+  const metricsEl=document.getElementById('dash-metrics');
+  if(!titleEl)return;
+  // Get first name from current user
+  const fullName=currentUser?.displayName||currentUser?.email?.split('@')[0]||'';
+  const firstName=fullName.split(' ')[0];
+  const monthTitle=MESES[viewMonth]+' '+viewYear;
+  // Fade in metrics
+  if(metricsEl){metricsEl.parentElement.classList.add('dash-animate');}
+  // Typing: "Bem-vindo, Pedro!" → wait 1.2s → type month
+  typingEffect(titleEl, 'Bem-vindo, '+firstName+'!', 60, ()=>{
+    setTimeout(()=>{
+      typingEffect(titleEl, monthTitle, 70);
+    }, 1200);
+  });
 }
 
 // ── HELPERS ──────────────────────────────────────────────
@@ -1900,6 +1942,15 @@ window.acceptPrivacy=()=>{
 
 function renderDashboard(){
   checkPrivacyConsent();
+  // Welcome animation on first visit
+  if(!_dashAnimated){
+    _dashAnimated=true;
+    setTimeout(runDashWelcome, 80);
+  } else {
+    // Just update title normally on subsequent renders
+    const titleEl=document.getElementById('dash-title');
+    if(titleEl) titleEl.textContent=MESES[viewMonth]+' '+viewYear;
+  }
   const mx=getMonthEntries();
   const rR=sumR(mx.filter(e=>e.tipo==='receita'));
   const dR=sumR(mx.filter(e=>e.tipo==='despesa'));
@@ -2339,10 +2390,23 @@ function renderInvestimentos(){
   let totalSaldo=0,totalAportes=0,totalRendimentos=0;
   investments.forEach(inv=>{const r=calcInvSaldoNow(inv);totalSaldo+=r.saldo;totalAportes+=r.totalAportes;totalRendimentos+=r.totalRendimentos;});
 
+  // Calculate this month's aportes and rendimentos
+  const prevMonth=viewMonth===0?11:viewMonth-1;
+  const prevYear=viewMonth===0?viewYear-1:viewYear;
+  let totalAportesMes=0, totalRendimentosMes=0;
+  investments.forEach(inv=>{
+    const rPrev=calcInvSaldoByMonth(inv,prevMonth,prevYear);
+    const rNow=calcInvSaldoNow(inv);
+    // Aportes this month = difference in totalAportes
+    totalAportesMes+=(rNow.totalAportes-rPrev.totalAportes);
+    // Rendimentos this month = difference in totalRendimentos
+    totalRendimentosMes+=(rNow.totalRendimentos-rPrev.totalRendimentos);
+  });
+
   document.getElementById('inv-metrics').innerHTML=`
     <div class="metric-card"><div class="metric-label">Patrimônio total</div><div class="metric-value acc">${fmtK(totalSaldo)}</div></div>
-    <div class="metric-card"><div class="metric-label">Total aportado</div><div class="metric-value">${fmtK(totalAportes)}</div></div>
-    <div class="metric-card"><div class="metric-label">Rendimentos</div><div class="metric-value pos">${fmtK(totalRendimentos)}</div></div>
+    <div class="metric-card"><div class="metric-label">Aportado este mês</div><div class="metric-value">${fmtK(totalAportesMes)}</div></div>
+    <div class="metric-card"><div class="metric-label">Rendimentos este mês</div><div class="metric-value pos">${fmtK(totalRendimentosMes)}</div></div>
     <div class="metric-card"><div class="metric-label">Ativos</div><div class="metric-value">${investments.length}</div></div>`;
 
   // Line chart — patrimony evolution month by month
@@ -3008,17 +3072,6 @@ function renderCfgDados(){
   const keyColor = ANTHROPIC_KEY ? 'var(--green)' : 'var(--red)';
   document.getElementById('cfg-dados').innerHTML=`
     <div class="cfg-section">
-      <div class="cfg-section-title">Chave da API — Finn AI</div>
-      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">A chave é salva no Firebase e carregada automaticamente em todos os dispositivos. Apenas administradores podem alterar.</p>
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-        <span style="font-size:13px;font-weight:500;color:${keyColor}">${keyStatus}</span>
-      </div>
-      ${isAdmin ? `<div style="display:flex;gap:8px;align-items:center">
-        <input id="api-key-input" type="password" placeholder="sk-ant-api03-..." style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:'Sora',sans-serif;background:var(--bg);color:var(--text)">
-        <button class="btn-add" onclick="saveApiKey()">Salvar</button>
-      </div>` : '<p style="font-size:12px;color:var(--text3)">Apenas o administrador pode alterar a chave.</p>'}
-    </div>
-    <div class="cfg-section">
       <div class="cfg-section-title">Backup e restauração</div>
       <p style="font-size:13px;color:var(--text2);margin-bottom:14px">Exporte todos os seus dados em JSON para guardar uma cópia de segurança. Para restaurar, selecione um arquivo de backup exportado anteriormente.</p>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
@@ -3042,6 +3095,17 @@ function renderCfgDados(){
         <button class="btn-outline" onclick="solicitarExclusaoConta()" style="font-size:12px;color:var(--red);border-color:var(--red)">🗑 Excluir minha conta e dados</button>
       </div>
       <p style="font-size:11px;color:var(--text3)">A exportação inclui todos os seus lançamentos, metas, investimentos e configurações em formato JSON. A exclusão é permanente e irreversível.</p>
+    </div>
+    <div class="cfg-section">
+      <div class="cfg-section-title">Chave da API — Finn AI</div>
+      <p style="font-size:13px;color:var(--text2);margin-bottom:12px">A chave é salva no Firebase e carregada automaticamente em todos os dispositivos. Apenas administradores podem alterar.</p>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <span style="font-size:13px;font-weight:500;color:${keyColor}">${keyStatus}</span>
+      </div>
+      ${isAdmin ? `<div style="display:flex;gap:8px;align-items:center">
+        <input id="api-key-input" type="password" placeholder="sk-ant-api03-..." style="flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:'Sora',sans-serif;background:var(--bg);color:var(--text)">
+        <button class="btn-add" onclick="saveApiKey()">Salvar</button>
+      </div>` : '<p style="font-size:12px;color:var(--text3)">Apenas o administrador pode alterar a chave.</p>'}
     </div>
     <div class="cfg-section">
       <div class="cfg-section-title">Zona de perigo</div>
