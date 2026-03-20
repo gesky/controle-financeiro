@@ -1006,7 +1006,13 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
     <div class="modal-body">
       <div class="form-row single"><div class="fg"><label>Nome</label><input id="mc-name" placeholder="Ex: Pets, Assinaturas..."></div></div>
       <div class="form-row">
-        <div class="fg"><label>Ícone (emoji)</label><input id="mc-icon" placeholder="🐾" maxlength="4"></div>
+        <div class="fg"><label>Ícone (emoji)</label>
+          <div style="display:flex;align-items:center;gap:8px">
+            <button id="mc-icon-btn" onclick="openCatEmojiPicker(this)" style="font-size:24px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);width:44px;height:44px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1" title="Clique para escolher emoji">📦</button>
+            <input id="mc-icon" type="hidden" value="📦">
+            <span style="font-size:12px;color:var(--text3)">Clique para escolher</span>
+          </div>
+        </div>
         <div class="fg"><label>Tipo</label><select id="mc-tipo"><option value="despesa">Despesa</option><option value="receita">Receita</option></select></div>
       </div>
       <div class="btn-row"><button class="btn-cancel" onclick="closeModal('modal-cat')">Cancelar</button><button class="btn-save" onclick="saveCat()">Salvar</button></div>
@@ -2382,13 +2388,15 @@ window.saveEntry=async()=>{
   if(editingEntryId){
     const idx=entries.findIndex(e=>e.id===editingEntryId);
     if(idx>=0) entries[idx]={...entries[idx],...data};
-    await updateDoc(doc(db,'entries',editingEntryId),data);
+    if(!isParcChecked) await updateDoc(doc(db,'entries',editingEntryId),data);
+    // If isParcChecked on edit, updateDoc is handled inside the parcelamento block above
   } else if(!isParcChecked){
     await addDoc(collection(db,'entries'),data);
   }
 
   // If parcelamento checkbox is checked, create parcelamento record
-  if(isParcChecked && tipo==='despesa' && !editingEntryId){
+  // Works both for new entries and when editing an existing one (converting to parcelado)
+  if(isParcChecked && tipo==='despesa'){
     const numParcelas=parseInt(document.getElementById('me-parc-num').value)||0;
     const parcAtual=parseInt(document.getElementById('me-parc-atual').value)||1;
     const cartaoId=document.getElementById('me-parc-cartao').value;
@@ -2397,28 +2405,49 @@ window.saveEntry=async()=>{
     if(numParcelas>=2&&val>0){
       const mensalidade=val/numParcelas;
       const cartao=cartoes.find(c=>c.id===cartaoId);
-      // Calculate inicio month: go back (parcAtual-1) months from current date
-      const inicioDate=new Date(date+'T12:00:00');
+      const inicioDate=new Date((date||new Date().toISOString().split('T')[0])+'T12:00:00');
       inicioDate.setMonth(inicioDate.getMonth()-(parcAtual-1));
       const inicio=inicioDate.getFullYear()+'-'+String(inicioDate.getMonth()+1).padStart(2,'0');
-      // Save entry first to get its ID, then link it to parcelamento
-      const entryRef = await addDoc(collection(db,'entries'),data);
-      await addDoc(collection(db,'parcelamentos'),{
-        descricao:desc||subcat,
-        valorTotal:val,
-        numParcelas,
-        parcPagas:parcAtual,
-        inicio,
-        catId,
-        cartaoId:cartaoId||null,
-        cartaoNome:cartao?cartao.nome:'',
-        banco,
-        obs,
-        entryId:entryRef.id,
-        createdAt:new Date().toISOString()
-      });
-      // Skip the normal addDoc below since we already saved the entry
-      _parcEntryAlreadySaved=true;
+
+      if(editingEntryId){
+        // Editing existing entry — check if already linked to a parcelamento
+        const alreadyLinked=parcelamentos.find(p=>p.entryId===editingEntryId);
+        if(!alreadyLinked){
+          // Convert: update entry valor to mensalidade, create parcelamento linked to it
+          await updateDoc(doc(db,'entries',editingEntryId),{...data,valor:mensalidade});
+          await addDoc(collection(db,'parcelamentos'),{
+            descricao:desc||subcat,
+            valorTotal:val,
+            numParcelas,
+            parcPagas:parcAtual,
+            inicio,
+            catId,
+            cartaoId:cartaoId||null,
+            cartaoNome:cartao?cartao.nome:'',
+            banco,
+            obs,
+            entryId:editingEntryId,
+            createdAt:new Date().toISOString()
+          });
+        }
+      } else {
+        // New entry — save entry first, then create parcelamento linked to it
+        const entryRef=await addDoc(collection(db,'entries'),{...data,valor:mensalidade});
+        await addDoc(collection(db,'parcelamentos'),{
+          descricao:desc||subcat,
+          valorTotal:val,
+          numParcelas,
+          parcPagas:parcAtual,
+          inicio,
+          catId,
+          cartaoId:cartaoId||null,
+          cartaoNome:cartao?cartao.nome:'',
+          banco,
+          obs,
+          entryId:entryRef.id,
+          createdAt:new Date().toISOString()
+        });
+      }
     }
   }
 
@@ -2513,7 +2542,7 @@ function renderInvestimentos(){
       <div class="inv-meta">Aportado: ${fmt(r.totalAportes)} · Rendimentos: ${fmt(r.totalRendimentos)}</div>
       ${inv.notas?`<div style="font-size:12px;color:var(--text2);margin-bottom:10px;font-style:italic">${inv.notas}</div>`:''}
       <div class="inv-actions">
-        <button class="btn-sm" onclick="openInvMovModal('${inv.id}','${inv.nome.replace(/'/g,"\\'")}')">+ Movimentação</button>
+        <button class="btn-sm" onclick="openInvMovModal('${inv.id}','${inv.nome.replace(/'/g,"\\'")}')">+ Aporte</button>
         <button class="btn-sm" onclick="openEditInv('${inv.id}')">✎ Editar</button>
       </div>
       ${movs.length?`<div class="inv-tx-list">${movs.map(m=>{const d=new Date(m.date+'T12:00:00');const neg=m.tipo==='retirada';return`<div class="inv-tx-item"><span class="inv-tx-date">${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}</span><span class="inv-tx-desc">${m.tipo}${m.descricao?' · '+m.descricao:''}</span><span class="inv-tx-val" style="color:${neg?'var(--red)':'var(--green)'}">${neg?'-':'+'}${fmt(m.valor)}</span><button class="inv-tx-del" onclick="deleteInvMov('${m.id}')">×</button></div>`;}).join('')}</div>`:''}
@@ -3309,7 +3338,33 @@ window.zerarBanco=async()=>{
 };
 
 // ── MODAL CATEGORIA ───────────────────────────────────────
-window.openCatModal=tipo=>{_catTipo=tipo;document.getElementById('mc-name').value='';document.getElementById('mc-icon').value='📦';document.getElementById('mc-tipo').value=tipo;openModal('modal-cat');};
+
+window.openCatEmojiPicker=function(btnEl){
+  document.querySelectorAll('.emoji-picker-popup').forEach(p=>p.remove());
+  const picker=document.createElement('div');
+  picker.className='emoji-picker-popup';
+  picker.style.cssText='position:absolute;z-index:999;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:10px;box-shadow:var(--shadow-md);display:grid;grid-template-columns:repeat(10,28px);gap:2px;max-width:320px';
+  EMOJI_LIST.forEach(em=>{
+    const btn=document.createElement('button');
+    btn.textContent=em;
+    btn.style.cssText='background:none;border:none;cursor:pointer;font-size:16px;width:28px;height:28px;border-radius:4px;display:flex;align-items:center;justify-content:center;';
+    btn.onmouseover=()=>btn.style.background='var(--bg2)';
+    btn.onmouseout=()=>btn.style.background='none';
+    btn.onclick=()=>{
+      document.getElementById('mc-icon').value=em;
+      document.getElementById('mc-icon-btn').textContent=em;
+      picker.remove();
+    };
+    picker.appendChild(btn);
+  });
+  btnEl.style.position='relative';
+  btnEl.parentElement.style.position='relative';
+  btnEl.parentElement.appendChild(picker);
+  const closeOnClick=e=>{if(!picker.contains(e.target)&&e.target!==btnEl){picker.remove();document.removeEventListener('click',closeOnClick);}};
+  setTimeout(()=>document.addEventListener('click',closeOnClick),10);
+};
+
+window.openCatModal=tipo=>{_catTipo=tipo;document.getElementById('mc-name').value='';document.getElementById('mc-icon').value='📦';const iconBtn=document.getElementById('mc-icon-btn');if(iconBtn)iconBtn.textContent='📦';document.getElementById('mc-tipo').value=tipo;openModal('modal-cat');};
 window.saveCat=async()=>{
   const name=document.getElementById('mc-name').value.trim();
   const icon=document.getElementById('mc-icon').value.trim()||'📦';
