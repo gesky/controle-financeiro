@@ -583,7 +583,17 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
         <div class="card"><div class="card-header"><span class="card-title">Receitas vs Despesas — últimos 6 meses</span></div><div class="card-body"><div class="chart-wrap"><canvas id="barChart"></canvas></div></div></div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:16px">
-        <div class="card"><div class="card-header"><span class="card-title">Despesas por categoria</span></div><div class="card-body"><div class="chart-wrap"><canvas id="pieChart"></canvas></div></div></div>
+        <div class="card">
+  <div class="card-header" style="display:flex;align-items:center;justify-content:space-between">
+    <span class="card-title" id="pie-chart-title">Despesas por categoria — Realizado</span>
+    <div style="display:flex;align-items:center;gap:6px">
+      <button onclick="togglePieView(-1)" style="background:none;border:1px solid var(--border);border-radius:4px;width:24px;height:24px;cursor:pointer;color:var(--text2);font-size:14px;display:flex;align-items:center;justify-content:center;line-height:1">‹</button>
+      <span id="pie-chart-dot" style="font-size:8px;color:var(--text3)">● ○</span>
+      <button onclick="togglePieView(1)" style="background:none;border:1px solid var(--border);border-radius:4px;width:24px;height:24px;cursor:pointer;color:var(--text2);font-size:14px;display:flex;align-items:center;justify-content:center;line-height:1">›</button>
+    </div>
+  </div>
+  <div class="card-body"><div class="chart-wrap"><canvas id="pieChart"></canvas></div></div>
+</div>
         <div class="card"><div class="card-header"><span class="card-title">Últimos lançamentos</span></div><div class="card-body" id="dash-recent"></div></div>
       </div>
     </div>
@@ -2006,15 +2016,53 @@ function renderDashboard(){
   if(barChartInst)barChartInst.destroy();
   barChartInst=new Chart(document.getElementById('barChart'),{type:'bar',data:{labels,datasets:[{label:'Receitas',data:recData,backgroundColor:'#0f9d5855',borderRadius:4,borderSkipped:false},{label:'Despesas',data:despData,backgroundColor:'#d44c4755',stack:'d',borderRadius:0,borderSkipped:false},{label:'Parcelas',data:parcData,backgroundColor:'#d9730d66',stack:'d',borderRadius:4,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,plugins:{tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.y??ctx.parsed;return' '+ctx.dataset.label+': '+fmt(typeof v==='number'?v:ctx.raw);}}},legend:{labels:{font:{size:10},boxWidth:8,padding:10}}},scales:{x:{stacked:true,grid:{display:false},ticks:{color:document.documentElement.getAttribute('data-theme')==='dark'?'#8888aa':'#787774',font:{size:11}}},y:{stacked:true,grid:{color:'rgba(120,119,116,0.12)'},ticks:{color:document.documentElement.getAttribute('data-theme')==='dark'?'#8888aa':'#787774',font:{size:11},callback:v=>'R$'+Math.round(v/1000)+'k'}}}}});
 
+  // Build pie data — realizado
   const catTotals={};
   mx.filter(e=>e.tipo==='despesa').forEach(e=>{const cat=getCatById(e.catId,'despesa');const lbl=cat?cat.label:(e.catId||'Outros');catTotals[lbl]=(catTotals[lbl]||0)+(Number(e.valor)||0);});
-  const catArr=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).slice(0,6);
-  if(pieChartInst)pieChartInst.destroy();
-  if(catArr.length){const COLS=['#0f9d58','#2383e2','#d9730d','#d44c47','#9065b0','#b8b5ad'];pieChartInst=new Chart(document.getElementById('pieChart'),{type:'doughnut',data:{labels:catArr.map(c=>c[0]),datasets:[{data:catArr.map(c=>Math.round(c[1])),backgroundColor:COLS,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{tooltip:{callbacks:{label:ctx=>{return' '+ctx.label+': '+fmt(ctx.raw);}}},legend:{position:'right',labels:{font:{size:11},boxWidth:10,padding:7}}},cutout:'60%'}});}
+  const catArrReal=Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  // Build pie data — previsto
+  const catPrevTotals={};
+  allCats('despesa').forEach(cat=>{
+    const p=cat.subcats.reduce((s,sub)=>s+getSubPrev(cat.id,sub),0);
+    if(p>0) catPrevTotals[cat.label]=p;
+  });
+  const catArrPrev=Object.entries(catPrevTotals).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  // Store for toggle
+  window._pieDataReal=catArrReal;
+  window._pieDataPrev=catArrPrev;
+  if(typeof window._pieView==='undefined') window._pieView=0; // 0=realizado, 1=previsto
+  renderPieChart();
 
   const recent=[...mx].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,8);
   document.getElementById('dash-recent').innerHTML=recent.length?recent.map(t=>{const d=new Date(t.date+'T12:00:00');return`<div class="tx-item"><span class="tx-date">${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}</span><span class="tx-desc">${esc(t.descricao)||t.subcategoria||'—'}</span><span class="tx-val ${t.tipo==='receita'?'pos':'neg'}">${t.tipo==='receita'?'+':'-'}${fmt(t.valor)}</span><button class="tx-edit" onclick="editEntry('${t.id}')">✎ editar</button></div>`;}).join(''):'<div class="empty">Sem lançamentos este mês.</div>';
 }
+
+
+// ── PIE CHART TOGGLE ─────────────────────────────────────
+function renderPieChart(){
+  const COLS=['#0f9d58','#2383e2','#d9730d','#d44c47','#9065b0','#b8b5ad'];
+  const isReal=window._pieView===0;
+  const catArr=isReal?(window._pieDataReal||[]):(window._pieDataPrev||[]);
+  const titleEl=document.getElementById('pie-chart-title');
+  const dotEl=document.getElementById('pie-chart-dot');
+  if(titleEl) titleEl.textContent='Despesas por categoria — '+(isReal?'Realizado':'Previsto');
+  if(dotEl) dotEl.textContent=isReal?'● ○':'○ ●';
+  if(pieChartInst)pieChartInst.destroy();
+  if(catArr.length){
+    pieChartInst=new Chart(document.getElementById('pieChart'),{
+      type:'doughnut',
+      data:{labels:catArr.map(c=>c[0]),datasets:[{data:catArr.map(c=>Math.round(c[1])),backgroundColor:COLS,borderWidth:0}]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{
+        tooltip:{callbacks:{label:ctx=>{return' '+ctx.label+': '+fmt(ctx.raw);}}},
+        legend:{position:'right',labels:{font:{size:11},boxWidth:10,padding:7}}
+      },cutout:'60%'}
+    });
+  }
+}
+window.togglePieView=dir=>{
+  window._pieView=((window._pieView||0)+dir+2)%2;
+  renderPieChart();
+};
 
 // ── CAT PAGE ──────────────────────────────────────────────
 function subPrevKey(catId,sub,m,y){
