@@ -1602,17 +1602,18 @@ function getCatById(catId,tipo){return allCats(tipo).find(c=>c.id===catId);}
 // ── INVEST SALDO CALC ─────────────────────────────────────
 // Calcula saldo mês a mês aplicando juros compostos sobre capital acumulado
 function calcInvSaldoByMonth(inv, upToMonth, upToYear){
-  const taxaMensal=Number(inv.taxa||0)/100; // % a.m. ex: 1.4% → 0.014
-  // Convert monthly rate to daily: (1 + r_m)^(1/30) - 1
+  const taxaMensal=Number(inv.taxa||0)/100;
   const taxaDiaria = taxaMensal>0 ? Math.pow(1+taxaMensal, 1/30)-1 : 0;
 
-  const start=inv.startDate?new Date(inv.startDate+'T00:00:00'):new Date(inv.criadoEm||Date.now());
+  const start=inv.startDate?new Date(inv.startDate+'T12:00:00'):new Date(inv.criadoEm||Date.now());
   start.setHours(0,0,0,0);
 
-  // upTo = last day of upToMonth/upToYear or today, whichever is earlier
-  const hoje = new Date(); hoje.setHours(0,0,0,0);
-  const upToRaw = new Date(upToYear, upToMonth+1, 0); // last day of month
+  const hoje = new Date(); hoje.setHours(23,59,59,999); // end of today
+  const upToRaw = new Date(upToYear, upToMonth+1, 0);
+  upToRaw.setHours(23,59,59,999);
   const upTo = upToRaw < hoje ? upToRaw : hoje;
+  // Convert upTo to start of that day for loop comparison
+  const upToDay = new Date(upTo); upToDay.setHours(0,0,0,0);
 
   let saldo=Number(inv.valorInicial||0);
   let totalAportes=Number(inv.valorInicial||0);
@@ -1620,19 +1621,21 @@ function calcInvSaldoByMonth(inv, upToMonth, upToYear){
 
   const movs=[...invMovimentos.filter(m=>m.invId===inv.id)].sort((a,b)=>a.date.localeCompare(b.date));
 
-  if(start>upTo) return{saldo,totalAportes,totalRendimentos};
+  if(start>upToDay) return{saldo,totalAportes,totalRendimentos};
 
-  // Iterate day by day from start to upTo
+  const msPerDay=1000*60*60*24;
+  const totalDays=Math.round((upToDay-start)/msPerDay)+1;
+
   const cur=new Date(start);
-  let safeIter=0;
-  while(cur<=upTo && safeIter++<1500){
-    const dateStr=cur.getFullYear()+'-'+String(cur.getMonth()+1).padStart(2,'0')+'-'+String(cur.getDate()).padStart(2,'0');
-    // Apply any movimentos on this day
+  for(let i=0;i<totalDays;i++){
+    const y=cur.getFullYear();
+    const mo=String(cur.getMonth()+1).padStart(2,'0');
+    const d=String(cur.getDate()).padStart(2,'0');
+    const dateStr=`${y}-${mo}-${d}`;
     movs.filter(m=>m.date===dateStr).forEach(m=>{
       if(m.tipo==='aporte'){saldo+=Number(m.valor||0);totalAportes+=Number(m.valor||0);}
       else if(m.tipo==='retirada'){saldo=Math.max(0,saldo-Number(m.valor||0));}
     });
-    // Apply daily compounding
     if(taxaDiaria>0&&saldo>0){
       const rend=saldo*taxaDiaria;
       totalRendimentos+=rend;
