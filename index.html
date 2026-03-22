@@ -489,6 +489,8 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 .cat-total-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em}
 .cat-total-val{font-size:13px;font-weight:600;font-family:'DM Mono',monospace}
 
+::selection{background:#3437ff33;color:var(--text)}
+::-moz-selection{background:#3437ff33;color:var(--text)}
 /* Prevent sidebar white rules from bleeding into main content */
 .main .subcat-name-btn, .page .subcat-name-btn{color:var(--text) !important}
 .main .add-tx-inline, .page .add-tx-inline{color:var(--text3) !important}
@@ -976,6 +978,18 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
       </div>
       <div class="btn-row" id="finn-dialog-btns"></div>
     </div>
+  </div>
+</div>
+
+
+<!-- MODAL DETALHE INVESTIMENTO -->
+<div class="modal-overlay" id="modal-inv-detail">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <span class="modal-title" id="inv-detail-title">Detalhes do Investimento</span>
+      <button class="modal-close" onclick="closeModal('modal-inv-detail')">×</button>
+    </div>
+    <div class="modal-body" id="inv-detail-body" style="max-height:70vh;overflow-y:auto"></div>
   </div>
 </div>
 
@@ -1612,7 +1626,7 @@ function calcInvSaldoByMonth(inv, upToMonth, upToYear){
   const cur=new Date(start);
   let safeIter=0;
   while(cur<=upTo && safeIter++<1500){
-    const dateStr=cur.toISOString().split('T')[0];
+    const dateStr=cur.getFullYear()+'-'+String(cur.getMonth()+1).padStart(2,'0')+'-'+String(cur.getDate()).padStart(2,'0');
     // Apply any movimentos on this day
     movs.filter(m=>m.date===dateStr).forEach(m=>{
       if(m.tipo==='aporte'){saldo+=Number(m.valor||0);totalAportes+=Number(m.valor||0);}
@@ -2534,7 +2548,6 @@ function renderInvestimentos(){
     const taxaDiaria=taxa>0?(Math.pow(1+taxa/100,1/30)-1)*100:0;
     const rendDiario=r.saldo*taxaDiaria/100;
     const rendMensal=r.saldo*taxa/100;
-    const movs=invMovimentos.filter(m=>m.invId===inv.id).slice(0,6);
     return`<div class="inv-card">
       <div style="display:flex;justify-content:space-between;align-items:start">
         <div><div class="inv-name">${inv.nome}</div><span class="inv-type-badge">${inv.tipo}</span></div>
@@ -2545,13 +2558,67 @@ function renderInvestimentos(){
       <div class="inv-meta">Aportado: ${fmt(r.totalAportes)} · Rendimentos: ${fmt(r.totalRendimentos)}</div>
       ${inv.notas?`<div style="font-size:12px;color:var(--text2);margin-bottom:10px;font-style:italic">${inv.notas}</div>`:''}
       <div class="inv-actions">
+        <button class="btn-sm" onclick="openInvDetail('${inv.id}')">📋 Detalhes</button>
         <button class="btn-sm" onclick="openInvMovModal('${inv.id}','${inv.nome.replace(/'/g,"\\'")}')">+ Aporte</button>
         <button class="btn-sm" onclick="openEditInv('${inv.id}')">✎ Editar</button>
       </div>
-      ${movs.length?`<div class="inv-tx-list">${movs.map(m=>{const d=new Date(m.date+'T12:00:00');const neg=m.tipo==='retirada';return`<div class="inv-tx-item"><span class="inv-tx-date">${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}</span><span class="inv-tx-desc">${m.tipo}${m.descricao?' · '+m.descricao:''}</span><span class="inv-tx-val" style="color:${neg?'var(--red)':'var(--green)'}">${neg?'-':'+'}${fmt(m.valor)}</span><button class="inv-tx-del" onclick="deleteInvMov('${m.id}')">×</button></div>`;}).join('')}</div>`:''}
     </div>`;
   }).join('');
 }
+
+
+window.openInvDetail=id=>{
+  const inv=investments.find(i=>i.id===id);
+  if(!inv)return;
+  const r=calcInvSaldoNow(inv);
+  const taxa=Number(inv.taxa||0);
+  const taxaDiaria=taxa>0?(Math.pow(1+taxa/100,1/30)-1)*100:0;
+  const rendDiario=r.saldo*taxaDiaria/100;
+  const rendMensal=r.saldo*taxa/100;
+  const movs=[...invMovimentos.filter(m=>m.invId===id)].sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('inv-detail-title').textContent=inv.nome;
+  document.getElementById('inv-detail-body').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      <div style="background:var(--bg2);border-radius:var(--radius);padding:12px">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Saldo atual</div>
+        <div style="font-size:20px;font-weight:700;font-family:'DM Mono',monospace;color:var(--green)">${fmt(r.saldo)}</div>
+      </div>
+      <div style="background:var(--bg2);border-radius:var(--radius);padding:12px">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Rendimentos totais</div>
+        <div style="font-size:20px;font-weight:700;font-family:'DM Mono',monospace;color:var(--purple)">${fmt(r.totalRendimentos)}</div>
+      </div>
+      <div style="background:var(--bg2);border-radius:var(--radius);padding:12px">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Total aportado</div>
+        <div style="font-size:15px;font-weight:600;font-family:'DM Mono',monospace">${fmt(r.totalAportes)}</div>
+      </div>
+      <div style="background:var(--bg2);border-radius:var(--radius);padding:12px">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Rendimento</div>
+        <div style="font-size:15px;font-weight:600;font-family:'DM Mono',monospace;color:var(--green)">${fmt(rendDiario)}/dia · ${taxa}% a.m.</div>
+      </div>
+    </div>
+    ${inv.notas?`<div style="font-size:12px;color:var(--text2);font-style:italic;padding:10px;background:var(--bg2);border-radius:var(--radius);margin-bottom:16px">${inv.notas}</div>`:''}
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Histórico de aportes</div>
+      <button class="btn-sm" onclick="closeModal('modal-inv-detail');openInvMovModal('${inv.id}','${inv.nome.replace(/'/g,"\'")}')">+ Aporte</button>
+    </div>
+    ${movs.length?`
+    <div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+      ${movs.map(m=>{
+        const d=new Date(m.date+'T12:00:00');
+        const neg=m.tipo==='retirada';
+        return`<div style="display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid var(--border)">
+          <span style="font-size:11px;color:var(--text3);white-space:nowrap;font-family:'DM Mono',monospace">${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear()}</span>
+          <span style="flex:1;font-size:13px;text-transform:capitalize">${m.tipo}${m.descricao?' · '+esc(m.descricao):''}</span>
+          <span style="font-size:13px;font-weight:600;font-family:'DM Mono',monospace;color:${neg?'var(--red)':'var(--green)'}">
+            ${neg?'-':'+'}${fmt(m.valor)}
+          </span>
+          <button onclick="deleteInvMov('${m.id}')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:0 2px" title="Excluir">×</button>
+        </div>`;
+      }).join('')}
+    </div>`:'<div style="color:var(--text3);font-size:13px;text-align:center;padding:20px">Nenhuma movimentação registrada.</div>'}
+  `;
+  openModal('modal-inv-detail');
+};
 
 window.openInvModal=()=>{
   editingInvId=null;
