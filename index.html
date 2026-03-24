@@ -52,6 +52,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 .field{margin-bottom:13px}
 .field label{display:block;font-size:11px;font-weight:600;color:#b0b0cc;margin-bottom:5px;text-transform:uppercase;letter-spacing:0.04em}
 .field input{width:100%;padding:9px 11px;border:1px solid rgba(255,255,255,0.18);border-radius:var(--radius);font-size:14px;font-family:'Sora',sans-serif;color:white;background:rgba(255,255,255,0.08)}
+.field input::placeholder{color:#b0b0cc;opacity:1}
 .field input:focus{outline:none;border-color:#b0b0cc;background:rgba(255,255,255,0.12)}
 .btn-primary{width:100%;padding:10px;background:white;color:#000032;border:none;border-radius:var(--radius);font-size:14px;font-weight:600;cursor:pointer;font-family:'Sora',sans-serif;transition:opacity .15s}
 .btn-primary:hover{opacity:.9}
@@ -2096,10 +2097,10 @@ function renderDashboard(){
   // Welcome animation on first visit
   if(!_dashAnimated){
     _dashAnimated=true;
-    // Clear title immediately so month text doesn't show before animation
+    _dashAnimating=true; // block updateMonthLabel immediately
     const titleEl=document.getElementById('dash-title');
     if(titleEl) titleEl.textContent='';
-    setTimeout(runDashWelcome, 80);
+    runDashWelcome();
   } else {
     // Just update title normally on subsequent renders
     const titleEl=document.getElementById('dash-title');
