@@ -509,6 +509,42 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 .dash-animate-cards{opacity:0;animation:fadeInUp .45s ease .3s forwards}
 .dash-title-cursor::after{content:'|';animation:blink .7s step-end infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ── MOBILE EXPERIENCE ──────────────────────────────────── */
+@media(max-width:768px){
+  /* Hide desktop-only nav items on mobile */
+  .nav-mobile-hide{display:none!important}
+  /* Compact dashboard on mobile */
+  .dash-mobile-hide{display:none!important}
+  /* FAB quick launch button */
+  .fab-launch{
+    position:fixed;bottom:74px;right:16px;z-index:300;
+    width:52px;height:52px;border-radius:50%;
+    background:var(--accent);color:white;border:none;
+    font-size:24px;font-weight:300;cursor:pointer;
+    box-shadow:0 4px 16px rgba(52,55,255,0.45);
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .15s,box-shadow .15s;
+  }
+  .fab-launch:active{transform:scale(.93)}
+  /* FAB quick menu */
+  .fab-menu{
+    position:fixed;bottom:136px;right:16px;z-index:299;
+    display:flex;flex-direction:column;align-items:flex-end;gap:8px;
+    pointer-events:none;opacity:0;transition:opacity .2s;
+  }
+  .fab-menu.open{pointer-events:all;opacity:1}
+  .fab-menu-item{
+    display:flex;align-items:center;gap:8px;
+    background:var(--bg);border:1px solid var(--border);
+    border-radius:20px;padding:8px 14px;
+    font-size:13px;font-weight:500;cursor:pointer;
+    box-shadow:0 2px 8px rgba(0,0,0,.12);white-space:nowrap;
+    color:var(--text);
+  }
+  /* Compact metrics on mobile */
+  .metrics-grid{grid-template-columns:repeat(2,1fr)!important}
+}
 </style>
 </head>
 <body>
@@ -554,12 +590,12 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
     <div class="nav-item active" onclick="showPage('dashboard',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></div>Painel</div>
     <div class="nav-item" onclick="showPage('receitas',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg></div>Receitas</div>
     <div class="nav-item" onclick="showPage('despesas',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg></div>Despesas</div>
-    <div class="nav-item" onclick="showPage('investimentos',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>Investimentos</div>
+    <div class="nav-item nav-mobile-hide" onclick="showPage('investimentos',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg></div>Investimentos</div>
     <div class="nav-item" onclick="showPage('parcelamentos',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/><line x1="7" y1="15" x2="9" y2="15"/><line x1="12" y1="15" x2="17" y2="15"/></svg></div>Parcelamentos</div>
-    <div class="nav-item" onclick="showPage('cartoes',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>Cartões</div>
+    <div class="nav-item nav-mobile-hide" onclick="showPage('cartoes',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>Cartões</div>
     <div class="nav-item" onclick="showPage('metas',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>Metas</div>
-    <div class="nav-item" onclick="showPage('relatorios',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></div>Relatórios</div>
-    <div class="nav-item" onclick="showPage('configuracoes',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>Configurações</div>
+    <div class="nav-item nav-mobile-hide" onclick="showPage('relatorios',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></div>Relatórios</div>
+    <div class="nav-item nav-mobile-hide" onclick="showPage('configuracoes',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>Configurações</div>
     <div class="sidebar-user" id="sidebar-user-block">
       <div class="sidebar-user-avatar" id="user-avatar-initials"></div>
       <div class="sidebar-user-info">
@@ -574,6 +610,14 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
     </div>
   </div>
 
+  
+  <!-- FAB Quick Launch (mobile only) -->
+  <div class="fab-menu" id="fab-menu">
+    <div class="fab-menu-item" onclick="fabLaunch('despesa')">💸 Despesa</div>
+    <div class="fab-menu-item" onclick="fabLaunch('receita')">💰 Receita</div>
+  </div>
+  <button class="fab-launch" id="fab-btn" onclick="toggleFab()" title="Lançamento rápido">+</button>
+
   <div class="main">
 
     <!-- PAINEL -->
@@ -582,7 +626,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
       <div class="metrics-grid" id="dash-metrics"></div>
       <div class="dash-animate-cards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:16px">
         <div class="card"><div class="card-header"><span class="card-title">Receitas vs Despesas — <span id="dash-chart-month"></span></span></div><div class="card-body"><div class="chart-wrap"><canvas id="barChartMonth"></canvas></div></div></div>
-        <div class="card"><div class="card-header"><span class="card-title">Receitas vs Despesas — últimos 6 meses</span></div><div class="card-body"><div class="chart-wrap"><canvas id="barChart"></canvas></div></div></div>
+        <div class="card dash-mobile-hide"><div class="card-header"><span class="card-title">Receitas vs Despesas — últimos 6 meses</span></div><div class="card-body"><div class="chart-wrap"><canvas id="barChart"></canvas></div></div></div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px;margin-bottom:16px">
         <div class="card">
@@ -1293,7 +1337,7 @@ function getParcTotalMonth(m=viewMonth,y=viewYear){
 }
 
 function renderParcelamentos(){
-  const active=parcelamentos.filter(p=>Number(p.parcPagas||0)<Number(p.numParcelas||0));
+  const active=parcelamentos.filter(p=>Number(p.parcPagas||0)<Number(p.numParcelas||0)).sort((a,b)=>(Number(a.numParcelas||0)-Number(a.parcPagas||0))-(Number(b.numParcelas||0)-Number(b.parcPagas||0)));
   const done=parcelamentos.filter(p=>Number(p.parcPagas||0)>=Number(p.numParcelas||0));
   const totalMes=getParcTotalMonth();
 
@@ -1592,7 +1636,50 @@ window.finnConfirm=(msg,title='Confirmar',danger=false)=>finnDialog({title,msg,t
 window.finnPrompt=(msg,placeholder='',defaultVal='',title='Finn')=>finnDialog({title,msg,type:'prompt',inputPlaceholder:placeholder,inputDefault:String(defaultVal),confirmText:'OK'});
 
 const esc=str=>{if(str===null||str===undefined)return'';return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');};
-function getMonthEntries(m=viewMonth,y=viewYear){return entries.filter(e=>{const d=new Date(e.date+'T12:00:00');return d.getMonth()===m&&d.getFullYear()===y;});}
+function getMonthEntries(m=viewMonth,y=viewYear){
+  // Real entries for this month
+  const real=entries.filter(e=>{
+    if(!e.date) return false;
+    const d=new Date(e.date+'T12:00:00');
+    return d.getMonth()===m&&d.getFullYear()===y;
+  });
+  // Virtual entries from parcelamentos for future/other months
+  // Only add if there's no real entry already linked (entryId check)
+  const realEntryIds=new Set(real.map(e=>e.id));
+  const linkedEntryIds=new Set(parcelamentos.map(p=>p.entryId).filter(Boolean));
+  const virtual=[];
+  parcelamentos.forEach(p=>{
+    if(!p.entryId) return; // only for linked parcelamentos
+    const mens=getParcMensalidade(p);
+    const saldo=getParcSaldoMes(p,m,y);
+    if(saldo<=0) return; // this parcelamento doesn't apply to this month
+    // Check if there's already a real entry for this parcelamento this month
+    const hasRealEntry=real.some(e=>e.id===p.entryId);
+    const isFirstMonth=(()=>{
+      const parts=(p.inicio||'').split('-').map(Number);
+      if(parts.length<2) return false;
+      const idx=(y-parts[0])*12+(m-parts[1]+2);
+      return idx===1; // first month = where real entry lives
+    })();
+    if(!hasRealEntry&&!isFirstMonth){
+      // Add virtual entry for this month
+      virtual.push({
+        id:'virtual-'+p.id+'-'+y+'-'+m,
+        tipo:'despesa',
+        catId:p.catId,
+        subcategoria:p.descricao,
+        descricao:p.descricao+' (parcela)',
+        date:y+'-'+String(m+1).padStart(2,'0')+'-01',
+        valor:mens,
+        previsto:0,
+        por:'—',
+        isVirtual:true,
+        parcId:p.id
+      });
+    }
+  });
+  return [...real,...virtual];
+}
 const sumR=arr=>arr.reduce((s,e)=>s+(Number(e.valor)||0),0);
 const sumP=arr=>arr.reduce((s,e)=>s+(Number(e.previsto)||0),0);
 function pctColor(pct){if(pct>=90)return'var(--red)';if(pct>=50)return'var(--amber)';return'var(--green)';}
@@ -1959,6 +2046,35 @@ window.updateGoalProgress=async(id,cur)=>{
 };
 
 
+
+// ── FAB QUICK LAUNCH (mobile) ────────────────────────────
+let _fabOpen=false;
+window.toggleFab=()=>{
+  _fabOpen=!_fabOpen;
+  const menu=document.getElementById('fab-menu');
+  const btn=document.getElementById('fab-btn');
+  if(menu) menu.classList.toggle('open',_fabOpen);
+  if(btn) btn.textContent=_fabOpen?'×':'+';
+  if(btn) btn.style.transform=_fabOpen?'rotate(45deg)':'rotate(0)';
+};
+window.fabLaunch=(tipo)=>{
+  _fabOpen=false;
+  const menu=document.getElementById('fab-menu');
+  const btn=document.getElementById('fab-btn');
+  if(menu) menu.classList.remove('open');
+  if(btn){btn.textContent='+';btn.style.transform='rotate(0)';}
+  // Navigate to the right page and open entry modal
+  const pageId=tipo==='despesa'?'despesas':'receitas';
+  showPage(pageId,document.querySelector(`.nav-item[onclick*="${pageId}"]`));
+  setTimeout(()=>openEntryModal(tipo),200);
+};
+// Close FAB on outside click
+document.addEventListener('click',e=>{
+  if(_fabOpen&&!e.target.closest('#fab-btn')&&!e.target.closest('#fab-menu')){
+    window.toggleFab&&toggleFab();
+  }
+});
+
 // ── LGPD Privacy consent ─────────────────────────────────
 function checkPrivacyConsent(){
   if(!localStorage.getItem('finn-privacy-consent')){
@@ -2148,7 +2264,7 @@ function renderCatPage(tipo,metricsId,catsId){
     ${tipo==='receita'?`
     <div class="metric-card"><div class="metric-label" style="color:${isSuperavit?'var(--green)':'var(--red)'}">${isSuperavit?'Superávit':'Déficit'}</div><div class="metric-value ${isSuperavit?'pos':'neg'}">${fmt(Math.abs(saldo))}</div></div>
     `:`
-    <div class="metric-card"><div class="metric-label" style="color:${saldoReal>=0?'var(--green)':'var(--red)'}">Saldo do mês</div><div class="metric-value ${saldoReal>=0?'pos':'neg'}">${fmt(Math.abs(saldoReal))}</div></div>
+    <div class="metric-card"><div class="metric-label" style="color:${saldoReal>=0?'var(--green)':'var(--red)'}">Saldo do mês</div><div class="metric-value ${saldoReal>=0?'pos':'neg'}">${saldoReal<0?'−':''}${fmt(Math.abs(saldoReal))}</div></div>
     `}
     <div class="metric-card"><div class="metric-label">% ${tipo==='receita'?'recebido':'uso'}</div><div class="metric-value">${totalP>0?Math.round((tipo==='receita'?totalR:totalR)/totalP*100):0}%</div></div>`;
 
