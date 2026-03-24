@@ -1643,40 +1643,34 @@ function getMonthEntries(m=viewMonth,y=viewYear){
     const d=new Date(e.date+'T12:00:00');
     return d.getMonth()===m&&d.getFullYear()===y;
   });
-  // Virtual entries from parcelamentos for future/other months
-  // Only add if there's no real entry already linked (entryId check)
-  const realEntryIds=new Set(real.map(e=>e.id));
-  const linkedEntryIds=new Set(parcelamentos.map(p=>p.entryId).filter(Boolean));
+
+  // Virtual entries from parcelamentos for non-first months
   const virtual=[];
   parcelamentos.forEach(p=>{
-    if(!p.entryId) return; // only for linked parcelamentos
     const mens=getParcMensalidade(p);
     const saldo=getParcSaldoMes(p,m,y);
-    if(saldo<=0) return; // this parcelamento doesn't apply to this month
-    // Check if there's already a real entry for this parcelamento this month
-    const hasRealEntry=real.some(e=>e.id===p.entryId);
-    const isFirstMonth=(()=>{
-      const parts=(p.inicio||'').split('-').map(Number);
-      if(parts.length<2) return false;
-      const idx=(y-parts[0])*12+(m-parts[1]+2);
-      return idx===1; // first month = where real entry lives
-    })();
-    if(!hasRealEntry&&!isFirstMonth){
-      // Add virtual entry for this month
-      virtual.push({
-        id:'virtual-'+p.id+'-'+y+'-'+m,
-        tipo:'despesa',
-        catId:p.catId,
-        subcategoria:p.descricao,
-        descricao:p.descricao+' (parcela)',
-        date:y+'-'+String(m+1).padStart(2,'0')+'-01',
-        valor:mens,
-        previsto:0,
-        por:'—',
-        isVirtual:true,
-        parcId:p.id
-      });
-    }
+    if(saldo<=0) return; // not active this month
+
+    // Calculate which month index this is
+    const parts=(p.inicio||'').split('-').map(Number);
+    if(parts.length<2) return;
+    const idx=(y-parts[0])*12+(m-parts[1]+2);
+    if(idx===1) return; // first month — real entry already exists there
+
+    // For months 2..N, inject a virtual entry
+    virtual.push({
+      id:'virtual-'+p.id+'-'+y+'-'+m,
+      tipo:'despesa',
+      catId:p.catId,
+      subcategoria:p.descricao,
+      descricao:p.descricao+' (parcela '+idx+'/'+p.numParcelas+')',
+      date:y+'-'+String(m+1).padStart(2,'0')+'-15',
+      valor:mens,
+      previsto:0,
+      por:'—',
+      isVirtual:true,
+      parcId:p.id
+    });
   });
   return [...real,...virtual];
 }
@@ -2304,7 +2298,7 @@ function renderCatPage(tipo,metricsId,catsId){
           const subR=sumR(subE);
           const subP=getSubPrev(cat.id,sub);
           const txId='txlist-'+cat.id+'-'+si;
-          const txHtml=subE.map(e=>{const d=new Date(e.date+'T12:00:00');return`<div class="tx-item"><span class="tx-date">${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}</span><span class="tx-desc">${esc(e.descricao)||'—'}</span><span class="tx-val ${tipo==='receita'?'pos':'neg'}">${tipo==='receita'?'+':'-'}${fmt(e.valor)}</span><button class="tx-edit" onclick="editEntry('${e.id}')">✎</button><button class="tx-del" onclick="deleteEntry('${e.id}')">×</button></div>`;}).join('');
+          const txHtml=subE.map(e=>{const d=new Date(e.date+'T12:00:00');const isVirt=e.isVirtual;return`<div class="tx-item${isVirt?' tx-virtual':''}"><span class="tx-date">${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}</span><span class="tx-desc">${esc(e.descricao)||'—'}</span><span class="tx-val ${tipo==='receita'?'pos':'neg'}">${tipo==='receita'?'+':'-'}${fmt(e.valor)}</span>${isVirt?`<span style="font-size:10px;color:var(--text3);padding:1px 5px;border:1px solid var(--border);border-radius:10px">auto</span>`:`<button class="tx-edit" onclick="editEntry('${e.id}')">✎</button><button class="tx-del" onclick="deleteEntry('${e.id}')">×</button>`}</div>`;}).join('');
           return`<div class="subcat-row">
             <div class="subcat-name-col"><button class="subcat-name-btn" onclick="toggleTxList('${txId}')">▸ ${sub}</button></div>
             <div style="width:90px;flex-shrink:0"></div>
