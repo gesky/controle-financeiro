@@ -770,7 +770,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
       <!-- Parcelamento section (only for despesas) -->
       <div id="parc-check-row" style="display:none;margin-bottom:12px">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:500">
-          <input type="checkbox" id="me-is-parc" onchange="toggleParcFields()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent)">
+          <input type="checkbox" id="me-is-parc" onchange="toggleParcFields();updateValLabel()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent)">
           Este lançamento é um parcelamento
         </label>
       </div>
@@ -1658,11 +1658,15 @@ function getMonthEntries(m=viewMonth,y=viewYear){
     if(idx===1) return; // first month — real entry already exists there
 
     // For months 2..N, inject a virtual entry
+    // Use stored subcategoria, fallback to finding from linked entry
+    const vSubcat = p.subcategoria ||
+      (p.entryId ? (entries.find(e=>e.id===p.entryId)||{}).subcategoria : '') ||
+      '';
     virtual.push({
       id:'virtual-'+p.id+'-'+y+'-'+m,
       tipo:'despesa',
       catId:p.catId,
-      subcategoria:p.descricao,
+      subcategoria:vSubcat,
       descricao:p.descricao+' (parcela '+idx+'/'+p.numParcelas+')',
       date:y+'-'+String(m+1).padStart(2,'0')+'-15',
       valor:mens,
@@ -2216,9 +2220,20 @@ function getSubPrev(catId,sub,m,y){
   const mm=m!==undefined?m:viewMonth;
   const yy=y!==undefined?y:viewYear;
   const monthKey=catId+'__'+sub+'__'+yy+'-'+(mm+1).toString().padStart(2,'0');
-  if(previstos[monthKey]!==undefined) return Number(previstos[monthKey]||0);
-  // fallback: use old global key for migration
-  return Number(previstos[catId+'__'+sub]||0);
+  let base=0;
+  if(previstos[monthKey]!==undefined) base=Number(previstos[monthKey]||0);
+  else base=Number(previstos[catId+'__'+sub]||0);
+  // Auto-add parcelamento mensalidade as previsto for non-first months
+  parcelamentos.forEach(p=>{
+    if(p.catId!==catId||(p.subcategoria||'')!==sub) return;
+    const saldo=getParcSaldoMes(p,mm,yy);
+    if(saldo<=0) return;
+    const parts=(p.inicio||'').split('-').map(Number);
+    if(parts.length<2) return;
+    const idx=(yy-parts[0])*12+(mm-parts[1]+2);
+    if(idx>1) base+=getParcMensalidade(p);
+  });
+  return base;
 }
 async function saveSubPrev(catId,sub,val,m,y){
   const mm=m!==undefined?m:viewMonth;
@@ -2425,6 +2440,13 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 // ── ENTRY MODAL ───────────────────────────────────────────
 
+
+window.updateValLabel=()=>{
+  const chk=document.getElementById('me-is-parc')?.checked;
+  const lbl=document.querySelector('label[for=me-val], #entry-val-label');
+  if(lbl) lbl.textContent=chk?'Valor da parcela (R$)':'Valor realizado (R$)';
+};
+
 window.toggleParcFields=()=>{
   const checked=document.getElementById('me-is-parc').checked;
   document.getElementById('parc-extra-fields').style.display=checked?'block':'none';
@@ -2437,7 +2459,7 @@ window.calcParcPreviewInline=()=>{
   const atual=parseInt(document.getElementById('me-parc-atual').value)||1;
   const prev=document.getElementById('parc-inline-preview');
   if(val>0&&num>0){
-    const mens=val/num;
+    const mens=val; // val is the parcela value
     prev.textContent=`Parcela ${atual} de ${num} · R$ ${mens.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}/mês · Total: R$ ${val.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})}`;
   } else { prev.textContent=''; }
 };
@@ -2508,10 +2530,11 @@ window.saveEntry=async()=>{
   // date is optional
   if(!val&&!prev){await finnAlert('Informe ao menos um valor realizado.');return;}
 
-  // If parcelamento, use mensalidade as the entry valor
+  // If parcelamento, user types the PARCELA value directly
+  // Entry stores parcela value; parcelamento.valorTotal = parcela * numParcelas
   const isParcChecked = document.getElementById('me-is-parc')?.checked;
   const numParcelasCheck = isParcChecked ? (parseInt(document.getElementById('me-parc-num').value)||0) : 0;
-  const valorParaSalvar = (isParcChecked && numParcelasCheck>=2) ? val/numParcelasCheck : val;
+  const valorParaSalvar = val; // always save exactly what was typed
 
   const data={tipo,catId,subcategoria:subcat,descricao:desc,date,valor:valorParaSalvar,previsto:prev,por:currentUser.displayName||currentUser.email};
   let _parcEntryAlreadySaved=false;
@@ -2533,7 +2556,7 @@ window.saveEntry=async()=>{
     const banco='';
     const obs=document.getElementById('me-parc-obs').value.trim();
     if(numParcelas>=2&&val>0){
-      const mensalidade=val/numParcelas;
+      const mensalidade=val; // val is already the parcela value
       const cartao=cartoes.find(c=>c.id===cartaoId);
       const inicioDate=new Date((date||new Date().toISOString().split('T')[0])+'T12:00:00');
       inicioDate.setMonth(inicioDate.getMonth()-(parcAtual-1));
@@ -2547,7 +2570,8 @@ window.saveEntry=async()=>{
           await updateDoc(doc(db,'entries',editingEntryId),{...data,valor:mensalidade});
           await addDoc(collection(db,'parcelamentos'),{
             descricao:desc||subcat,
-            valorTotal:val,
+            subcategoria:subcat,
+            valorTotal:val*numParcelas,
             numParcelas,
             parcPagas:parcAtual,
             inicio,
@@ -2565,7 +2589,8 @@ window.saveEntry=async()=>{
         const entryRef=await addDoc(collection(db,'entries'),{...data,valor:mensalidade});
         await addDoc(collection(db,'parcelamentos'),{
           descricao:desc||subcat,
-          valorTotal:val,
+          subcategoria:subcat,
+          valorTotal:val*numParcelas,
           numParcelas,
           parcPagas:parcAtual,
           inicio,
