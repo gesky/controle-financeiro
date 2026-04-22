@@ -1337,9 +1337,31 @@ function getParcTotalMonth(m=viewMonth,y=viewYear){
   return parcelamentos.reduce((s,p)=>s+getParcSaldoMes(p,m,y),0);
 }
 
+function isParcDone(p){
+  // Done if manually marked OR if last month has passed (using today's real date)
+  if(Number(p.parcPagas||0)>=Number(p.numParcelas||0)) return true;
+  if(!p.inicio) return false;
+  const [sy,sm]=p.inicio.split('-').map(Number);
+  const total=Number(p.numParcelas||0);
+  // Last month index (1-indexed): sm + total - 1
+  const lastMonthDate=new Date(sy, sm-1+total-1, 1); // first day of last month
+  const hoje=new Date(); hoje.setDate(1); hoje.setHours(0,0,0,0);
+  // After last month has fully passed
+  return lastMonthDate < hoje;
+}
+function parcRestantes(p){
+  if(!p.inicio) return Number(p.numParcelas||0)-Number(p.parcPagas||0);
+  const [sy,sm]=p.inicio.split('-').map(Number);
+  const total=Number(p.numParcelas||0);
+  const hoje=new Date();
+  const todayM=(hoje.getFullYear()-sy)*12+(hoje.getMonth()-(sm-1));
+  // parcelas pagas = how many months have passed since inicio (min numParcelas)
+  const autoPayd=Math.max(Number(p.parcPagas||0), Math.min(total, todayM));
+  return Math.max(0, total-autoPayd);
+}
 function renderParcelamentos(){
-  const active=parcelamentos.filter(p=>Number(p.parcPagas||0)<Number(p.numParcelas||0)).sort((a,b)=>(Number(a.numParcelas||0)-Number(a.parcPagas||0))-(Number(b.numParcelas||0)-Number(b.parcPagas||0)));
-  const done=parcelamentos.filter(p=>Number(p.parcPagas||0)>=Number(p.numParcelas||0));
+  const active=parcelamentos.filter(p=>!isParcDone(p)).sort((a,b)=>parcRestantes(a)-parcRestantes(b));
+  const done=parcelamentos.filter(p=>isParcDone(p));
   const totalMes=getParcTotalMonth();
 
   const totalRest=active.reduce((s,p)=>{const mens=getParcMensalidade(p);return s+mens*(Number(p.numParcelas||0)-Number(p.parcPagas||0));},0);
@@ -1347,16 +1369,19 @@ function renderParcelamentos(){
   document.getElementById('parc-metrics').innerHTML=`
     <div class="metric-card"><div class="metric-label">Parcelas este mês</div><div class="metric-value neg">${fmt(totalMes)}</div></div>
     <div class="metric-card"><div class="metric-label">Em aberto</div><div class="metric-value">${active.length}</div></div>
-    <div class="metric-card"><div class="metric-label">Valor restante</div><div class="metric-value neg">${fmt(totalRest)}</div></div>
-    <div class="metric-card"><div class="metric-label">Concluídos</div><div class="metric-value pos">${done.length}</div></div>`;
+    <div class="metric-card"><div class="metric-label">Valor restante</div><div class="metric-value neg">${fmt(totalRest)}</div></div>`;
 
   const activeEl=document.getElementById('parc-active');
   if(!active.length){activeEl.innerHTML='<div class="empty">Nenhum parcelamento em aberto.</div>';}
   else{
     activeEl.innerHTML=active.map(p=>{
       const mens=getParcMensalidade(p);
-      const pagas=Number(p.parcPagas||0);
       const total=Number(p.numParcelas||0);
+      // Auto-calculate paid based on time elapsed
+      const _parts=p.inicio?(p.inicio.split('-').map(Number)):null;
+      const _hoje=new Date();
+      const _autoPayd=_parts?Math.min(total,Math.max(Number(p.parcPagas||0),(_hoje.getFullYear()-_parts[0])*12+(_hoje.getMonth()-(_parts[1]-1)))):Number(p.parcPagas||0);
+      const pagas=Math.min(total,Math.max(0,_autoPayd));
       const rest=total-pagas;
       const pct=Math.round((pagas/total)*100);
       const barColor=pct>=80?'var(--green)':pct>=40?'var(--accent)':'var(--amber)';
@@ -1398,10 +1423,21 @@ function renderParcelamentos(){
   const histSec=document.getElementById('parc-history-section');
   if(histSec) histSec.style.display=done.length?'block':'none';
   const histEl=document.getElementById('parc-history');
-  if(histEl) histEl.innerHTML=done.map(p=>{
+  if(histEl) histEl.innerHTML=done.length?done.map(p=>{
     const catName=allCats('despesa').find(c=>c.id===p.catId)?.label||'—';
-    return`<div class="parc-hist-card"><div style="flex:1"><div style="font-size:13px;font-weight:500">${esc(p.descricao)}</div><div style="font-size:12px;color:var(--text3)">${catName} · ${p.numParcelas}x ${fmt(getParcMensalidade(p))}</div></div><span style="font-size:13px;font-weight:600;font-family:'DM Mono',monospace">${fmt(p.valorTotal)}</span><button class="btn-sm" style="color:var(--red)" onclick="deleteParc('${p.id}')">×</button></div>`;
-  }).join('');
+    const [sy,sm]=p.inicio?(p.inicio.split('-').map(Number)):[0,0];
+    const total=Number(p.numParcelas||0);
+    const lastDate=sy?new Date(sy,sm-1+total-1):null;
+    const encerrou=lastDate?(MESES[lastDate.getMonth()]+'/'+lastDate.getFullYear()):'—';
+    return`<div class="parc-hist-card">
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:500;margin-bottom:2px">${esc(p.descricao)}</div>
+        <div style="font-size:11px;color:var(--text3)">${catName} · ${total}x ${fmt(getParcMensalidade(p))} · encerrou ${encerrou}</div>
+      </div>
+      <span style="font-size:13px;font-weight:600;font-family:'DM Mono',monospace;color:var(--text2)">${fmt(p.valorTotal)}</span>
+      <button class="btn-sm" style="color:var(--red)" onclick="deleteParc('${p.id}')">×</button>
+    </div>`;
+  }).join(''):'<div class="empty" style="font-size:13px">Nenhum parcelamento concluído ainda.</div>';
 }
 
 window.toggleParcHistory=()=>{
@@ -1566,21 +1602,34 @@ function typingEffect(el, text, speed=55, onDone){
     if(i>=text.length){clearInterval(t);el.classList.remove('dash-title-cursor');if(onDone)onDone();}
   },speed);
 }
+function eraseEffect(el, onDone){
+  // Erase text character by character
+  const interval=setInterval(()=>{
+    if(el.textContent.length===0){clearInterval(interval);if(onDone)onDone();return;}
+    el.textContent=el.textContent.slice(0,-1);
+  },35);
+}
 function runDashWelcome(){
   const titleEl=document.getElementById('dash-title');
   const metricsEl=document.getElementById('dash-metrics');
   if(!titleEl)return;
   _dashAnimating=true;
+  titleEl.textContent='';
   const fullName=currentUser?.displayName||currentUser?.email?.split('@')[0]||'';
   const firstName=fullName.split(' ')[0];
   const monthTitle=MESES[viewMonth]+' '+viewYear;
   if(metricsEl){metricsEl.parentElement.classList.add('dash-animate');}
-  typingEffect(titleEl, 'Bem-vindo, '+firstName+'!', 60, ()=>{
+  // Type welcome → pause → ERASE → type month
+  typingEffect(titleEl,'Bem-vindo, '+firstName+'!',55,()=>{
     setTimeout(()=>{
-      typingEffect(titleEl, monthTitle, 70, ()=>{
-        _dashAnimating=false;
+      eraseEffect(titleEl,()=>{
+        setTimeout(()=>{
+          typingEffect(titleEl,monthTitle,65,()=>{
+            _dashAnimating=false;
+          });
+        },150);
       });
-    }, 1200);
+    },1200);
   });
 }
 
