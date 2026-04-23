@@ -2274,6 +2274,7 @@ function formatDateKey(d){
 }
 
 function renderCardapio(){
+  try{
   const weekStart = getCardapioWeekStart(cardapioSemanaOffset);
   const weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate()+6);
   const periodoEl = document.getElementById('cardapio-periodo');
@@ -2332,6 +2333,7 @@ function renderCardapio(){
     if(slot) onPratoDrop(e, slot.dataset.slot);
   };
   renderListaCompras();
+  }catch(e){console.error('renderCardapio error:',e);}
 }
 
 // Fix typo in the generated html
