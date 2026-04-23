@@ -546,6 +546,50 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
   /* Compact metrics on mobile */
   .metrics-grid{grid-template-columns:repeat(2,1fr)!important}
 }
+
+/* ── CARDÁPIO ────────────────────────────────────────────── */
+.cardapio-layout{display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start}
+.semana-block{margin-bottom:18px}
+.semana-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding:0 2px}
+.dias-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.dia-col{display:flex;flex-direction:column;gap:0}
+.dia-header{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);text-align:center;padding:4px 0 6px}
+.dia-data{font-size:9px;color:var(--text3);text-align:center;margin-bottom:4px}
+.refeicao-slot{min-height:64px;border-radius:var(--radius);border:1.5px dashed var(--border);padding:4px;display:flex;flex-direction:column;gap:4px;margin-bottom:6px;transition:background .15s;position:relative}
+.refeicao-slot:hover{background:var(--bg2)}
+.refeicao-label{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);padding:2px 3px;font-weight:600}
+.prato-card{border-radius:6px;padding:6px 8px;cursor:pointer;position:relative;transition:transform .1s,box-shadow .15s;font-size:12px;font-weight:500;line-height:1.3;color:rgba(0,0,0,0.7);user-select:none}
+.prato-card:hover{transform:translateY(-1px);box-shadow:0 3px 10px rgba(0,0,0,.15)}
+.prato-card:active{transform:scale(.97)}
+.prato-card-del{position:absolute;top:3px;right:4px;background:none;border:none;cursor:pointer;font-size:13px;color:rgba(0,0,0,0.3);opacity:0;transition:opacity .1s;line-height:1;padding:1px 2px}
+.prato-card:hover .prato-card-del{opacity:1}
+.add-prato-btn{font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer;padding:3px 4px;width:100%;text-align:left;border-radius:4px;transition:color .1s}
+.add-prato-btn:hover{color:var(--accent)}
+/* Shopping list */
+.lista-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px;position:sticky;top:20px}
+.lista-title{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+.lista-input-row{display:flex;gap:6px;margin-bottom:12px}
+.lista-input-row input{flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:'Sora',sans-serif;background:var(--bg2);color:var(--text)}
+.lista-item{display:flex;align-items:center;gap:8px;padding:6px 4px;border-bottom:1px solid var(--border);font-size:13px}
+.lista-item:last-child{border-bottom:none}
+.lista-item input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
+.lista-item-text{flex:1;transition:color .15s}
+.lista-item-text.done{text-decoration:line-through;color:var(--text3)}
+.lista-item-del{background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;opacity:0;transition:opacity .1s;padding:0 2px}
+.lista-item:hover .lista-item-del{opacity:1}
+/* Prato detail modal */
+.ingrediente-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px}
+.ingrediente-row:last-child{border-bottom:none}
+.color-picker-row{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+.color-swatch{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .1s,border-color .1s}
+.color-swatch:hover{transform:scale(1.15)}
+.color-swatch.selected{border-color:var(--text);transform:scale(1.1)}
+@media(max-width:768px){
+  .cardapio-layout{grid-template-columns:1fr}
+  .dias-grid{grid-template-columns:repeat(7,1fr);gap:4px}
+  .prato-card{font-size:10px;padding:4px 6px}
+}
+
 </style>
 </head>
 <body>
@@ -596,6 +640,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
     <div class="nav-item nav-mobile-hide" onclick="showPage('cartoes',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>Cartões</div>
     <div class="nav-item" onclick="showPage('metas',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>Metas</div>
     <div class="nav-item nav-mobile-hide" onclick="showPage('relatorios',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></div>Relatórios</div>
+    <div class="nav-item nav-mobile-hide" onclick="showPage('cardapio',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg></div>Cardápio</div>
     <div class="nav-item nav-mobile-hide" onclick="showPage('configuracoes',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>Configurações</div>
     <div class="sidebar-user" id="sidebar-user-block">
       <div class="sidebar-user-avatar" id="user-avatar-initials"></div>
@@ -718,6 +763,76 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
       <div class="page-header"><div><div class="page-title">Relatórios</div><div class="page-sub" id="rel-sub"></div></div></div>
       <div class="card"><div class="card-header"><span class="card-title">Evolução mensal — Previsto vs Realizado</span></div><div class="card-body"><div class="chart-wrap" style="height:260px"><canvas id="lineChart"></canvas></div></div></div>
       <div class="card"><div class="card-header"><span class="card-title">Resumo anual por categoria de despesa</span></div><div class="card-body" id="rel-table" style="overflow-x:auto"></div></div>
+    </div>
+
+    <!-- CARDÁPIO -->
+    <div id="page-cardapio" class="page">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Cardápio</div>
+          <div class="page-sub" id="cardapio-sub">Planejamento de refeições</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn-outline" style="font-size:12px" onclick="cardapioSemanaAnterior()">‹</button>
+          <span id="cardapio-periodo" style="font-size:13px;font-weight:500;min-width:140px;text-align:center"></span>
+          <button class="btn-outline" style="font-size:12px" onclick="cardapioProximaSemana()">›</button>
+        </div>
+      </div>
+      <div class="cardapio-layout">
+        <div id="cardapio-semanas"></div>
+        <div class="lista-card">
+          <div class="lista-title">
+            🛒 Lista de compras
+            <button onclick="limparListaConcluidos()" style="font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer">limpar ✓</button>
+          </div>
+          <div class="lista-input-row">
+            <input id="lista-input" placeholder="Adicionar item..." onkeydown="if(event.key==='Enter')adicionarListaItem()">
+            <button class="btn-add" onclick="adicionarListaItem()" style="padding:7px 12px;font-size:13px">+</button>
+          </div>
+          <div id="lista-compras"></div>
+          <div id="lista-empty" style="font-size:12px;color:var(--text3);text-align:center;padding:16px 0;display:none">Lista vazia 🛒</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL PRATO -->
+    <div class="modal-overlay" id="modal-prato">
+      <div class="modal" style="max-width:440px">
+        <div class="modal-header">
+          <span class="modal-title" id="modal-prato-title">Prato</span>
+          <button class="modal-close" onclick="closeModal('modal-prato')">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-row single">
+            <div class="fg"><label>Nome do prato</label>
+              <input id="prato-nome" placeholder="Ex: Frango grelhado com arroz..." style="width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:'Sora',sans-serif;background:var(--bg);color:var(--text)">
+            </div>
+          </div>
+          <div style="margin-bottom:14px">
+            <label style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px">Cor do card</label>
+            <div class="color-picker-row" id="prato-cores"></div>
+          </div>
+          <div style="margin-bottom:8px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <label style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.04em">Ingredientes</label>
+              <button onclick="adicionarIngredienteModal()" style="font-size:11px;color:var(--accent);background:none;border:none;cursor:pointer;font-family:'Sora',sans-serif">+ adicionar</button>
+            </div>
+            <div id="prato-ingredientes"></div>
+            <div style="display:flex;gap:6px;margin-top:8px">
+              <input id="ingrediente-input" placeholder="Ex: 200g frango, sal, alho..." style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:'Sora',sans-serif;background:var(--bg2);color:var(--text)" onkeydown="if(event.key==='Enter')adicionarIngredienteModal()">
+              <button class="btn-outline" onclick="adicionarIngredienteModal()" style="font-size:12px;padding:7px 10px">+</button>
+            </div>
+          </div>
+          <div style="margin-bottom:12px">
+            <label style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:6px">Adicionar à lista de compras</label>
+            <button onclick="addIngredientesToLista()" class="btn-outline" style="font-size:12px;width:100%">🛒 Adicionar ingredientes à lista</button>
+          </div>
+          <div class="btn-row">
+            <button class="btn-cancel" onclick="closeModal('modal-prato')">Cancelar</button>
+            <button class="btn-save" onclick="salvarPrato()">Salvar</button>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- CONFIGURAÇÕES -->
@@ -2122,6 +2237,278 @@ document.addEventListener('click',e=>{
     window.toggleFab&&toggleFab();
   }
 });
+
+
+// ══════════════════════════════════════════════════════════
+// CARDÁPIO — Sistema de planejamento de refeições
+// ══════════════════════════════════════════════════════════
+const DIAS_SEMANA = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const CORES_PRATO = [
+  '#ffd6d6','#ffecd2','#fff4d2','#d2f4d2','#d2eeff',
+  '#e8d2ff','#ffd2ee','#d2ffee','#f0f0d2','#ddd2ff'
+];
+const REFEICOES = ['Almoço','Janta'];
+
+let cardapioData = {}; // { "YYYY-MM-DD_almoco": {id,nome,cor,ingredientes}, ... }
+let listaCompras = []; // [{id,texto,done}]
+let cardapioSemanaOffset = 0; // 0 = semana atual, 1 = próxima, etc.
+let _pratoCurrent = null; // {slotKey, id, nome, cor, ingredientes}
+let _cardapioUnsub = null;
+let _listaUnsub = null;
+
+function getCardapioSlotKey(date, refeicao){
+  return date + '_' + refeicao.toLowerCase();
+}
+
+function getCardapioWeekStart(offset=0){
+  const hoje = new Date();
+  const dow = hoje.getDay(); // 0=dom
+  const monday = new Date(hoje);
+  monday.setDate(hoje.getDate() - dow + (dow===0?-6:1) + offset*7);
+  monday.setHours(0,0,0,0);
+  return monday;
+}
+
+function formatDateKey(d){
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+}
+
+function renderCardapio(){
+  if(activePage()!=='cardapio') return;
+  const weekStart = getCardapioWeekStart(cardapioSemanaOffset);
+  const weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate()+6);
+  const periodoEl = document.getElementById('cardapio-periodo');
+  if(periodoEl){
+    const fmt2 = d => d.getDate().toString().padStart(2,'0')+'/'+(d.getMonth()+1).toString().padStart(2,'0');
+    periodoEl.textContent = fmt2(weekStart)+' – '+fmt2(weekEnd);
+  }
+
+  // Build 7 days
+  const days = [];
+  for(let i=0;i<7;i++){
+    const d = new Date(weekStart);
+    d.setDate(weekStart.getDate()+i);
+    days.push(d);
+  }
+
+  const container = document.getElementById('cardapio-semanas');
+  const hoje = new Date(); hoje.setHours(0,0,0,0);
+
+  let html = '<div class="semana-block"><div class="dias-grid">';
+  days.forEach(d => {
+    const dateKey = formatDateKey(d);
+    const isToday = d.getTime()===hoje.getTime();
+    const isPast = d < hoje;
+    html += `<div class="dia-col">
+      <div class="dia-header" style="${isToday?'color:var(--accent);font-weight:800':''}">${DIAS_SEMANA[d.getDay()]}</div>
+      <div class="dia-data" style="${isToday?'color:var(--accent)':''}">${d.getDate()}/${d.getMonth()+1}</div>`;
+
+    REFEICOES.forEach(ref => {
+      const slotKey = getCardapioSlotKey(dateKey, ref);
+      const prato = cardapioData[slotKey];
+      html += `<div class="refeicao-slot" ondragover="event.preventDefault()" ondrop="onPratoDrop(event,'${slotKey}')">
+        <div class="refeicao-label">${ref}</div>`;
+      if(prato){
+        html += `<div class="prato-card" style="background:${prato.cor||CORES_PRATO[0]}"
+          draggable="true"
+          ondragstart="onPratoDragStart(event,'${slotKey}')"
+          onclick="abrirPrato('${slotKey}')">
+          ${esc(prato.nome)}
+          <button class="prato-card-del" onclick="event.stopPropagation();removerPrato('${slotKey}')">×</button>
+        </div>`;
+      } else {
+        html += `<button class="add-prato-btn" onclick="novoPrato('${slotKey}')">+ add</button>`;
+      }
+      html += `</div>`;
+    });
+    html += `</div>`;
+  });
+  html += '</div></div>';
+  container.innerHTML = html;
+  renderListaCompras();
+}
+
+// Fix typo in the generated html
+// (will be fixed below)
+
+window.cardapioSemanaAnterior=()=>{cardapioSemanaOffset--;renderCardapio();};
+window.cardapioProximaSemana=()=>{cardapioSemanaOffset++;renderCardapio();};
+
+// ── PRATO CRUD ────────────────────────────────────────────
+let _dragSlot = null;
+window.onPratoDragStart=(e,slotKey)=>{_dragSlot=slotKey;e.dataTransfer.effectAllowed='move';};
+window.onPratoDrop=async(e,targetSlot)=>{
+  e.preventDefault();
+  if(!_dragSlot||_dragSlot===targetSlot)return;
+  const src=cardapioData[_dragSlot];
+  const tgt=cardapioData[targetSlot];
+  // Swap
+  if(src) cardapioData[targetSlot]={...src};
+  else delete cardapioData[targetSlot];
+  if(tgt) cardapioData[_dragSlot]={...tgt};
+  else delete cardapioData[_dragSlot];
+  _dragSlot=null;
+  await saveCardapioData();
+  renderCardapio();
+};
+
+window.novoPrato=(slotKey)=>{
+  _pratoCurrent={slotKey,id:null,nome:'',cor:CORES_PRATO[0],ingredientes:[]};
+  renderModalPrato();
+  openModal('modal-prato');
+};
+
+window.abrirPrato=(slotKey)=>{
+  const p=cardapioData[slotKey]||{};
+  _pratoCurrent={slotKey,...p,ingredientes:p.ingredientes||[]};
+  renderModalPrato();
+  openModal('modal-prato');
+};
+
+window.removerPrato=async(slotKey)=>{
+  delete cardapioData[slotKey];
+  await saveCardapioData();
+  renderCardapio();
+};
+
+function renderModalPrato(){
+  document.getElementById('modal-prato-title').textContent=_pratoCurrent.nome||'Novo prato';
+  document.getElementById('prato-nome').value=_pratoCurrent.nome||'';
+  // Colors
+  document.getElementById('prato-cores').innerHTML=CORES_PRATO.map(c=>
+    `<div class="color-swatch${c===(_pratoCurrent.cor||CORES_PRATO[0])?' selected':''}"
+      style="background:${c}" onclick="selectPratoCor('${c}')"></div>`
+  ).join('');
+  renderIngredientesList();
+}
+
+window.selectPratoCor=(cor)=>{
+  _pratoCurrent.cor=cor;
+  document.querySelectorAll('.color-swatch').forEach(s=>{
+    s.classList.toggle('selected',s.style.background===cor||s.style.backgroundColor===cor);
+  });
+};
+
+function renderIngredientesList(){
+  const el=document.getElementById('prato-ingredientes');
+  if(!_pratoCurrent.ingredientes.length){el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:4px 0">Nenhum ingrediente ainda.</div>';return;}
+  el.innerHTML=_pratoCurrent.ingredientes.map((ing,i)=>`
+    <div class="ingrediente-row">
+      <span style="flex:1">${esc(ing)}</span>
+      <button onclick="removerIngrediente(${i})" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px">×</button>
+    </div>`).join('');
+}
+
+window.adicionarIngredienteModal=()=>{
+  const inp=document.getElementById('ingrediente-input');
+  const val=inp.value.trim();
+  if(!val)return;
+  _pratoCurrent.ingredientes.push(val);
+  inp.value='';
+  renderIngredientesList();
+};
+
+window.removerIngrediente=(idx)=>{
+  _pratoCurrent.ingredientes.splice(idx,1);
+  renderIngredientesList();
+};
+
+window.addIngredientesToLista=async()=>{
+  if(!_pratoCurrent.ingredientes.length)return;
+  _pratoCurrent.ingredientes.forEach(ing=>{
+    if(!listaCompras.find(i=>i.texto.toLowerCase()===ing.toLowerCase())){
+      listaCompras.push({id:'item-'+Date.now()+'-'+Math.random().toString(36).slice(2),texto:ing,done:false});
+    }
+  });
+  await saveListaCompras();
+  renderListaCompras();
+  await finnAlert('Ingredientes adicionados à lista de compras! 🛒','Lista atualizada');
+};
+
+window.salvarPrato=async()=>{
+  const nome=document.getElementById('prato-nome').value.trim();
+  if(!nome){await finnAlert('Informe o nome do prato.');return;}
+  _pratoCurrent.nome=nome;
+  cardapioData[_pratoCurrent.slotKey]={
+    nome:_pratoCurrent.nome,
+    cor:_pratoCurrent.cor||CORES_PRATO[0],
+    ingredientes:_pratoCurrent.ingredientes||[]
+  };
+  await saveCardapioData();
+  closeModal('modal-prato');
+  renderCardapio();
+};
+
+// ── LISTA DE COMPRAS ──────────────────────────────────────
+window.adicionarListaItem=async()=>{
+  const inp=document.getElementById('lista-input');
+  const val=inp.value.trim();
+  if(!val)return;
+  listaCompras.push({id:'item-'+Date.now(),texto:val,done:false});
+  inp.value='';
+  await saveListaCompras();
+  renderListaCompras();
+};
+
+window.toggleListaItem=async(id)=>{
+  const item=listaCompras.find(i=>i.id===id);
+  if(item){item.done=!item.done;await saveListaCompras();renderListaCompras();}
+};
+
+window.removerListaItem=async(id)=>{
+  listaCompras=listaCompras.filter(i=>i.id!==id);
+  await saveListaCompras();
+  renderListaCompras();
+};
+
+window.limparListaConcluidos=async()=>{
+  listaCompras=listaCompras.filter(i=>!i.done);
+  await saveListaCompras();
+  renderListaCompras();
+};
+
+function renderListaCompras(){
+  const el=document.getElementById('lista-compras');
+  const emptyEl=document.getElementById('lista-empty');
+  if(!el)return;
+  const ativos=listaCompras.filter(i=>!i.done);
+  const feitos=listaCompras.filter(i=>i.done);
+  const todos=[...ativos,...feitos];
+  if(!todos.length){el.innerHTML='';if(emptyEl)emptyEl.style.display='block';return;}
+  if(emptyEl)emptyEl.style.display='none';
+  el.innerHTML=todos.map(item=>`
+    <div class="lista-item">
+      <input type="checkbox" ${item.done?'checked':''} onchange="toggleListaItem('${item.id}')">
+      <span class="lista-item-text${item.done?' done':''}">${esc(item.texto)}</span>
+      <button class="lista-item-del" onclick="removerListaItem('${item.id}')">×</button>
+    </div>`).join('');
+}
+
+// ── FIRESTORE PERSISTENCE ─────────────────────────────────
+async function saveCardapioData(){
+  if(!currentUser)return;
+  try{
+    await setDoc(doc(db,'cardapio',currentUser.uid),{data:JSON.stringify(cardapioData),updatedAt:new Date().toISOString()});
+  }catch(e){console.warn('cardapio save error',e);}
+}
+
+async function saveListaCompras(){
+  if(!currentUser)return;
+  try{
+    await setDoc(doc(db,'listaCompras',currentUser.uid),{items:listaCompras,updatedAt:new Date().toISOString()});
+  }catch(e){console.warn('lista save error',e);}
+}
+
+async function loadCardapioData(){
+  if(!currentUser)return;
+  try{
+    const snap=await getDoc(doc(db,'cardapio',currentUser.uid));
+    if(snap.exists()){const d=snap.data();cardapioData=d.data?JSON.parse(d.data):{};}
+    const snapL=await getDoc(doc(db,'listaCompras',currentUser.uid));
+    if(snapL.exists()){listaCompras=snapL.data().items||[];}
+  }catch(e){console.warn('cardapio load error',e);}
+  if(activePage()==='cardapio') renderCardapio();
+}
 
 // ── LGPD Privacy consent ─────────────────────────────────
 function checkPrivacyConsent(){
