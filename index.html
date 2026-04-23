@@ -551,7 +551,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 .cardapio-layout{display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start}
 .semana-block{margin-bottom:18px}
 .semana-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:10px;padding:0 2px}
-.dias-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.dias-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
 .dia-col{display:flex;flex-direction:column;gap:0}
 .dia-header{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);text-align:center;padding:4px 0 6px}
 .dia-data{font-size:9px;color:var(--text3);text-align:center;margin-bottom:4px}
@@ -586,7 +586,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 .color-swatch.selected{border-color:var(--text);transform:scale(1.1)}
 @media(max-width:768px){
   .cardapio-layout{grid-template-columns:1fr}
-  .dias-grid{grid-template-columns:repeat(7,1fr);gap:4px}
+  .dias-grid{grid-template-columns:repeat(5,1fr);gap:4px}
   .prato-card{font-size:10px;padding:4px 6px}
 }
 
@@ -772,11 +772,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
           <div class="page-title">Finn Home</div>
           <div class="page-sub" id="cardapio-sub">Planejamento de refeições & lista de compras</div>
         </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <button class="btn-outline" style="font-size:12px" onclick="cardapioSemanaAnterior()">‹</button>
-          <span id="cardapio-periodo" style="font-size:13px;font-weight:500;min-width:140px;text-align:center"></span>
-          <button class="btn-outline" style="font-size:12px" onclick="cardapioProximaSemana()">›</button>
-        </div>
+
       </div>
       <div class="cardapio-layout">
         <div id="cardapio-semanas"></div>
@@ -2275,46 +2271,43 @@ function formatDateKey(d){
 }
 
 function renderCardapio(){
-  try{
-  const weekStart = getCardapioWeekStart(cardapioSemanaOffset);
-  const weekEnd = new Date(weekStart); weekEnd.setDate(weekStart.getDate()+6);
-  const periodoEl = document.getElementById('cardapio-periodo');
-  if(periodoEl){
-    const fmt2 = d => d.getDate().toString().padStart(2,'0')+'/'+(d.getMonth()+1).toString().padStart(2,'0');
-    periodoEl.textContent = fmt2(weekStart)+' – '+fmt2(weekEnd);
-  }
-  const days = [];
-  for(let i=0;i<7;i++){const d=new Date(weekStart);d.setDate(weekStart.getDate()+i);days.push(d);}
   const container = document.getElementById('cardapio-semanas');
   if(!container) return;
-  const hoje = new Date(); hoje.setHours(0,0,0,0);
 
-  let h = '<div class="semana-block"><div class="dias-grid">';
-  days.forEach(d => {
-    const dateKey = formatDateKey(d);
-    const isToday = d.getTime()===hoje.getTime();
-    h += '<div class="dia-col">';
-    h += '<div class="dia-header"'+(isToday?' style="color:var(--accent);font-weight:800"':'')+'>'+DIAS_SEMANA[d.getDay()]+'</div>';
-    h += '<div class="dia-data"'+(isToday?' style="color:var(--accent)"':'')+'>'+d.getDate()+'/'+(d.getMonth()+1)+'</div>';
-    REFEICOES.forEach(ref => {
-      const slotKey = dateKey+'_'+ref.toLowerCase();
-      const prato = cardapioData[slotKey];
-      h += '<div class="refeicao-slot" data-slot="'+slotKey+'">';
-      h += '<div class="refeicao-label">'+ref+'</div>';
-      if(prato){
-        const cor = prato.cor||CORES_PRATO[0];
-        h += '<div class="prato-card" draggable="true" data-slot="'+slotKey+'" style="background:'+cor+'">'+esc(prato.nome)+'<button class="prato-card-del" data-del="'+slotKey+'">×</button></div>';
-      } else {
-        h += '<button class="add-prato-btn" data-novo="'+slotKey+'">+ add</button>';
-      }
+  const DIAS = ['Seg','Ter','Qua','Qui','Sex'];
+  const SEMANAS = ['Semana 1','Semana 2','Semana 3','Semana 4'];
+  const REFS = ['almoco','janta'];
+  const REFS_LABEL = {'almoco':'Almoço','janta':'Janta'};
+
+  let h = '';
+  SEMANAS.forEach((semLabel, si) => {
+    h += '<div class="semana-block">';
+    h += '<div class="semana-title">'+semLabel+'</div>';
+    h += '<div class="dias-grid">';
+    DIAS.forEach(dia => {
+      h += '<div class="dia-col">';
+      h += '<div class="dia-header">'+dia+'</div>';
+      REFS.forEach(ref => {
+        const slotKey = 's'+(si+1)+'_'+dia.toLowerCase()+'_'+ref;
+        const prato = cardapioData[slotKey];
+        h += '<div class="refeicao-slot" data-slot="'+slotKey+'">';
+        h += '<div class="refeicao-label">'+REFS_LABEL[ref]+'</div>';
+        if(prato){
+          const cor = prato.cor||CORES_PRATO[0];
+          h += '<div class="prato-card" draggable="true" data-slot="'+slotKey+'" style="background:'+cor+'">'+esc(prato.nome)+'<button class="prato-card-del" data-del="'+slotKey+'">×</button></div>';
+        } else {
+          h += '<button class="add-prato-btn" data-novo="'+slotKey+'">+ add</button>';
+        }
+        h += '</div>';
+      });
       h += '</div>';
     });
-    h += '</div>';
+    h += '</div></div>';
   });
-  h += '</div></div>';
+
   container.innerHTML = h;
 
-  // Attach events via delegation
+  // Event delegation
   container.onclick = e => {
     const del = e.target.closest('[data-del]');
     if(del){e.stopPropagation();removerPrato(del.dataset.del);return;}
@@ -2334,9 +2327,7 @@ function renderCardapio(){
     if(slot) onPratoDrop(e, slot.dataset.slot);
   };
   renderListaCompras();
-  }catch(e){console.error('renderCardapio error:',e);}
 }
-
 // Fix typo in the generated html
 // (will be fixed below)
 
