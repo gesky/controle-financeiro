@@ -640,7 +640,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
     <div class="nav-item nav-mobile-hide" onclick="showPage('cartoes',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg></div>Cartões</div>
     <div class="nav-item" onclick="showPage('metas',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>Metas</div>
     <div class="nav-item nav-mobile-hide" onclick="showPage('relatorios',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg></div>Relatórios</div>
-    <div class="nav-item nav-mobile-hide" onclick="showPage('cardapio',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg></div>Cardápio</div>
+    <div class="nav-item nav-mobile-hide" onclick="showPage('cardapio',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 002-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 00-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg></div>Finn Home</div>
     <div class="nav-item nav-mobile-hide" onclick="showPage('configuracoes',this)"><div class="nav-item-icon"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>Configurações</div>
     <div class="sidebar-user" id="sidebar-user-block">
       <div class="sidebar-user-avatar" id="user-avatar-initials"></div>
@@ -769,8 +769,8 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
     <div id="page-cardapio" class="page">
       <div class="page-header">
         <div>
-          <div class="page-title">Cardápio</div>
-          <div class="page-sub" id="cardapio-sub">Planejamento de refeições</div>
+          <div class="page-title">Finn Home</div>
+          <div class="page-sub" id="cardapio-sub">Planejamento de refeições & lista de compras</div>
         </div>
         <div style="display:flex;gap:8px;align-items:center">
           <button class="btn-outline" style="font-size:12px" onclick="cardapioSemanaAnterior()">‹</button>
@@ -2282,49 +2282,56 @@ function renderCardapio(){
     const fmt2 = d => d.getDate().toString().padStart(2,'0')+'/'+(d.getMonth()+1).toString().padStart(2,'0');
     periodoEl.textContent = fmt2(weekStart)+' – '+fmt2(weekEnd);
   }
-
-  // Build 7 days
   const days = [];
-  for(let i=0;i<7;i++){
-    const d = new Date(weekStart);
-    d.setDate(weekStart.getDate()+i);
-    days.push(d);
-  }
-
+  for(let i=0;i<7;i++){const d=new Date(weekStart);d.setDate(weekStart.getDate()+i);days.push(d);}
   const container = document.getElementById('cardapio-semanas');
+  if(!container) return;
   const hoje = new Date(); hoje.setHours(0,0,0,0);
 
-  let html = '<div class="semana-block"><div class="dias-grid">';
+  let h = '<div class="semana-block"><div class="dias-grid">';
   days.forEach(d => {
     const dateKey = formatDateKey(d);
     const isToday = d.getTime()===hoje.getTime();
-    const isPast = d < hoje;
-    html += `<div class="dia-col">
-      <div class="dia-header" style="${isToday?'color:var(--accent);font-weight:800':''}">${DIAS_SEMANA[d.getDay()]}</div>
-      <div class="dia-data" style="${isToday?'color:var(--accent)':''}">${d.getDate()}/${d.getMonth()+1}</div>`;
-
+    h += '<div class="dia-col">';
+    h += '<div class="dia-header"'+(isToday?' style="color:var(--accent);font-weight:800"':'')+'>'+DIAS_SEMANA[d.getDay()]+'</div>';
+    h += '<div class="dia-data"'+(isToday?' style="color:var(--accent)"':'')+'>'+d.getDate()+'/'+(d.getMonth()+1)+'</div>';
     REFEICOES.forEach(ref => {
-      const slotKey = getCardapioSlotKey(dateKey, ref);
+      const slotKey = dateKey+'_'+ref.toLowerCase();
       const prato = cardapioData[slotKey];
-      html += `<div class="refeicao-slot" ondragover="event.preventDefault()" ondrop="onPratoDrop(event,'${slotKey}')">
-        <div class="refeicao-label">${ref}</div>`;
+      h += '<div class="refeicao-slot" data-slot="'+slotKey+'">';
+      h += '<div class="refeicao-label">'+ref+'</div>';
       if(prato){
-        html += `<div class="prato-card" style="background:${prato.cor||CORES_PRATO[0]}"
-          draggable="true"
-          ondragstart="onPratoDragStart(event,'${slotKey}')"
-          onclick="abrirPrato('${slotKey}')">
-          ${esc(prato.nome)}
-          <button class="prato-card-del" onclick="event.stopPropagation();removerPrato('${slotKey}')">×</button>
-        </div>`;
+        const cor = prato.cor||CORES_PRATO[0];
+        h += '<div class="prato-card" draggable="true" data-slot="'+slotKey+'" style="background:'+cor+'">'+esc(prato.nome)+'<button class="prato-card-del" data-del="'+slotKey+'">×</button></div>';
       } else {
-        html += `<button class="add-prato-btn" onclick="novoPrato('${slotKey}')">+ add</button>`;
+        h += '<button class="add-prato-btn" data-novo="'+slotKey+'">+ add</button>';
       }
-      html += `</div>`;
+      h += '</div>';
     });
-    html += `</div>`;
+    h += '</div>';
   });
-  html += '</div></div>';
-  container.innerHTML = html;
+  h += '</div></div>';
+  container.innerHTML = h;
+
+  // Attach events via delegation
+  container.onclick = e => {
+    const del = e.target.closest('[data-del]');
+    if(del){e.stopPropagation();removerPrato(del.dataset.del);return;}
+    const novo = e.target.closest('[data-novo]');
+    if(novo){novoPrato(novo.dataset.novo);return;}
+    const card = e.target.closest('.prato-card[data-slot]');
+    if(card){abrirPrato(card.dataset.slot);return;}
+  };
+  container.ondragover = e => e.preventDefault();
+  container.ondragstart = e => {
+    const card = e.target.closest('.prato-card[data-slot]');
+    if(card){_dragSlot=card.dataset.slot;e.dataTransfer.effectAllowed='move';}
+  };
+  container.ondrop = e => {
+    e.preventDefault();
+    const slot = e.target.closest('[data-slot]');
+    if(slot) onPratoDrop(e, slot.dataset.slot);
+  };
   renderListaCompras();
 }
 
