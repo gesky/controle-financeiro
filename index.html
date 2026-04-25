@@ -3047,6 +3047,15 @@ window.saveEntry=async()=>{
     refreshActivePage();
     return; // exit early — don't fall through to normal save below
   }
+
+  // Normal (non-parcelamento) save
+  if(!editingEntryId){
+    await addDoc(collection(db,'entries'),data);
+  }
+  editingEntryId=null;
+  closeModal('modal-entry');
+  refreshActivePage();
+};
 window.deleteEntry=async id=>{
   if(!await finnConfirm('Excluir este lançamento?','Excluir lançamento',true))return;
   await deleteDoc(doc(db,'entries',id));
