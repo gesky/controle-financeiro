@@ -1428,19 +1428,23 @@ async function savePrevistos(){await setDoc(doc(db,'config','previstos'),previst
 async function saveInvTipos(){await setDoc(doc(db,'config','invTipos'),{tipos:invTipos});}
 
 // ── PARCELAMENTOS ─────────────────────────────────────────
-function getParcMensalidade(p){ return Math.round((Number(p.valorTotal)||0)/(Number(p.numParcelas)||1)*100)/100; }
+function getParcMensalidade(p){
+  return Math.round((Number(p.valorTotal)||0)/(Number(p.numParcelas)||1)*100)/100;
+}
+
+// Returns the 1-based index of month (y,m) within this parcelamento
+// idx=1 means first month, idx=2 second, etc.
+function getParcIdx(p, m, y){
+  const parts=(p.inicio||'').split('-').map(Number);
+  if(parts.length<2) return -1;
+  const [startY,startM]=parts;
+  return (y-startY)*12+(m-startM+2);
+}
 
 function getParcSaldoMes(p, m, y){
-  const parts=(p.inicio||'').split('-').map(Number);
-  if(parts.length<2)return 0;
-  const [startY,startM]=parts; // startM is 1-indexed (January=1)
-  // idx: 1 = first month of parcelamento, 2 = second, etc.
-  const idx=(y-startY)*12+(m-startM+2);
-  if(idx<1||idx>Number(p.numParcelas))return 0;
-  // Only exclude if truly all done (parcPagas covers this month's idx too)
-  if(Number(p.parcPagas||0)>=Number(p.numParcelas||0))return 0;
-  // idx <= parcPagas means this month was already paid (past month shown)
-  // but we still want to count it for historical months display
+  const total=Number(p.numParcelas)||1;
+  const idx=getParcIdx(p,m,y);
+  if(idx<1||idx>total) return 0;
   return getParcMensalidade(p);
 }
 
@@ -1449,26 +1453,26 @@ function getParcTotalMonth(m=viewMonth,y=viewYear){
 }
 
 function isParcDone(p){
-  // Done if manually marked OR if last month has passed (using today's real date)
-  if(Number(p.parcPagas||0)>=Number(p.numParcelas||0)) return true;
-  if(!p.inicio) return false;
+  if(!p.inicio) return Number(p.parcPagas||0)>=Number(p.numParcelas||1);
   const [sy,sm]=p.inicio.split('-').map(Number);
-  const total=Number(p.numParcelas||0);
-  // Last month index (1-indexed): sm + total - 1
-  const lastMonthDate=new Date(sy, sm-1+total-1, 1); // first day of last month
-  const hoje=new Date(); hoje.setDate(1); hoje.setHours(0,0,0,0);
-  // After last month has fully passed
-  return lastMonthDate < hoje;
+  const total=Number(p.numParcelas)||1;
+  // Last month of parcelamento
+  const lastY=sy+Math.floor((sm-1+total-1)/12);
+  const lastM=((sm-1+total-1)%12); // 0-indexed
+  // Done only after the last month has fully passed
+  const hoje=new Date();
+  const todayY=hoje.getFullYear(), todayM=hoje.getMonth();
+  return (lastY<todayY)||(lastY===todayY&&lastM<todayM);
 }
 function parcRestantes(p){
-  if(!p.inicio) return Number(p.numParcelas||0)-Number(p.parcPagas||0);
+  const total=Number(p.numParcelas)||1;
+  if(!p.inicio) return total;
   const [sy,sm]=p.inicio.split('-').map(Number);
-  const total=Number(p.numParcelas||0);
   const hoje=new Date();
-  const todayM=(hoje.getFullYear()-sy)*12+(hoje.getMonth()-(sm-1));
-  // parcelas pagas = how many months have passed since inicio (min numParcelas)
-  const autoPayd=Math.max(Number(p.parcPagas||0), Math.min(total, todayM));
-  return Math.max(0, total-autoPayd);
+  // How many months of this parcelamento have occurred up to today
+  const elapsed=(hoje.getFullYear()-sy)*12+(hoje.getMonth()-(sm-1));
+  const paid=Math.min(total, Math.max(1, elapsed));
+  return Math.max(0, total-paid);
 }
 function renderParcelamentos(){
   const active=parcelamentos.filter(p=>!isParcDone(p)).sort((a,b)=>parcRestantes(a)-parcRestantes(b));
@@ -1487,13 +1491,11 @@ function renderParcelamentos(){
   else{
     activeEl.innerHTML=active.map(p=>{
       const mens=getParcMensalidade(p);
-      const total=Number(p.numParcelas||0);
-      // Auto-calculate paid based on time elapsed
-      const _parts=p.inicio?(p.inicio.split('-').map(Number)):null;
+      const total=Number(p.numParcelas)||1;
+      // Current month index = how many parcelas have occurred
       const _hoje=new Date();
-      const _autoPayd=_parts?Math.min(total,Math.max(Number(p.parcPagas||0),(_hoje.getFullYear()-_parts[0])*12+(_hoje.getMonth()-(_parts[1]-1)))):Number(p.parcPagas||0);
-      const pagas=Math.min(total,Math.max(0,_autoPayd));
-      const rest=total-pagas;
+      const pagas=p.inicio?Math.min(total,Math.max(1,getParcIdx(p,_hoje.getMonth(),_hoje.getFullYear()))):Number(p.parcPagas||1);
+      const rest=Math.max(0,total-pagas);
       const pct=Math.round((pagas/total)*100);
       const barColor=pct>=80?'var(--green)':pct>=40?'var(--accent)':'var(--amber)';
       const catName=allCats('despesa').find(c=>c.id===p.catId)?.label||p.catId||'—';
@@ -1656,7 +1658,12 @@ function listenAll(){
   unsubs.push(onSnapshot(collection(db,'goals'),s=>{goals=s.docs.map(d=>({id:d.id,...d.data()}));if(activePage()==='metas')renderGoals();}));
   unsubs.push(onSnapshot(collection(db,'investments'),s=>{investments=s.docs.map(d=>({id:d.id,...d.data()}));if(activePage()==='investimentos')renderInvestimentos();}));
   unsubs.push(onSnapshot(query(collection(db,'invMovimentos'),orderBy('date','desc')),s=>{invMovimentos=s.docs.map(d=>({id:d.id,...d.data()}));if(activePage()==='investimentos')renderInvestimentos();}));
-  unsubs.push(onSnapshot(collection(db,'parcelamentos'),s=>{parcelamentos=s.docs.map(d=>({id:d.id,...d.data()}));if(activePage()==='parcelamentos')renderParcelamentos();if(activePage()==='dashboard')renderDashboard();}));
+  unsubs.push(onSnapshot(collection(db,'parcelamentos'),s=>{
+    parcelamentos=s.docs.map(d=>({id:d.id,...d.data()}));
+    if(activePage()==='parcelamentos') renderParcelamentos();
+    if(activePage()==='despesas') renderCatPage('despesa','desp-metrics','desp-cats');
+    if(activePage()==='dashboard') renderDashboard();
+  }));
   unsubs.push(onSnapshot(collection(db,'cartoes'),s=>{cartoes=s.docs.map(d=>({id:d.id,...d.data()}));if(activePage()==='cartoes')renderCartoes();}));
 }
 
@@ -1814,9 +1821,7 @@ function getMonthEntries(m=viewMonth,y=viewYear){
     if(saldo<=0) return; // not active this month
 
     // Calculate which month index this is
-    const parts=(p.inicio||'').split('-').map(Number);
-    if(parts.length<2) return;
-    const idx=(y-parts[0])*12+(m-parts[1]+2);
+    const idx=getParcIdx(p,m,y);
     if(idx===1) return; // first month — real entry already exists there
 
     // For months 2..N, inject a virtual entry
@@ -2654,12 +2659,8 @@ function getSubPrev(catId,sub,m,y){
   // Auto-add parcelamento mensalidade as previsto for non-first months
   parcelamentos.forEach(p=>{
     if(p.catId!==catId||(p.subcategoria||'')!==sub) return;
-    const saldo=getParcSaldoMes(p,mm,yy);
-    if(saldo<=0) return;
-    const parts=(p.inicio||'').split('-').map(Number);
-    if(parts.length<2) return;
-    const idx=(yy-parts[0])*12+(mm-parts[1]+2);
-    if(idx>1) base+=getParcMensalidade(p);
+    const idx=getParcIdx(p,mm,yy);
+    if(idx>1&&idx<=Number(p.numParcelas||1)) base+=getParcMensalidade(p);
   });
   return base;
 }
