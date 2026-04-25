@@ -2990,6 +2990,7 @@ window.saveEntry=async()=>{
     const cartaoId=document.getElementById('me-parc-cartao').value;
     const banco='';
     const obs=document.getElementById('me-parc-obs').value.trim();
+    console.log('[FINN-PARC] numParcelas='+numParcelas+' parcAtual='+parcAtual+' val='+val+' date='+date+' subcat='+subcat+' catId='+catId);
     if(numParcelas>=1&&val>0){
       const mensalidade=val; // val is already the parcela value
       const cartao=cartoes.find(c=>c.id===cartaoId);
