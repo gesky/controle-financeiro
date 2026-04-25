@@ -2971,6 +2971,13 @@ window.saveEntry=async()=>{
   // Entry stores parcela value; parcelamento.valorTotal = parcela * numParcelas
   const isParcChecked = document.getElementById('me-is-parc')?.checked;
   const numParcelasCheck = isParcChecked ? (parseInt(document.getElementById('me-parc-num').value)||0) : 0;
+
+  // Validate parcelamento fields early
+  if(isParcChecked && tipo==='despesa'){
+    if(numParcelasCheck<2){await finnAlert('Informe o número de parcelas (mínimo 2).','Parcelamento');return;}
+    if(!val){await finnAlert('Informe o valor da parcela.','Parcelamento');return;}
+  }
+
   const valorParaSalvar = val; // always save exactly what was typed
 
   const data={tipo,catId,subcategoria:subcat,descricao:desc,date,valor:valorParaSalvar,previsto:prev,por:currentUser.displayName||currentUser.email};
@@ -2979,7 +2986,6 @@ window.saveEntry=async()=>{
     const idx=entries.findIndex(e=>e.id===editingEntryId);
     if(idx>=0) entries[idx]={...entries[idx],...data};
     if(!isParcChecked) await updateDoc(doc(db,'entries',editingEntryId),data);
-    // If isParcChecked on edit, updateDoc is handled inside the parcelamento block above
   } else if(!isParcChecked){
     await addDoc(collection(db,'entries'),data);
   }
