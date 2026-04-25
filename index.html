@@ -2530,18 +2530,9 @@ window.acceptPrivacy=()=>{
 
 function renderDashboard(){
   checkPrivacyConsent();
-  // Welcome animation on first visit
-  if(!_dashAnimated){
-    _dashAnimated=true;
-    _dashAnimating=true; // block updateMonthLabel immediately
-    const titleEl=document.getElementById('dash-title');
-    if(titleEl) titleEl.textContent='';
-    runDashWelcome();
-  } else {
-    // Just update title normally on subsequent renders
-    const titleEl=document.getElementById('dash-title');
-    if(titleEl) titleEl.textContent=MESES[viewMonth]+' '+viewYear;
-  }
+  const titleEl=document.getElementById('dash-title');
+  if(titleEl) titleEl.textContent=MESES[viewMonth]+' '+viewYear;
+  _dashAnimated=true;
   const mx=getMonthEntries();
   const rR=sumR(mx.filter(e=>e.tipo==='receita'));
   const dR=sumR(mx.filter(e=>e.tipo==='despesa'));
@@ -2974,8 +2965,8 @@ window.saveEntry=async()=>{
 
   // Validate parcelamento fields early
   if(isParcChecked && tipo==='despesa'){
-    if(numParcelasCheck<2){await finnAlert('Informe o número de parcelas (mínimo 2).','Parcelamento');return;}
     if(!val){await finnAlert('Informe o valor da parcela.','Parcelamento');return;}
+    if(numParcelasCheck<1){await finnAlert('Informe o número de parcelas.','Parcelamento');return;}
   }
 
   const valorParaSalvar = val; // always save exactly what was typed
@@ -2998,7 +2989,7 @@ window.saveEntry=async()=>{
     const cartaoId=document.getElementById('me-parc-cartao').value;
     const banco='';
     const obs=document.getElementById('me-parc-obs').value.trim();
-    if(numParcelas>=2&&val>0){
+    if(numParcelas>=1&&val>0){
       const mensalidade=val; // val is already the parcela value
       const cartao=cartoes.find(c=>c.id===cartaoId);
       const inicioDate=new Date((date||new Date().toISOString().split('T')[0])+'T12:00:00');
