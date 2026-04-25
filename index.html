@@ -2955,102 +2955,76 @@ window.saveEntry=async()=>{
   const subcat=document.getElementById('me-subcat').value;
   const date=document.getElementById('me-date').value;
   const val=parseFloat(document.getElementById('me-val').value)||0;
-  const prev=0;
   const desc=(document.getElementById('me-desc').value||'').trim();
-  // date is optional
-  if(!val&&!prev){await finnAlert('Informe ao menos um valor realizado.');return;}
+  const isParcChecked=!!(document.getElementById('me-is-parc')?.checked);
 
-  // If parcelamento, user types the PARCELA value directly
-  // Entry stores parcela value; parcelamento.valorTotal = parcela * numParcelas
-  const isParcChecked = document.getElementById('me-is-parc')?.checked;
-  const numParcelasCheck = isParcChecked ? (parseInt(document.getElementById('me-parc-num').value)||0) : 0;
+  if(!val){await finnAlert('Informe o valor.');return;}
+  if(!catId){await finnAlert('Selecione uma categoria.');return;}
 
-  // Validate parcelamento fields early
+  const por=currentUser.displayName||currentUser.email;
+
+  // ── PARCELAMENTO ────────────────────────────────────────
   if(isParcChecked && tipo==='despesa'){
-    if(!val){await finnAlert('Informe o valor da parcela.','Parcelamento');return;}
-    if(numParcelasCheck<1){await finnAlert('Informe o número de parcelas.','Parcelamento');return;}
-  }
+    const numParcelas=parseInt(document.getElementById('me-parc-num').value)||0;
+    const parcAtual=parseInt(document.getElementById('me-parc-atual').value)||1;
+    const cartaoId=document.getElementById('me-parc-cartao')?.value||'';
+    const obs=document.getElementById('me-parc-obs')?.value?.trim()||'';
 
-  const valorParaSalvar = val; // always save exactly what was typed
+    if(numParcelas<1){await finnAlert('Informe o número de parcelas.','Parcelamento');return;}
 
-  const data={tipo,catId,subcategoria:subcat,descricao:desc,date,valor:valorParaSalvar,previsto:prev,por:currentUser.displayName||currentUser.email};
-  let _parcEntryAlreadySaved=false;
-  if(editingEntryId){
-    const idx=entries.findIndex(e=>e.id===editingEntryId);
-    if(idx>=0) entries[idx]={...entries[idx],...data};
-    if(!isParcChecked) await updateDoc(doc(db,'entries',editingEntryId),data);
-  } else if(!isParcChecked){
-    await addDoc(collection(db,'entries'),data);
-  }
-
-  // If parcelamento checkbox is checked, create parcelamento record
-  // Works both for new entries and when editing an existing one (converting to parcelado)
-  if(isParcChecked && tipo==='despesa'){
-    const numParcelasRaw = document.getElementById('me-parc-num').value;
-    const parcAtualRaw = document.getElementById('me-parc-atual').value;
-    const numParcelas = parseInt(numParcelasRaw) || 0;
-    const parcAtual = parseInt(parcAtualRaw) || 1;
-    const cartaoId = document.getElementById('me-parc-cartao')?.value || '';
-    const obs = document.getElementById('me-parc-obs')?.value?.trim() || '';
-    const cartao = cartoes.find(c=>c.id===cartaoId);
-
-    console.log('[FINN-PARC] numParcelasRaw="'+numParcelasRaw+'" numParcelas='+numParcelas+' parcAtual='+parcAtual+' val='+val+' subcat='+subcat+' catId='+catId);
-
-    if(numParcelas < 1){
-      await finnAlert('Informe o número de parcelas.','Parcelamento');
-      return;
-    }
-
-    // Calculate inicio: go back (parcAtual-1) months from the entry date
-    let inicioDate;
+    // Calculate inicio month (go back parcAtual-1 months from entry date)
+    let iy,im;
     if(date){
-      const [dy,dm,dd]=date.split('-').map(Number);
-      inicioDate=new Date(dy,dm-1,dd,12,0,0); // local time, no UTC issue
+      const parts=date.split('-').map(Number);
+      const d=new Date(parts[0],parts[1]-1,parts[2],12,0,0);
+      d.setMonth(d.getMonth()-(parcAtual-1));
+      iy=d.getFullYear(); im=d.getMonth()+1;
     } else {
-      const n=new Date();
-      inicioDate=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);
+      const d=new Date();
+      d.setMonth(d.getMonth()-(parcAtual-1));
+      iy=d.getFullYear(); im=d.getMonth()+1;
     }
-    inicioDate.setMonth(inicioDate.getMonth()-(parcAtual-1));
-    const inicio=inicioDate.getFullYear()+'-'+String(inicioDate.getMonth()+1).padStart(2,'0');
+    const inicio=iy+'-'+String(im).padStart(2,'0');
+    const valorTotal=Math.round(val*numParcelas*100)/100;
+    const cartao=cartoes.find(c=>c.id===cartaoId);
 
-    const parcPayload = {
-      descricao: desc||subcat||'Parcelamento',
-      subcategoria: subcat,
-      valorTotal: Math.round(val*numParcelas*100)/100,
-      numParcelas,
-      parcPagas: parcAtual,
-      inicio,
-      catId,
-      cartaoId: cartaoId||null,
-      cartaoNome: cartao?cartao.nome:'',
-      obs,
-      createdAt: new Date().toISOString()
+    const entryData={tipo,catId,subcategoria:subcat,descricao:desc||subcat,date,valor:val,previsto:0,por};
+    const parcData={
+      descricao:desc||subcat||'Parcelamento',
+      subcategoria:subcat,
+      valorTotal,numParcelas,parcPagas:parcAtual,
+      inicio,catId,
+      cartaoId:cartaoId||null,
+      cartaoNome:cartao?cartao.nome:'',
+      obs,createdAt:new Date().toISOString()
     };
 
-    console.log('[FINN-PARC] payload=', JSON.stringify(parcPayload));
-
     if(editingEntryId){
-      const alreadyLinked=parcelamentos.find(p=>p.entryId===editingEntryId);
-      if(!alreadyLinked){
-        await updateDoc(doc(db,'entries',editingEntryId),{...data});
-        const ref=await addDoc(collection(db,'parcelamentos'),{...parcPayload,entryId:editingEntryId});
-        console.log('[FINN-PARC] saved parcelamento id='+ref.id);
+      const linked=parcelamentos.find(p=>p.entryId===editingEntryId);
+      if(linked){
+        await updateDoc(doc(db,'entries',editingEntryId),entryData);
+        await updateDoc(doc(db,'parcelamentos',linked.id),parcData);
+      } else {
+        await updateDoc(doc(db,'entries',editingEntryId),entryData);
+        await addDoc(collection(db,'parcelamentos'),{...parcData,entryId:editingEntryId});
       }
     } else {
-      const entryRef=await addDoc(collection(db,'entries'),data);
-      const ref=await addDoc(collection(db,'parcelamentos'),{...parcPayload,entryId:entryRef.id});
-      console.log('[FINN-PARC] saved entry='+entryRef.id+' parcelamento='+ref.id);
+      const eRef=await addDoc(collection(db,'entries'),entryData);
+      await addDoc(collection(db,'parcelamentos'),{...parcData,entryId:eRef.id});
     }
 
     editingEntryId=null;
     closeModal('modal-entry');
     refreshActivePage();
-    return; // exit early — don't fall through to normal save below
+    return;
   }
 
-  // Normal (non-parcelamento) save
-  if(!editingEntryId){
-    await addDoc(collection(db,'entries'),data);
+  // ── LANÇAMENTO NORMAL ───────────────────────────────────
+  const entryData={tipo,catId,subcategoria:subcat,descricao:desc,date,valor:val,previsto:0,por};
+  if(editingEntryId){
+    await updateDoc(doc(db,'entries',editingEntryId),entryData);
+  } else {
+    await addDoc(collection(db,'entries'),entryData);
   }
   editingEntryId=null;
   closeModal('modal-entry');
