@@ -2902,7 +2902,8 @@ function populateParcCartaoSelect(){
 window.openEntryModal=(tipo='despesa',catId,subcat)=>{
   editingEntryId=null;
   document.getElementById('me-title').textContent='Novo lançamento';
-  document.getElementById('me-date').value=new Date().toISOString().split('T')[0];
+  const _hoje=new Date();
+  document.getElementById('me-date').value=_hoje.getFullYear()+'-'+String(_hoje.getMonth()+1).padStart(2,'0')+'-'+String(_hoje.getDate()).padStart(2,'0');
   document.getElementById('me-val').value='';document.getElementById('me-desc').value='';
   const noDateCb=document.getElementById('me-no-date');
   if(noDateCb){noDateCb.checked=false;const di=document.getElementById('me-date');di.disabled=false;di.style.opacity='1';}
@@ -2985,67 +2986,67 @@ window.saveEntry=async()=>{
   // If parcelamento checkbox is checked, create parcelamento record
   // Works both for new entries and when editing an existing one (converting to parcelado)
   if(isParcChecked && tipo==='despesa'){
-    const numParcelas=parseInt(document.getElementById('me-parc-num').value)||0;
-    const parcAtual=parseInt(document.getElementById('me-parc-atual').value)||1;
-    const cartaoId=document.getElementById('me-parc-cartao').value;
-    const banco='';
-    const obs=document.getElementById('me-parc-obs').value.trim();
-    console.log('[FINN-PARC] numParcelas='+numParcelas+' parcAtual='+parcAtual+' val='+val+' date='+date+' subcat='+subcat+' catId='+catId);
-    if(numParcelas>=1&&val>0){
-      const mensalidade=val; // val is already the parcela value
-      const cartao=cartoes.find(c=>c.id===cartaoId);
-      const inicioDate=new Date((date||new Date().toISOString().split('T')[0])+'T12:00:00');
-      inicioDate.setMonth(inicioDate.getMonth()-(parcAtual-1));
-      const inicio=inicioDate.getFullYear()+'-'+String(inicioDate.getMonth()+1).padStart(2,'0');
+    const numParcelasRaw = document.getElementById('me-parc-num').value;
+    const parcAtualRaw = document.getElementById('me-parc-atual').value;
+    const numParcelas = parseInt(numParcelasRaw) || 0;
+    const parcAtual = parseInt(parcAtualRaw) || 1;
+    const cartaoId = document.getElementById('me-parc-cartao')?.value || '';
+    const obs = document.getElementById('me-parc-obs')?.value?.trim() || '';
+    const cartao = cartoes.find(c=>c.id===cartaoId);
 
-      if(editingEntryId){
-        // Editing existing entry — check if already linked to a parcelamento
-        const alreadyLinked=parcelamentos.find(p=>p.entryId===editingEntryId);
-        if(!alreadyLinked){
-          // Convert: update entry valor to mensalidade, create parcelamento linked to it
-          await updateDoc(doc(db,'entries',editingEntryId),{...data,valor:mensalidade});
-          await addDoc(collection(db,'parcelamentos'),{
-            descricao:desc||subcat,
-            subcategoria:subcat,
-            valorTotal:val*numParcelas,
-            numParcelas,
-            parcPagas:parcAtual,
-            inicio,
-            catId,
-            cartaoId:cartaoId||null,
-            cartaoNome:cartao?cartao.nome:'',
-            banco,
-            obs,
-            entryId:editingEntryId,
-            createdAt:new Date().toISOString()
-          });
-        }
-      } else {
-        // New entry — save entry first, then create parcelamento linked to it
-        const entryRef=await addDoc(collection(db,'entries'),{...data,valor:mensalidade});
-        await addDoc(collection(db,'parcelamentos'),{
-          descricao:desc||subcat,
-          subcategoria:subcat,
-          valorTotal:val*numParcelas,
-          numParcelas,
-          parcPagas:parcAtual,
-          inicio,
-          catId,
-          cartaoId:cartaoId||null,
-          cartaoNome:cartao?cartao.nome:'',
-          banco,
-          obs,
-          entryId:entryRef.id,
-          createdAt:new Date().toISOString()
-        });
-      }
+    console.log('[FINN-PARC] numParcelasRaw="'+numParcelasRaw+'" numParcelas='+numParcelas+' parcAtual='+parcAtual+' val='+val+' subcat='+subcat+' catId='+catId);
+
+    if(numParcelas < 1){
+      await finnAlert('Informe o número de parcelas.','Parcelamento');
+      return;
     }
-  }
 
-  editingEntryId=null;
-  closeModal('modal-entry');
-  refreshActivePage();
-};
+    // Calculate inicio: go back (parcAtual-1) months from the entry date
+    let inicioDate;
+    if(date){
+      const [dy,dm,dd]=date.split('-').map(Number);
+      inicioDate=new Date(dy,dm-1,dd,12,0,0); // local time, no UTC issue
+    } else {
+      const n=new Date();
+      inicioDate=new Date(n.getFullYear(),n.getMonth(),n.getDate(),12,0,0);
+    }
+    inicioDate.setMonth(inicioDate.getMonth()-(parcAtual-1));
+    const inicio=inicioDate.getFullYear()+'-'+String(inicioDate.getMonth()+1).padStart(2,'0');
+
+    const parcPayload = {
+      descricao: desc||subcat||'Parcelamento',
+      subcategoria: subcat,
+      valorTotal: Math.round(val*numParcelas*100)/100,
+      numParcelas,
+      parcPagas: parcAtual,
+      inicio,
+      catId,
+      cartaoId: cartaoId||null,
+      cartaoNome: cartao?cartao.nome:'',
+      obs,
+      createdAt: new Date().toISOString()
+    };
+
+    console.log('[FINN-PARC] payload=', JSON.stringify(parcPayload));
+
+    if(editingEntryId){
+      const alreadyLinked=parcelamentos.find(p=>p.entryId===editingEntryId);
+      if(!alreadyLinked){
+        await updateDoc(doc(db,'entries',editingEntryId),{...data});
+        const ref=await addDoc(collection(db,'parcelamentos'),{...parcPayload,entryId:editingEntryId});
+        console.log('[FINN-PARC] saved parcelamento id='+ref.id);
+      }
+    } else {
+      const entryRef=await addDoc(collection(db,'entries'),data);
+      const ref=await addDoc(collection(db,'parcelamentos'),{...parcPayload,entryId:entryRef.id});
+      console.log('[FINN-PARC] saved entry='+entryRef.id+' parcelamento='+ref.id);
+    }
+
+    editingEntryId=null;
+    closeModal('modal-entry');
+    refreshActivePage();
+    return; // exit early — don't fall through to normal save below
+  }
 window.deleteEntry=async id=>{
   if(!await finnConfirm('Excluir este lançamento?','Excluir lançamento',true))return;
   await deleteDoc(doc(db,'entries',id));
