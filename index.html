@@ -716,6 +716,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
         <div><div class="page-title">Parcelamentos</div><div class="page-sub">Compras parceladas em aberto</div></div>
       </div>
       <div class="metrics-grid" id="parc-metrics"></div>
+      <div id="parc-debug"></div>
       <div id="parc-active"></div>
       <div id="parc-history-section" style="display:none">
         <div style="display:flex;align-items:center;gap:10px;margin:20px 0 12px;cursor:pointer" onclick="toggleParcHistory()">
@@ -1485,6 +1486,18 @@ function renderParcelamentos(){
     <div class="metric-card"><div class="metric-label">Parcelas este mês</div><div class="metric-value neg">${fmt(totalMes)}</div></div>
     <div class="metric-card"><div class="metric-label">Em aberto</div><div class="metric-value">${active.length}</div></div>
     <div class="metric-card"><div class="metric-label">Valor restante</div><div class="metric-value neg">${fmt(totalRest)}</div></div>`;
+
+  // DEBUG: show raw data
+  const debugEl = document.getElementById('parc-debug');
+  if(debugEl){
+    debugEl.innerHTML = '<div style="font-size:11px;font-family:monospace;background:var(--bg2);padding:10px;border-radius:6px;margin-bottom:12px;white-space:pre-wrap">' +
+    '<strong>RAW parcelamentos ('+parcelamentos.length+' total, '+active.length+' active, '+done.length+' done):</strong>\n' +
+    parcelamentos.map(p=>{
+      const isDone=isParcDone(p);
+      const idx=getParcIdx(p,viewMonth,viewYear);
+      return `• ${p.descricao||'?'} | inicio=${p.inicio} | num=${p.numParcelas} | pagas=${p.parcPagas} | total=${p.valorTotal} | isDone=${isDone} | idxNow=${idx}`;
+    }).join('\n') + '</div>';
+  }
 
   const activeEl=document.getElementById('parc-active');
   if(!active.length){activeEl.innerHTML='<div class="empty">Nenhum parcelamento em aberto.</div>';}
