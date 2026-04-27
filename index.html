@@ -688,6 +688,8 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 </div>
         <div class="card"><div class="card-header"><span class="card-title">Últimos lançamentos</span></div><div class="card-body" id="dash-recent"></div></div>
       </div>
+      <div class="card dash-mobile-hide" style="margin-bottom:16px"><div class="card-header"><span class="card-title">Evolução mensal — Previsto vs Realizado</span></div><div class="card-body"><div class="chart-wrap" style="height:260px"><canvas id="lineChart"></canvas></div></div></div>
+      <div class="card dash-mobile-hide" style="margin-bottom:16px"><div class="card-header"><span class="card-title">Resumo anual por categoria de despesa</span></div><div class="card-body" id="rel-table" style="overflow-x:auto"></div></div>
     </div>
 
     <!-- RECEITAS -->
@@ -759,12 +761,6 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
     </div>
 
     <!-- RELATÓRIOS -->
-    <div id="page-relatorios" class="page">
-      <div class="page-header"><div><div class="page-title">Relatórios</div><div class="page-sub" id="rel-sub"></div></div></div>
-      <div class="card"><div class="card-header"><span class="card-title">Evolução mensal — Previsto vs Realizado</span></div><div class="card-body"><div class="chart-wrap" style="height:260px"><canvas id="lineChart"></canvas></div></div></div>
-      <div class="card"><div class="card-header"><span class="card-title">Resumo anual por categoria de despesa</span></div><div class="card-body" id="rel-table" style="overflow-x:auto"></div></div>
-    </div>
-
     <!-- CARDÁPIO -->
     <div id="page-cardapio" class="page">
       <div class="page-header">
@@ -1689,7 +1685,6 @@ function renderPage(id){
   else if(id==='metas')renderGoals();
   else if(id==='parcelamentos')renderParcelamentos();
   else if(id==='cartoes')renderCartoes();
-  else if(id==='relatorios')renderRelatorios();
   else if(id==='configuracoes')renderConfig();
   else if(id==='cardapio')loadCardapioData();
 }
@@ -2621,6 +2616,7 @@ function renderDashboard(){
   window._pieDataPrev=catArrPrev;
   if(typeof window._pieView==='undefined') window._pieView=0; // 0=realizado, 1=previsto
   renderPieChart();
+  renderRelatorios();
 
   const recent=[...mx].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,8);
   document.getElementById('dash-recent').innerHTML=recent.length?recent.map(t=>{const d=new Date(t.date+'T12:00:00');return`<div class="tx-item"><span class="tx-date">${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}</span><span class="tx-desc">${esc(t.descricao)||t.subcategoria||'—'}</span><span class="tx-val ${t.tipo==='receita'?'pos':'neg'}">${t.tipo==='receita'?'+':'-'}${fmt(t.valor)}</span><button class="tx-edit" onclick="editEntry('${t.id}')">✎ editar</button></div>`;}).join(''):'<div class="empty">Sem lançamentos este mês.</div>';
