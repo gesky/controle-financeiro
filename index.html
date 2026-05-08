@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob: wss:;">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Finn">
@@ -274,14 +274,14 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 /* RESPONSIVE */
 @media(max-width:768px){
   /* Sidebar — bottom navigation on mobile */
-  .sidebar{width:100%;height:auto;position:fixed;bottom:0;left:0;top:auto;border-right:none;border-top:1px solid var(--sidebar-border);border-bottom:none;flex-direction:row;overflow-x:auto;overflow-y:hidden;z-index:200;padding:0;background:#000032}
+  .sidebar{width:100%;height:auto;position:fixed;bottom:0;left:0;top:auto;border-right:none;border-top:1px solid var(--sidebar-border);border-bottom:none;flex-direction:row;overflow-x:auto;overflow-y:hidden;z-index:200;padding:0 0 env(safe-area-inset-bottom) 0;background:#000032}
   .sidebar-header{display:none}
   .sidebar-user{display:none}
   .sidebar-month{display:none}
   .sidebar-section{display:none}
   .nav-item{flex-direction:column;gap:2px;padding:8px 10px;margin:0;min-width:60px;font-size:10px;border-radius:0;align-items:center}
   .nav-item-icon{width:22px;height:22px}
-  .main{margin-left:0;padding-bottom:70px}
+  .main{margin-left:0;padding-top:max(16px, calc(env(safe-area-inset-top) + 12px));padding-bottom:calc(70px + env(safe-area-inset-bottom));padding-left:max(14px, env(safe-area-inset-left));padding-right:max(14px, env(safe-area-inset-right))}
   .page{padding:16px 14px}
   .metrics-grid{grid-template-columns:1fr 1fr;gap:8px}
   .form-row{grid-template-columns:1fr}
@@ -291,8 +291,8 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
   /* Stack dashboard charts */
   #page-dashboard .card + .card{margin-top:0}
   /* AI panel full width on mobile */
-  .ai-panel{width:calc(100vw - 24px);right:12px;bottom:76px;height:460px}
-  .ai-btn{bottom:76px;right:12px}
+  .ai-panel{width:calc(100vw - 24px);right:12px;bottom:calc(76px + env(safe-area-inset-bottom));height:460px}
+  .ai-btn{bottom:calc(76px + env(safe-area-inset-bottom));right:max(12px, env(safe-area-inset-right))}
   /* Fix modal on mobile */
   .modal{max-height:85vh;margin:0 8px;width:calc(100% - 16px)}
   /* Parcelamento card */
@@ -527,7 +527,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
   .dash-mobile-hide{display:none!important}
   /* FAB quick launch button */
   .fab-launch{
-    position:fixed;bottom:74px;right:16px;z-index:300;
+    position:fixed;bottom:calc(74px + env(safe-area-inset-bottom));right:max(16px, env(safe-area-inset-right));z-index:300;
     width:52px;height:52px;border-radius:50%;
     background:var(--accent);color:white;border:none;
     font-size:24px;font-weight:300;cursor:pointer;
@@ -538,7 +538,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
   .fab-launch:active{transform:scale(.93)}
   /* FAB quick menu */
   .fab-menu{
-    position:fixed;bottom:136px;right:16px;z-index:299;
+    position:fixed;bottom:calc(136px + env(safe-area-inset-bottom));right:max(16px, env(safe-area-inset-right));z-index:299;
     display:flex;flex-direction:column;align-items:flex-end;gap:8px;
     pointer-events:none;opacity:0;transition:opacity .2s;
   }
