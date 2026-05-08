@@ -3,7 +3,14 @@
 <head>
 <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob: wss:;">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Finn">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#000032">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='120' fill='%23000032'/%3E%3Ctext x='256' y='340' font-family='Arial' font-weight='bold' font-size='260' fill='white' text-anchor='middle'%3EF%3C/text%3E%3C/svg%3E">
+  <link rel="manifest" href="data:application/json,%7B%22name%22%3A%22Finn%22%2C%22short_name%22%3A%22Finn%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23000032%22%2C%22theme_color%22%3A%22%23000032%22%7D">
 <title>Finn</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCI+PHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iOS40IiByeT0iOS40IiBmaWxsPSIjMDAwMDMyIi8+PGc+PGc+PHBvbHlnb24gZmlsbD0id2hpdGUiIHBvaW50cz0iMzIuNyAxMiAxNS4zIDE0LjEgMTUuMyA5LjQgMzIuNyA5LjQgMzIuNyAxMiIvPjxwb2x5Z29uIGZpbGw9IndoaXRlIiBwb2ludHM9IjE1LjMgMzYgMzIuNyAzMy45IDMyLjcgMzguNiAxNS4zIDM4LjYgMTUuMyAzNiIvPjwvZz48Zz48cG9seWdvbiBmaWxsPSJ3aGl0ZSIgcG9pbnRzPSIyMC44IDM0LjIgMTcuMSAzNC42IDE3LjEgMTUgMjAuNyAxNC42IDIwLjggMzQuMiIvPjxwb2x5Z29uIGZpbGw9IndoaXRlIiBwb2ludHM9IjI1LjggMzMuNiAyMi4yIDM0IDIyLjIgMTQuNCAyNS44IDE0IDI1LjggMzMuNiIvPjxwb2x5Z29uIGZpbGw9IndoaXRlIiBwb2ludHM9IjMwLjkgMzMgMjcuMyAzMy41IDI3LjIgMTMuOCAzMC45IDEzLjQgMzAuOSAzMyIvPjwvZz48L2c+PC9zdmc+">
   <link rel="shortcut icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0OCA0OCI+PHJlY3Qgd2lkdGg9IjQ4IiBoZWlnaHQ9IjQ4IiByeD0iOS40IiByeT0iOS40IiBmaWxsPSIjMDAwMDMyIi8+PGc+PGc+PHBvbHlnb24gZmlsbD0id2hpdGUiIHBvaW50cz0iMzIuNyAxMiAxNS4zIDE0LjEgMTUuMyA5LjQgMzIuNyA5LjQgMzIuNyAxMiIvPjxwb2x5Z29uIGZpbGw9IndoaXRlIiBwb2ludHM9IjE1LjMgMzYgMzIuNyAzMy45IDMyLjcgMzguNiAxNS4zIDM4LjYgMTUuMyAzNiIvPjwvZz48Zz48cG9seWdvbiBmaWxsPSJ3aGl0ZSIgcG9pbnRzPSIyMC44IDM0LjIgMTcuMSAzNC42IDE3LjEgMTUgMjAuNyAxNC42IDIwLjggMzQuMiIvPjxwb2x5Z29uIGZpbGw9IndoaXRlIiBwb2ludHM9IjI1LjggMzMuNiAyMi4yIDM0IDIyLjIgMTQuNCAyNS44IDE0IDI1LjggMzMuNiIvPjxwb2x5Z29uIGZpbGw9IndoaXRlIiBwb2ludHM9IjMwLjkgMzMgMjcuMyAzMy41IDI3LjIgMTMuOCAzMC45IDEzLjQgMzAuOSAzMyIvPjwvZz48L2c+PC9zdmc+">
@@ -588,6 +595,18 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
   .cardapio-layout{grid-template-columns:1fr}
   .dias-grid{grid-template-columns:repeat(5,1fr);gap:4px}
   .prato-card{font-size:10px;padding:4px 6px}
+}
+
+
+/* ── MOBILE CAT PAGE ─────────────────────────────────────── */
+@media(max-width:768px){
+  .cat-card{margin-bottom:8px}
+  .subcat-row .tx-edit,.subcat-row .tx-del,
+  .subcat-row input[type=number],.subcat-row .btn-sm{display:none!important}
+  .subcat-row{pointer-events:none}
+  .cat-card-header .btn-add,.cat-card-header .btn-outline{display:none!important}
+  .cat-launch-btn{display:none!important}
+  .page-header .btn-add{display:none!important}
 }
 
 </style>
@@ -3288,10 +3307,10 @@ function renderRelatorios(){
   // Only show months with any data
   const activeMths=monthData.filter(d=>d.totalP>0||d.totalR>0);
 
-  const TH='padding:5px 8px;border:1px solid var(--border);text-align:center;font-size:11px;font-weight:700;background:var(--bg3);color:var(--text);white-space:nowrap';
-  const TH2='padding:4px 6px;border:1px solid var(--border);text-align:right;font-size:10px;font-weight:600;background:var(--bg2);color:var(--text3);white-space:nowrap';
-  const TD='padding:4px 8px;border:1px solid var(--border);text-align:right;font-size:11px;font-family:"DM Mono",monospace;white-space:nowrap';
-  const TDL='padding:4px 8px;border:1px solid var(--border);text-align:left;font-size:11px;font-weight:600;white-space:nowrap;position:sticky;left:0;background:var(--bg)';
+  const TH='padding:6px 16px;border:1px solid var(--border);text-align:center;font-size:11px;font-weight:700;background:var(--bg3);color:var(--text);white-space:nowrap;min-width:160px';
+  const TH2='padding:4px 16px;border:1px solid var(--border);text-align:right;font-size:10px;font-weight:600;background:var(--bg2);color:var(--text3);white-space:nowrap;min-width:80px';
+  const TD='padding:5px 16px;border:1px solid var(--border);text-align:right;font-size:11px;font-family:"DM Mono",monospace;white-space:nowrap;min-width:80px';
+  const TDL='padding:5px 12px;border:1px solid var(--border);text-align:left;font-size:11px;font-weight:600;white-space:nowrap;position:sticky;left:0;background:var(--bg);min-width:160px';
 
   let html=`<div style="overflow-x:auto"><table style="border-collapse:collapse;font-size:12px;min-width:100%">
   <thead>
@@ -3338,22 +3357,6 @@ function renderRelatorios(){
   });
   html+=`<td style="${TD};font-weight:700">R$ ${fmt(annualGP)}</td>`;
   html+=`<td style="${TD};font-weight:700;color:${annualGR>annualGP?'var(--red)':'var(--text)'}">R$ ${fmt(annualGR)}</td></tr>`;
-
-  // EVOLUÇÃO DOS GASTOS row — % change in Realizado month over month
-  html+=`<tr style="color:var(--red)"><td style="${TDL};color:var(--red);background:var(--bg)">EVOLUÇÃO DOS GASTOS</td>`;
-  activeMths.forEach((_,mi)=>{
-    html+=`<td style="${TD}"></td>`; // previsto col empty
-    if(mi===0){
-      html+=`<td style="${TD};color:var(--text3);font-size:10px">—</td>`;
-    } else {
-      const prev=grandTotalR[mi-1];
-      const curr=grandTotalR[mi];
-      const pct=prev>0?((curr-prev)/prev*100):0;
-      const sign=pct>=0?'+':'';
-      html+=`<td style="${TD};color:${pct<0?'var(--green)':'var(--red)'}">${prev>0?sign+pct.toFixed(2)+'%':'—'}</td>`;
-    }
-  });
-  html+=`<td style="${TD}"></td><td style="${TD}"></td></tr>`;
 
   html+=`</tbody></table></div>`;
   document.getElementById('rel-table').innerHTML=html;
