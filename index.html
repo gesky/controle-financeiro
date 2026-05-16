@@ -46,7 +46,9 @@
 body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh}
 
 /* AUTH */
-#auth-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:radial-gradient(ellipse at 20% 100%, #3437ff 0%, #1a1ccc 25%, #0a0b6e 55%, #000032 100%);position:relative;overflow:hidden}
+#auth-screen{display:none;align-items:center;justify-content:center;min-height:100vh;background:radial-gradient(ellipse at 20% 100%, #3437ff 0%, #1a1ccc 25%, #0a0b6e 55%, #000032 100%);position:relative;overflow:hidden}
+#loading-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#000032;position:fixed;inset:0;z-index:9999;transition:opacity .3s}
+#loading-screen.hidden{opacity:0;pointer-events:none}
 #auth-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 80% 90%, #3437ff55 0%, transparent 50%);pointer-events:none}
 #auth-screen::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 110%, #3437ff33 0%, transparent 60%);pointer-events:none}
 .auth-card{background:rgba(255,255,255,0.06);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:40px;width:100%;max-width:380px;box-shadow:0 8px 48px rgba(0,0,32,0.6),inset 0 1px 0 rgba(255,255,255,0.1);position:relative;z-index:1}
@@ -230,7 +232,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 .parc-progress-wrap{display:flex;align-items:center;gap:10px;margin:10px 0}
 .parc-pbar{flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
 .parc-pbar-fill{height:100%;border-radius:3px;transition:width .5s}
-.parc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:10px}
+.parc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
 .parc-stat{background:var(--bg2);border-radius:var(--radius);padding:8px 12px}
 .parc-stat-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:3px}
 .parc-stat-val{font-size:14px;font-weight:600;font-family:'DM Mono',monospace}
@@ -292,12 +294,25 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
   /* Stack dashboard charts */
   #page-dashboard .card + .card{margin-top:0}
   /* AI panel full width on mobile */
-  .ai-panel{width:calc(100vw - 24px);right:12px;bottom:calc(76px + env(safe-area-inset-bottom));height:460px}
+  .ai-panel{
+    width:100vw!important;
+    right:0!important;left:0!important;
+    bottom:0!important;
+    height:auto!important;
+    max-height:calc(100dvh - 60px)!important;
+    border-radius:var(--radius-lg) var(--radius-lg) 0 0!important;
+    transform-origin:bottom center!important;
+    position:fixed!important;
+  }
   /* ai-btn mobile handled in FAB block */
   /* Fix modal on mobile */
-  .modal{max-height:85vh;margin:0 8px;width:calc(100% - 16px)}
+  .modal{max-height:90dvh;margin:0 0;width:100%;border-radius:var(--radius-lg) var(--radius-lg) 0 0;position:fixed;bottom:0;top:auto}
   /* Parcelamento card */
   .parc-body{grid-template-columns:1fr 1fr}
+  .parc-grid{grid-template-columns:repeat(2,1fr)!important}
+  .parc-stat{padding:6px 8px}
+  .parc-stat-val{font-size:12px!important}
+  .parc-header{flex-wrap:wrap;gap:6px}
   /* Cards grid */
   #cartoes-grid{grid-template-columns:1fr}
   /* Inv grid */
@@ -388,7 +403,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
 .ai-conv-item:hover{background:var(--bg2)}
 .ai-conv-date{font-size:11px;color:var(--text3);margin-bottom:4px}
 .ai-conv-preview{font-size:13px;color:var(--text2)}
-@media(max-width:480px){.ai-panel{width:calc(100vw - 32px);right:16px;bottom:calc(216px + env(safe-area-inset-bottom))}}
+
 
 .parc-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:16px 18px;margin-bottom:10px}
 .parc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:10px}
@@ -635,11 +650,18 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
   .cat-name{font-size:13px!important}
 }
 
+@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
 
 <!-- AUTH -->
+<div id="loading-screen">
+  <div style="text-align:center">
+    <div style="font-size:32px;font-weight:700;color:white;letter-spacing:-1px;margin-bottom:12px">Finn</div>
+    <div style="width:32px;height:32px;border:3px solid rgba(255,255,255,0.2);border-top-color:white;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto"></div>
+  </div>
+</div>
 <div id="auth-screen">
   <div class="auth-card">
     <div class="auth-logo" style="margin-bottom:28px;justify-content:center;color:white">
@@ -915,7 +937,7 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
         <div class="fg"><label>Subcategoria</label><select id="me-subcat"></select></div>
       </div>
       <div class="form-row">
-        <div class="fg"><label>Valor realizado (R$)</label><input type="number" id="me-val" placeholder="0,00" step="0.01" min="0"></div>
+        <div class="fg"><label>Valor realizado (R$)</label><input type="text" inputmode="decimal" id="me-val" placeholder="0,00" autocomplete="off"></div>
         <div class="fg"></div>
       </div>
       <div class="form-row single"><div class="fg"><label>Descrição</label><input id="me-desc" placeholder="Ex: Supermercado Extra, Salário março..."></div></div>
@@ -1392,6 +1414,9 @@ window.sendPasswordReset = async () => {
 };
 
 onAuthStateChanged(auth,async user=>{
+  // Hide loading screen as soon as auth state is known
+  const ls=document.getElementById('loading-screen');
+  if(ls){ls.classList.add('hidden');setTimeout(()=>ls.remove(),400);}
   if(user){
     currentUser=user;
     isAdmin=user.email===ADMIN_EMAIL;
@@ -2940,7 +2965,7 @@ window.toggleParcFields=()=>{
 };
 
 window.calcParcPreviewInline=()=>{
-  const val=parseFloat(document.getElementById('me-val').value)||0;
+  const val=parseFloat((document.getElementById('me-val').value||'').replace(',','.'))||0;
   const num=parseInt(document.getElementById('me-parc-num').value)||0;
   const atual=parseInt(document.getElementById('me-parc-atual').value)||1;
   const prev=document.getElementById('parc-inline-preview');
@@ -3011,7 +3036,7 @@ window.saveEntry=async()=>{
   const catId=document.getElementById('me-cat').value;
   const subcat=document.getElementById('me-subcat').value;
   const date=document.getElementById('me-date').value;
-  const val=parseFloat(document.getElementById('me-val').value)||0;
+  const val=parseFloat((document.getElementById('me-val').value||'').replace(',','.'))||0;
   const desc=(document.getElementById('me-desc').value||'').trim();
   const isParcChecked=!!(document.getElementById('me-is-parc')?.checked);
 
