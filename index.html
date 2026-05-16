@@ -924,9 +924,9 @@ body{font-family:'Sora',sans-serif;background:var(--bg);color:var(--text);font-s
       <div class="form-row">
         <div class="fg"><label>Tipo</label><select id="me-tipo" onchange="onEntryTipoChange()"><option value="receita">Receita</option><option value="despesa">Despesa</option></select></div>
         <div class="fg"><label>Data <span style="font-size:11px;color:var(--text3);font-weight:400">(opcional)</span></label>
-          <div style="display:flex;align-items:center;gap:8px">
-            <input type="date" id="me-date" style="flex:1">
-            <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text2);cursor:pointer;white-space:nowrap">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <input type="date" id="me-date" style="flex:1;min-width:130px">
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text2);cursor:pointer;white-space:nowrap;flex-shrink:0">
               <input type="checkbox" id="me-no-date" onchange="toggleNoDate(this)" style="cursor:pointer"> Sem data
             </label>
           </div>
